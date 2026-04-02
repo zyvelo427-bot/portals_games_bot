@@ -2,69 +2,141 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>TON Arena</title>
-
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <script src="https://cdn.tailwindcss.com"></script>
-
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
-body {
-  margin: 0;
-  background: black;
-  color: white;
-  font-family: Arial;
-}
+body { font-family: 'Inter', sans-serif; background-color: black; color: white; margin: 0; padding: 0; overflow: hidden; -webkit-tap-highlight-color: transparent; user-select: none; }
+.arena-gradient { background: linear-gradient(135deg, #2563eb 0%, #9333ea 50%, #10b981 100%); }
+.profile-gradient { background: linear-gradient(180deg, #7c3aed 0%, #4c1d95 100%); }
+.nav-blur { background: rgba(28, 28, 30, 0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+@keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+.animate-fadeIn { animation: fadeIn 0.2s ease-out forwards; }
+::-webkit-scrollbar { display: none; }
 </style>
 </head>
-
 <body>
 <div id="root"></div>
-
 <script type="text/babel">
 const { useState, useEffect } = React;
-
-function App() {
-  const [balance, setBalance] = useState(10);
-  const [username, setUsername] = useState("Player");
-
-  useEffect(() => {
-    const tg = window.Telegram?.WebApp;
-    if (tg) {
-      tg.ready();
-      if (tg.initDataUnsafe?.user) {
-        setUsername(tg.initDataUnsafe.user.username || tg.initDataUnsafe.user.first_name);
-      }
-    }
-  }, []);
-
-  return (
-    <div style={{padding:20}}>
-      <h1>TON Arena</h1>
-
-      <p>Юзер: {username}</p>
-      <p>Баланс: {balance} TON</p>
-
-      <img
-        src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`}
-        width="120"
-      />
-
-      <br /><br />
-
-      <button onClick={() => setBalance(balance + 1)}>
-        +1 TON
-      </button>
-    </div>
-  );
+const App = () => {
+const [activeTab, setActiveTab] = useState('arena');
+const [balance, setBalance] = useState(10.00);
+const [username, setUsername] = useState('Gamer');
+const [online, setOnline] = useState(43);
+const [bank, setBank] = useState(3.75);
+useEffect(() => {
+const tg = window.Telegram?.WebApp;
+if (tg) {
+tg.ready();
+tg.expand();
+tg.setHeaderColor('#000000');
+if (tg.initDataUnsafe?.user) {
+setUsername(tg.initDataUnsafe.user.username || tg.initDataUnsafe.user.first_name);
 }
-
-const root = ReactDOM.createRoot(document.getElementById("root"));
+}
+const interval = setInterval(() => { setOnline(prev => prev + (Math.random() > 0.5 ? 1 : -1)); }, 5000);
+return () => clearInterval(interval);
+}, []);
+const playHaptic = () => { if (window.Telegram?.WebApp?.HapticFeedback) window.Telegram.WebApp.HapticFeedback.impactOccurred('medium'); };
+const makeBet = (amount) => {
+playHaptic();
+if (balance >= amount) { setBalance(prev => prev - amount); setBank(prev => prev + amount); }
+else { setBalance(prev => prev + 50); }
+};
+const ArenaScreen = () => (
+<div className="p-4 space-y-4 pb-32 animate-fadeIn">
+<div className="flex justify-between items-center text-xs text-gray-400 px-1">
+<div className="flex items-center gap-1.5">
+<div className="w-2 h-2 bg-green-500 rounded-full shadow-[0_0_8px_#22c55e]"></div>
+<span className="font-bold">{online} online</span>
+</div>
+<div className="flex gap-4 opacity-50"><span>ⓘ</span><span>💬</span><span>📅</span></div>
+</div>
+<div className="grid grid-cols-2 gap-3">
+<div className="bg-[#1c1c1e] p-3 rounded-2xl border border-white/5">
+<p className="text-[9px] text-gray-500 uppercase font-black mb-1">Top game</p>
+<div className="flex justify-between items-center"><span className="text-[10px] font-bold">@surfer</span><span className="text-[10px] font-black text-blue-400">+13 641 ▽</span></div>
+</div>
+<div className="bg-[#1c1c1e] p-3 rounded-2xl border border-white/5">
+<p className="text-[9px] text-gray-500 uppercase font-black mb-1">Last game</p>
+<div className="flex justify-between items-center"><span className="text-[10px] font-bold">@cyanotcia</span><span className="text-[10px] font-black text-purple-400">+23.85 ▽</span></div>
+</div>
+</div>
+<div className="bg-[#1c1c1e] rounded-[40px] p-4 border border-white/5 shadow-2xl">
+<div className="flex justify-between items-center mb-4 px-1">
+<div><p className="text-[10px] text-gray-500 font-black uppercase">Total</p><p className="text-2xl font-black text-blue-400">{bank.toFixed(2)} ▽</p></div>
+<div className="bg-green-500/10 border border-green-500/20 px-3 py-1 rounded-full"><span className="text-green-500 text-[10px] font-black uppercase tracking-tighter">● Live</span></div>
+</div>
+<div className="aspect-square w-full rounded-[30px] arena-gradient relative flex items-center justify-center shadow-inner">
+<div className="absolute top-6 right-6 w-12 h-12 bg-white/20 rounded-full border-2 border-white/30 backdrop-blur-md flex items-center justify-center">⚡</div>
+<div className="w-44 h-44 rounded-full bg-black/40 border-[8px] border-black/20 flex items-center justify-center shadow-2xl overflow-hidden backdrop-blur-sm">
+<img src={https://api.dicebear.com/7.x/avataaars/svg?seed=${username}} className="w-full h-full scale-110" />
+</div>
+<div className="absolute bottom-6 bg-black/50 px-4 py-2 rounded-full border border-white/10 backdrop-blur-md"><span className="text-[10px] font-black">CHANCE 100%</span></div>
+</div>
+</div>
+<div className="grid grid-cols-5 gap-2 pt-2 px-1">
+<button className="aspect-square bg-[#1c1c1e] rounded-full flex items-center justify-center border border-white/5 active:scale-90 transition-transform">⚙️</button>
+{[1, 5, 10].map(v => (
+<button key={v} onClick={() => makeBet(v)} className="aspect-square bg-[#1c1c1e] rounded-full flex flex-col items-center justify-center border border-white/5 active:bg-blue-600 transition-all active:scale-90">
+<span className="text-sm font-black">{v}</span><span className="text-[8px] text-blue-400">▽</span>
+</button>
+))}
+<button onClick={() => makeBet(balance)} className="aspect-square bg-[#2c2c2e] rounded-full text-[9px] font-black uppercase active:scale-90">All-in</button>
+</div>
+</div>
+);
+const ProfileScreen = () => (
+<div className="p-4 space-y-6 animate-fadeIn pb-32">
+<div className="profile-gradient rounded-[40px] p-8 text-center border border-white/20 shadow-2xl relative overflow-hidden">
+<div className="w-24 h-24 bg-black rounded-[28px] mx-auto mb-4 border border-white/20 flex items-center justify-center overflow-hidden">
+<img src={https://api.dicebear.com/7.x/identicon/svg?seed=${username}} className="w-full h-full p-3" />
+</div>
+<h2 className="text-2xl font-black">@{username}</h2>
+<div className="grid grid-cols-2 mt-8 gap-4">
+<div className="text-center"><p className="text-3xl font-black">0</p><p className="text-[10px] opacity-50 uppercase font-black tracking-widest">Games</p></div>
+<div className="text-center"><p className="text-3xl font-black">0 ▽</p><p className="text-[10px] opacity-50 uppercase font-black tracking-widest">Best win</p></div>
+</div>
+</div>
+<div className="bg-[#1c1c1e] p-6 rounded-[32px] border border-white/5 text-center">
+<p className="text-xs text-gray-400 font-bold mb-4 uppercase tracking-widest">Earn ton ▽ with friends</p>
+<button className="w-full bg-white text-black py-5 rounded-[28px] font-black text-sm active:scale-95 transition-all shadow-xl">INVITE FRIENDS +</button>
+</div>
+</div>
+);
+return (
+<div className="h-screen flex flex-col">
+<div className="flex justify-between items-center p-5">
+<div className="text-xs font-bold opacity-30 tracking-widest">TON ARENA</div>
+<div className="bg-[#1c1c1e] pl-4 pr-1 py-1 rounded-full flex items-center gap-3 border border-white/5">
+<span className="text-sm font-black text-blue-400">{balance.toFixed(2)} TON</span>
+<div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center font-black shadow-lg shadow-blue-600/30">+</div>
+</div>
+</div>
+<div className="flex-1 overflow-y-auto">
+{activeTab === 'arena' && <ArenaScreen />}
+{activeTab === 'profile' && <ProfileScreen />}
+{(activeTab === 'market' || activeTab === 'gifts') && (<div className="h-full flex flex-col items-center justify-center opacity-20 p-20 text-center"><span className="text-4xl mb-4">✨</span><p className="font-black text-[10px] uppercase tracking-widest">Coming Soon</p></div>)}
+</div>
+<div className="fixed bottom-0 left-0 right-0 p-5 pb-10 bg-gradient-to-t from-black via-black to-transparent z-[100]">
+<div className="nav-blur h-20 rounded-[35px] border border-white/10 flex items-center justify-between px-4 shadow-2xl">
+<button onClick={() => { playHaptic(); setActiveTab('market'); }} className={flex flex-col items-center gap-1 flex-1 ${activeTab === &#39;market&#39; ? &#39;text-white&#39; : &#39;text-gray-500&#39;}}><span className="text-xl">⊞</span><span className="text-[9px] font-black uppercase tracking-tighter">Market</span></button>
+<button onClick={() => { playHaptic(); setActiveTab('arena'); }} className={flex flex-col items-center gap-1 flex-1 ${activeTab === &#39;arena&#39; ? &#39;text-blue-400 scale-110&#39; : &#39;text-gray-500&#39;}}><span className="text-2xl">🕹️</span><span className="text-[9px] font-black uppercase tracking-tighter">Arena</span></button>
+<button onClick={() => { playHaptic(); setActiveTab('gifts'); }} className={flex flex-col items-center gap-1 flex-1 ${activeTab === &#39;gifts&#39; ? &#39;text-white&#39; : &#39;text-gray-500&#39;}}><span className="text-xl">🎁</span><span className="text-[9px] font-black uppercase tracking-tighter">Gifts</span></button>
+<button onClick={() => { playHaptic(); setActiveTab('profile'); }} className={w-11 h-11 rounded-full overflow-hidden border-2 transition-all ${activeTab === &#39;profile&#39; ? &#39;border-blue-500 scale-110&#39; : &#39;border-transparent&#39;}}><img src={https://api.dicebear.com/7.x/avataaars/svg?seed=${username}} className="w-full h-full bg-blue-900" /></button>
+</div>
+</div>
+</div>
+);
+};
+const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<App />);
 </script>
-
 </body>
 </html>
