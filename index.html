@@ -5,14 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TON Arena Live</title>
 
-<script src="https://cdn.tailwindcss.com"></script>
-
 <!-- React -->
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-<!-- Firebase (НЕ module версия) -->
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Firebase FIXED (compat версия) -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
@@ -21,17 +22,36 @@
 <script src="https://tg.dev/js/telegram-web-app.js"></script>
 
 <style>
-body {
-    background: #000;
-    color: #fff;
-    margin: 0;
-    font-family: sans-serif;
+body { 
+    background-color: #000; 
+    color: #fff; 
+    margin: 0; 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+    overflow: hidden; 
 }
-.btn {
-    background: #1c1c1e;
-    padding: 15px;
-    border-radius: 15px;
-    border: 1px solid #333;
+.card-grad { 
+    background: linear-gradient(145deg, #1a1a1c, #0a0a0b); 
+    border: 1px solid rgba(255,255,255,0.08); 
+}
+.btn-bet { 
+    background: #1c1c1e; 
+    border: 1px solid rgba(255,255,255,0.05); 
+    transition: all 0.1s ease;
+}
+.btn-bet:active { 
+    transform: scale(0.92); 
+    background: #2563eb; 
+}
+.online-dot { 
+    width: 6px; 
+    height: 6px; 
+    background: #22c55e; 
+    border-radius: 9999px; 
+    animation: pulse 2s infinite; 
+}
+@keyframes pulse { 
+    0%, 100% { opacity: 1; transform: scale(1); } 
+    50% { opacity: 0.3; transform: scale(1.3); } 
 }
 </style>
 </head>
@@ -41,80 +61,100 @@ body {
 
 <script type="text/babel">
 
-// 🔥 ВСТАВЬ СВОЙ НОРМАЛЬНЫЙ CONFIG СЮДА
+// 🔥 ВСТАВЬ СВОИ НАСТОЯЩИЕ КЛЮЧИ
 const firebaseConfig = {
-    apiKey: "PASTE_YOUR_KEY",
+    apiKey: "PASTE_KEY",
     authDomain: "portals-c5000.firebaseapp.com",
     databaseURL: "https://portals-c5000-default-rtdb.europe-west1.firebasedatabase.app",
     projectId: "portals-c5000",
     storageBucket: "portals-c5000.appspot.com",
     messagingSenderId: "24003070752",
-    appId: "PASTE_YOUR_APP_ID"
+    appId: "PASTE_APP_ID"
 };
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-function App() {
-    const [bank, setBank] = React.useState(0);
-    const [lastUser, setLastUser] = React.useState("...");
-    const [balance, setBalance] = React.useState(100);
-    const [username, setUsername] = React.useState("Player");
+const { useState, useEffect } = React;
 
-    React.useEffect(() => {
-        // Telegram
+function App() {
+    const [state, setState] = useState({ bank: 0, lastUser: "..." });
+    const [balance, setBalance] = useState(100);
+    const [username, setUsername] = useState("Player");
+
+    useEffect(() => {
         if (window.Telegram?.WebApp) {
             const tg = window.Telegram.WebApp;
             tg.ready();
             tg.expand();
-
             const user = tg.initDataUnsafe?.user;
             if (user) setUsername(user.username || user.first_name);
         }
 
-        // Firebase auth
         firebase.auth().signInAnonymously();
 
         const ref = db.ref("live_arena_v1");
 
         ref.on("value", (snap) => {
-            const data = snap.val();
-            if (data) {
-                setBank(data.bank || 0);
-                setLastUser(data.lastUser || "...");
-            }
+            const data = snap.val() || { bank: 0, lastUser: "..." };
+            setState(data);
         });
     }, []);
 
-    const bet = (amount) => {
-        if (balance < amount) return;
+    const handleBet = (val) => {
+        if (balance < val) return;
 
-        setBalance(prev => prev - amount);
+        setBalance(prev => prev - val);
 
-        const ref = db.ref("live_arena_v1");
-
-        ref.update({
-            bank: firebase.database.ServerValue.increment(amount),
+        db.ref("live_arena_v1").update({
+            bank: firebase.database.ServerValue.increment(val),
             lastUser: username
         });
     };
 
     return (
-        <div style={{padding:20}}>
-            <h1>🔥 Arena Live</h1>
+        <div className="flex flex-col h-screen max-w-md mx-auto p-6">
+            
+            {/* HEADER */}
+            <div className="flex justify-between items-center mb-8">
+                <div>
+                    <h1 className="text-xl font-black italic text-blue-500 uppercase">Arena Pro</h1>
+                    <div className="flex items-center gap-1 mt-1">
+                        <div className="online-dot"></div>
+                        <span className="text-xs text-zinc-500">Live</span>
+                    </div>
+                </div>
+                <div className="bg-[#1c1c1e] px-4 py-2 rounded-xl">
+                    {balance.toFixed(2)} TON
+                </div>
+            </div>
 
-            <p>Баланс: {balance} TON</p>
+            {/* MAIN */}
+            <div className="flex-1 flex flex-col justify-center">
+                <div className="card-grad rounded-3xl p-8 text-center">
+                    <p className="text-xs text-zinc-500 mb-2">Банк</p>
+                    <h2 className="text-5xl font-bold mb-6">
+                        {state.bank.toFixed(2)}
+                    </h2>
 
-            <h2>Банк: {bank}</h2>
-            <p>Последний: @{lastUser}</p>
+                    <img 
+                        src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${state.lastUser}`} 
+                        className="w-24 h-24 mx-auto mb-4"
+                    />
 
-            <div style={{display:"flex", gap:10}}>
+                    <p className="text-sm text-zinc-400">@{state.lastUser}</p>
+                </div>
+            </div>
+
+            {/* BETS */}
+            <div className="grid grid-cols-4 gap-3 mt-6">
                 {[1,5,10,25].map(v => (
-                    <button key={v} className="btn" onClick={()=>bet(v)}>
-                        {v} TON
+                    <button key={v} onClick={() => handleBet(v)} className="btn-bet h-14 rounded-xl">
+                        {v}
                     </button>
                 ))}
             </div>
+
         </div>
     );
 }
