@@ -1,200 +1,1879 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TON Arena v2</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
+  <title>TON Arena</title>
 
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 
-<style>
-body{background:#000;color:#fff;font-family:sans-serif;margin:0}
-.bottom-nav{position:fixed;bottom:0;width:100%;display:flex;background:#111}
-.bottom-nav button{flex:1;padding:14px;border:none;color:#fff;background:#111}
-.active{background:#222}
-.arena{width:300px;height:300px;position:relative;margin:auto;background:#111}
-.zone{position:absolute}
-.ball{width:16px;height:16px;border-radius:50%;background:white;position:absolute}
-</style>
+  <style>
+    :root{
+      --bg:#05060a;
+      --panel:rgba(255,255,255,.055);
+      --panel2:rgba(255,255,255,.075);
+      --line:rgba(255,255,255,.09);
+      --text:#eef3ff;
+      --muted:rgba(255,255,255,.58);
+      --accent:#5b8cff;
+      --accent2:#8b5cf6;
+      --good:#22c55e;
+      --warn:#f59e0b;
+      --danger:#ef4444;
+      --shadow:0 18px 50px rgba(0,0,0,.42);
+    }
+
+    *{box-sizing:border-box}
+    html,body{
+      margin:0;
+      min-height:100%;
+      background:
+        radial-gradient(circle at top, rgba(91,140,255,.18), transparent 26%),
+        radial-gradient(circle at 20% 18%, rgba(139,92,246,.12), transparent 24%),
+        radial-gradient(circle at 90% 4%, rgba(34,197,94,.08), transparent 20%),
+        linear-gradient(180deg,#0b0d14 0%, #05060a 56%, #000 100%);
+      color:var(--text);
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      overflow-x:hidden;
+    }
+
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      background:
+        linear-gradient(rgba(255,255,255,.023) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.023) 1px, transparent 1px);
+      background-size:34px 34px;
+      mask-image:radial-gradient(circle at center, black 42%, transparent 100%);
+      opacity:.28;
+    }
+
+    .app{
+      max-width:460px;
+      margin:0 auto;
+      padding:14px 14px 88px;
+      position:relative;
+    }
+
+    .glass{
+      background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.035));
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.05);
+      backdrop-filter:blur(18px);
+      -webkit-backdrop-filter:blur(18px);
+    }
+
+    .glass-strong{
+      background:linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.045));
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.08);
+      backdrop-filter:blur(18px);
+      -webkit-backdrop-filter:blur(18px);
+    }
+
+    .muted{color:var(--muted)}
+    .soft-line{border:1px solid rgba(255,255,255,.08)}
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:9px 14px;
+      border-radius:999px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.09);
+    }
+    .btn-main{
+      background:linear-gradient(180deg, rgba(91,140,255,1), rgba(70,119,250,1));
+      box-shadow:0 10px 28px rgba(91,140,255,.24), inset 0 1px 0 rgba(255,255,255,.18);
+    }
+    .btn-green{
+      background:linear-gradient(180deg, rgba(34,197,94,1), rgba(22,163,74,1));
+      box-shadow:0 10px 28px rgba(34,197,94,.20), inset 0 1px 0 rgba(255,255,255,.18);
+    }
+    .btn-dark{
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
+    }
+    .btn-danger{
+      background:rgba(239,68,68,.12);
+      border:1px solid rgba(239,68,68,.16);
+    }
+    .btn-tab{
+      background:transparent;
+      border:none;
+      color:rgba(255,255,255,.70);
+    }
+    .btn-tab.active{
+      color:#fff;
+      background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+    }
+    .scanline{
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      background:linear-gradient(to bottom, transparent, rgba(255,255,255,.06), transparent);
+      transform:translateY(-100%);
+      animation:scan 5.2s linear infinite;
+      opacity:.42;
+    }
+    @keyframes scan{0%{transform:translateY(-100%)}100%{transform:translateY(100%)}}
+    @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+    @keyframes pulse{0%,100%{transform:scale(1);opacity:.92}50%{transform:scale(1.03);opacity:1}}
+    .floaty{animation:floaty 4s ease-in-out infinite}
+    .pulse{animation:pulse 2.4s ease-in-out infinite}
+
+    .section{
+      border-radius:28px;
+      overflow:hidden;
+      position:relative;
+    }
+
+    .hero{
+      padding:16px;
+      border-radius:28px;
+      background:
+        radial-gradient(circle at 18% 18%, rgba(255,255,255,.14), transparent 18%),
+        radial-gradient(circle at 82% 18%, rgba(139,92,246,.20), transparent 20%),
+        linear-gradient(135deg, rgba(16,185,129,.85) 0%, rgba(59,130,246,.88) 22%, rgba(236,72,153,.90) 50%, rgba(245,158,11,.84) 74%, rgba(34,197,94,.84) 100%);
+      box-shadow:0 20px 70px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.08);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .hero::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        linear-gradient(155deg, rgba(0,0,0,.20) 0 34%, transparent 34% 55%, rgba(0,0,0,.10) 55% 100%),
+        radial-gradient(circle at center, transparent 0 26%, rgba(255,255,255,.06) 26.5% 27.5%, transparent 28%);
+      mix-blend-mode:screen;
+      pointer-events:none;
+    }
+
+    .hero::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:radial-gradient(circle at center, transparent 44%, rgba(0,0,0,.22) 100%);
+      pointer-events:none;
+    }
+
+    .grid-card{
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:18px;
+      padding:12px 14px;
+    }
+
+    .arena-shell{
+      position:relative;
+      aspect-ratio:1 / 1;
+      border-radius:26px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.10);
+      background:
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,.08) 0 2%, transparent 3%),
+        radial-gradient(circle at 50% 50%, transparent 0 38%, rgba(255,255,255,.05) 38.5% 39.5%, transparent 40%),
+        linear-gradient(180deg, rgba(7,9,16,.96), rgba(12,14,24,.96));
+      box-shadow:0 20px 70px rgba(0,0,0,.40), inset 0 1px 0 rgba(255,255,255,.04);
+    }
+
+    .arena-shell::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px),
+        linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px);
+      background-size:42px 42px;
+      opacity:.25;
+      pointer-events:none;
+      mask-image:radial-gradient(circle at center, black 45%, transparent 100%);
+    }
+
+    .arena-shell::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(circle at 50% 50%, transparent 0 58%, rgba(0,0,0,.10) 59% 100%);
+      pointer-events:none;
+    }
+
+    .arena-inner{
+      position:absolute;
+      inset:16px;
+      border-radius:20px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.08);
+      background:
+        radial-gradient(circle at center, rgba(255,255,255,.08), transparent 44%);
+    }
+
+    .player-zone{
+      position:absolute;
+      top:0;
+      height:100%;
+      border-right:1px solid rgba(255,255,255,.10);
+      box-shadow:inset 0 0 50px rgba(255,255,255,.06);
+      overflow:hidden;
+    }
+
+    .player-zone::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(circle at 50% 30%, rgba(255,255,255,.18), transparent 18%),
+        linear-gradient(180deg, rgba(255,255,255,.08), transparent 32%);
+      pointer-events:none;
+      mix-blend-mode:screen;
+      opacity:.9;
+    }
+
+    .zone-label{
+      position:absolute;
+      left:50%;
+      top:50%;
+      transform:translate(-50%, -50%);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:8px;
+      text-align:center;
+      width:100%;
+      padding:0 8px;
+      pointer-events:none;
+    }
+
+    .avatar-ring{
+      width:54px;
+      height:54px;
+      border-radius:999px;
+      padding:3px;
+      background:linear-gradient(135deg, rgba(255,255,255,.26), rgba(255,255,255,.08));
+      box-shadow:0 0 22px rgba(255,255,255,.14), 0 0 50px rgba(0,0,0,.18);
+    }
+
+    .avatar{
+      width:100%;
+      height:100%;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      background:rgba(0,0,0,.18);
+      border:1px solid rgba(255,255,255,.12);
+    }
+
+    .avatar img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .avatar-fallback{
+      font-size:12px;
+      font-weight:900;
+      letter-spacing:.05em;
+      text-shadow:0 1px 8px rgba(0,0,0,.45);
+    }
+
+    .zone-title{
+      font-size:12px;
+      font-weight:900;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      text-shadow:0 1px 8px rgba(0,0,0,.36);
+    }
+    .zone-sub{
+      font-size:11px;
+      color:rgba(255,255,255,.80);
+      text-shadow:0 1px 8px rgba(0,0,0,.36);
+    }
+
+    .arrow-wrap{
+      position:absolute;
+      left:0;
+      top:0;
+      width:100%;
+      height:100%;
+      pointer-events:none;
+      z-index:12;
+    }
+    .arrow-core{
+      position:absolute;
+      width:20px;
+      height:20px;
+      border-radius:999px;
+      background:radial-gradient(circle at 30% 30%, #fff, #f5f5f5 20%, #cbd5e1 100%);
+      box-shadow:0 0 18px rgba(255,255,255,.42), 0 0 30px rgba(91,140,255,.28);
+      transform:translate(-50%, -50%);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .arrow-head{
+      width:0;
+      height:0;
+      border-left:7px solid transparent;
+      border-right:7px solid transparent;
+      border-top:16px solid rgba(255,255,255,.96);
+      filter:drop-shadow(0 0 8px rgba(255,255,255,.45));
+      transform:translateY(14px);
+    }
+
+    .pointer-line{
+      position:absolute;
+      top:10px;
+      right:10px;
+      z-index:20;
+      padding:8px 10px;
+      border-radius:999px;
+      background:rgba(0,0,0,.28);
+      border:1px solid rgba(255,255,255,.10);
+      font-size:11px;
+      color:rgba(255,255,255,.85);
+    }
+
+    .indicator{
+      width:10px;
+      height:10px;
+      border-radius:999px;
+      background:var(--good);
+      box-shadow:0 0 12px rgba(34,197,94,.55);
+    }
+
+    .nav-bar{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:0;
+      width:min(460px,100%);
+      padding:10px 14px calc(10px + env(safe-area-inset-bottom));
+      z-index:40;
+      background:linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,.46) 14%, rgba(0,0,0,.72));
+      backdrop-filter:blur(16px);
+      -webkit-backdrop-filter:blur(16px);
+    }
+
+    .nav-inner{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:10px;
+      padding:10px;
+      border-radius:22px;
+      background:rgba(10,12,18,.76);
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:0 14px 40px rgba(0,0,0,.35);
+    }
+
+    .nav-btn{
+      border:none;
+      border-radius:18px;
+      padding:12px 8px;
+      color:rgba(255,255,255,.70);
+      font-weight:800;
+      letter-spacing:.02em;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:4px;
+      background:transparent;
+    }
+    .nav-btn.active{
+      color:#fff;
+      background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+      border:1px solid rgba(255,255,255,.07);
+    }
+    .nav-ic{
+      width:16px;
+      height:16px;
+      border-radius:999px;
+      background:rgba(255,255,255,.16);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+    }
+    .nav-btn.active .nav-ic{background:linear-gradient(180deg, rgba(91,140,255,1), rgba(139,92,246,1))}
+    .thin-scroll::-webkit-scrollbar{height:6px;width:6px}
+    .thin-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:999px}
+    .thin-scroll::-webkit-scrollbar-track{background:transparent}
+
+    .modal-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.62);
+      backdrop-filter:blur(10px);
+      -webkit-backdrop-filter:blur(10px);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index:100;
+      padding:16px;
+    }
+
+    .modal{
+      width:min(430px,100%);
+      border-radius:28px;
+      padding:16px;
+      background:linear-gradient(180deg, rgba(20,23,34,.98), rgba(9,10,16,.98));
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow:0 24px 80px rgba(0,0,0,.48);
+      position:relative;
+      overflow:hidden;
+    }
+    .modal::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(91,140,255,.12), transparent 18%),
+        radial-gradient(circle at 80% 10%, rgba(139,92,246,.12), transparent 18%);
+      pointer-events:none;
+    }
+
+    .input{
+      width:100%;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.26);
+      color:#fff;
+      padding:14px 14px;
+      outline:none;
+      font-size:15px;
+    }
+    .input:focus{
+      border-color:rgba(91,140,255,.34);
+      box-shadow:0 0 0 3px rgba(91,140,255,.12);
+    }
+
+    .support-mask{
+      position:fixed;
+      inset:0;
+      z-index:110;
+      background:rgba(0,0,0,.70);
+      display:flex;
+      align-items:flex-end;
+      justify-content:center;
+      padding:16px;
+      backdrop-filter:blur(10px);
+      -webkit-backdrop-filter:blur(10px);
+    }
+    .support-sheet{
+      width:min(430px,100%);
+      border-radius:24px;
+      background:linear-gradient(180deg, rgba(18,20,28,.98), rgba(8,9,14,.98));
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow:0 24px 70px rgba(0,0,0,.50);
+      padding:16px;
+      position:relative;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:800;
+      letter-spacing:.04em;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
+    }
+    .badge.good{background:rgba(34,197,94,.10); border-color:rgba(34,197,94,.16)}
+    .badge.warn{background:rgba(245,158,11,.10); border-color:rgba(245,158,11,.18)}
+    .badge.blue{background:rgba(91,140,255,.10); border-color:rgba(91,140,255,.18)}
+  </style>
 </head>
-
 <body>
-<div id="root"></div>
+  <div id="root"></div>
 
-<script type="text/babel">
+  <div class="nav-bar">
+    <div class="nav-inner" id="nav-anchor"></div>
+  </div>
 
-const firebaseConfig = {
-  apiKey: "AIzaSy...",
-  authDomain: "portals-c5000.firebaseapp.com",
-  databaseURL: "https://portals-c5000-default-rtdb.europe-west1.firebasedatabase.app",
-};
+  <script type="text/babel">
+    const {useEffect, useMemo, useRef, useState} = React;
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+    const firebaseConfig = {
+      apiKey: "AIzaSyCsgo_VhjPWLyUtZCE0jCzqCmQa-du0qwI",
+      authDomain: "portals-c5000.firebaseapp.com",
+      databaseURL: "https://portals-c5000-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "portals-c5000",
+      storageBucket: "portals-c5000.firebasestorage.app",
+      messagingSenderId: "24003070752",
+      appId: "1:24003070752:web:0b83600a20383640e5a545"
+    };
 
-const {useState,useEffect,useRef} = React;
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-function App(){
+    const APP_VERSION = "v3 arena";
+    const ROOM_DEFAULT = "room_1";
+    const ROUND_SECONDS = 20;
+    const FEE_RATE = 0.10;
+    const BASE_URL = "https://zyvelo427-bot.github.io/portals_games_bot";
 
-const [tab,setTab]=useState("games");
-const [nickname,setNickname]=useState(localStorage.getItem("nick")||"");
-const [inputNick,setInputNick]=useState("");
-const [bet,setBet]=useState(1);
-const [players,setPlayers]=useState([]);
-const [ball,setBall]=useState({x:150,y:150,vx:4,vy:3,active:false});
+    const LANGS = {
+      ru: {
+        appTitle: "TON Arena",
+        subtitle: "Квадратная арена • тестовая версия",
+        enterNick: "Введите уникальный ник",
+        nickHint: "Например: dragon77",
+        continue: "Продолжить",
+        room: "Комната",
+        bank: "Банк",
+        timer: "Таймер",
+        players: "Игроки",
+        bet: "Ставка",
+        join: "Войти / обновить ставку",
+        start: "Старт раунда",
+        reset: "Сброс комнаты",
+        games: "Игры",
+        refs: "Рефералы",
+        profile: "Профиль",
+        support: "Поддержка",
+        supportSoon: "Скоро добавим",
+        supportText: "Эта секция пока в разработке.",
+        back: "Назад",
+        language: "Язык",
+        stats: "Статистика",
+        betsCount: "Количество ставок",
+        wins: "Победы",
+        totalBet: "Всего поставлено",
+        rooms: "Комнаты",
+        online: "Онлайн",
+        referralTitle: "Реферальная система",
+        referralDesc: "Когда приглашённый игрок делает ставку и участвует в матчах, ты получаешь 10% бонуса от его активности как реферальное вознаграждение.",
+        referralLink: "Твоя ссылка",
+        copy: "Копировать",
+        copied: "Скопировано",
+        howItWorks: "Как работает",
+        howText: "Игрок вводит ник, входит в комнату, ставит TON и получает долю арены. Арена квадратная, а стрелка летает по полю с физикой.",
+        winner: "Победитель",
+        commission: "Комиссия",
+        roundFinished: "Раунд завершён",
+        comingSoon: "Скоро",
+        noPlayers: "Пока нет игроков",
+        noRoom: "Комната пуста",
+        noLast: "Пока нет завершённых раундов",
+        roomId: "ID комнаты",
+        liveArena: "Живая арена",
+        walletMode: "Режим теста",
+        testMode: "Без TonConnect. Для тестирования по нику.",
+        openRoom: "Открыть",
+        playerZone: "Зона",
+        payout: "Выплата",
+        feeNote: "10% комиссия удерживается из банка",
+        languageShort: "RU",
+        profileInfo: "Профиль и настройки",
+        supportTitle: "Поддержка",
+      },
+      en: {
+        appTitle: "TON Arena",
+        subtitle: "Square arena • test version",
+        enterNick: "Enter a unique nickname",
+        nickHint: "Example: dragon77",
+        continue: "Continue",
+        room: "Room",
+        bank: "Bank",
+        timer: "Timer",
+        players: "Players",
+        bet: "Bet",
+        join: "Join / update bet",
+        start: "Start round",
+        reset: "Reset room",
+        games: "Games",
+        refs: "Referrals",
+        profile: "Profile",
+        support: "Support",
+        supportSoon: "Coming soon",
+        supportText: "This section is still under development.",
+        back: "Back",
+        language: "Language",
+        stats: "Statistics",
+        betsCount: "Bet count",
+        wins: "Wins",
+        totalBet: "Total bet",
+        rooms: "Rooms",
+        online: "Online",
+        referralTitle: "Referral system",
+        referralDesc: "When an invited player places a bet and participates in matches, you receive a 10% bonus from their activity as a referral reward.",
+        referralLink: "Your link",
+        copy: "Copy",
+        copied: "Copied",
+        howItWorks: "How it works",
+        howText: "A player enters a nickname, joins a room, places TON and gets a share of the arena. The arena is square, and the arrow flies around with physics.",
+        winner: "Winner",
+        commission: "Commission",
+        roundFinished: "Round finished",
+        comingSoon: "Coming soon",
+        noPlayers: "No players yet",
+        noRoom: "Room is empty",
+        noLast: "No finished rounds yet",
+        roomId: "Room ID",
+        liveArena: "Live arena",
+        walletMode: "Test mode",
+        testMode: "No TonConnect. Nickname test mode.",
+        openRoom: "Open",
+        playerZone: "Zone",
+        payout: "Payout",
+        feeNote: "10% fee is deducted from the bank",
+        languageShort: "EN",
+        profileInfo: "Profile and settings",
+        supportTitle: "Support",
+      }
+    };
 
-useEffect(()=>{
-firebase.auth().signInAnonymously();
-db.ref("testRoom/players").on("value",snap=>{
-let data=snap.val()||{};
-setPlayers(Object.values(data));
-});
-},[]);
+    function t(lang, key){
+      return LANGS[lang]?.[key] ?? LANGS.ru[key] ?? key;
+    }
 
-const join=()=>{
-if(!inputNick)return alert("Введите ник");
+    function safeNick(nick){
+      return String(nick || "").trim().replace(/\s+/g, " ").slice(0, 18);
+    }
 
-db.ref("testRoom/players/"+inputNick).once("value",snap=>{
-if(snap.exists()){
-alert("Ник занят");
-}else{
-db.ref("testRoom/players/"+inputNick).set({
-name:inputNick,
-amount:bet,
-color:`hsl(${Math.random()*360},70%,50%)`
-});
-localStorage.setItem("nick",inputNick);
-setNickname(inputNick);
-}
-});
-};
+    function nickKey(nick){
+      return safeNick(nick).toLowerCase().replace(/[^a-zа-я0-9_ -]/gi, "_").replace(/\s/g, "_");
+    }
 
-const startGame=()=>{
-setBall({...ball,active:true});
-};
+    function shortNick(s){
+      if(!s) return "—";
+      return s.length > 12 ? s.slice(0, 12) + "…" : s;
+    }
 
-useEffect(()=>{
-if(!ball.active)return;
+    function shortAddr(s){
+      if(!s) return "—";
+      return s.length > 14 ? s.slice(0, 6) + "…" + s.slice(-4) : s;
+    }
 
-const interval=setInterval(()=>{
-setBall(b=>{
-let x=b.x+b.vx;
-let y=b.y+b.vy;
+    function formatTON(v){
+      const n = Number(v || 0);
+      if(!isFinite(n)) return "0";
+      return Number.isInteger(n) ? String(n) : n.toFixed(2).replace(/\.?0+$/,'');
+    }
 
-if(x<0||x>300){b.vx*=-1}
-if(y<0||y>300){b.vy*=-1}
+    function seededColor(seed){
+      let h = 0;
+      for(let i=0;i<seed.length;i++) h = ((h * 31) + seed.charCodeAt(i)) >>> 0;
+      const colors = [
+        ["#3b82f6","#1d4ed8"],
+        ["#8b5cf6","#6d28d9"],
+        ["#ec4899","#db2777"],
+        ["#f59e0b","#d97706"],
+        ["#10b981","#059669"],
+        ["#14b8a6","#0f766e"],
+        ["#ef4444","#b91c1c"],
+        ["#06b6d4","#0284c7"],
+        ["#f97316","#ea580c"],
+        ["#22c55e","#16a34a"]
+      ];
+      const c = colors[h % colors.length];
+      return `linear-gradient(135deg, ${c[0]}, ${c[1]})`;
+    }
 
-return {...b,x,y};
-});
-},30);
+    function makeReferralCode(nick){
+      const base = nickKey(nick) || "guest";
+      return base + "-tonarena";
+    }
 
-setTimeout(()=>{
-clearInterval(interval);
-setBall(b=>({...b,active:false}));
+    function weightedPick(players){
+      const arr = players
+        .map(p => ({...p, amount:Number(p.amount || 0)}))
+        .filter(p => p.amount > 0);
+      const total = arr.reduce((s,p)=>s+p.amount,0);
+      if(total <= 0) return arr[0] || null;
+      const r = Math.random() * total;
+      let a = 0;
+      for(const p of arr){
+        a += p.amount;
+        if(r <= a) return p;
+      }
+      return arr[arr.length - 1] || null;
+    }
 
-// winner
-let total=players.reduce((s,p)=>s+p.amount,0);
-let r=Math.random()*total;
-let sum=0;
-for(let p of players){
-sum+=p.amount;
-if(r<=sum){
-alert("WINNER: "+p.name);
-break;
-}
-}
+    function getCommission(bank){
+      return +(Number(bank || 0) * FEE_RATE).toFixed(2);
+    }
 
-},10000);
+    function getPayout(bank){
+      return +(Number(bank || 0) - getCommission(bank)).toFixed(2);
+    }
 
-},[ball.active]);
+    function progressWidth(players){
+      const total = players.reduce((s,p)=>s + Number(p.amount || 0), 0);
+      return total <= 0 ? [] : players.map(p => ({
+        ...p,
+        share: Number(p.amount || 0) / total
+      }));
+    }
 
-// % zones
-let total=players.reduce((s,p)=>s+p.amount,0);
-let offset=0;
+    function randomAvatar(seed){
+      return `https://api.dicebear.com/9.x/identicon/svg?seed=${encodeURIComponent(seed)}`;
+    }
 
-return(
+    function useLocal(key, fallback){
+      const [value, setValue] = useState(() => {
+        try{
+          const raw = localStorage.getItem(key);
+          return raw != null ? JSON.parse(raw) : fallback;
+        }catch{
+          return fallback;
+        }
+      });
+      useEffect(() => {
+        try{
+          localStorage.setItem(key, JSON.stringify(value));
+        }catch{}
+      }, [key, value]);
+      return [value, setValue];
+    }
 
-<div style={{paddingBottom:60}}>
+    function Card({children, className = ""}){
+      return <div className={`glass rounded-[28px] p-4 ${className}`}>{children}</div>;
+    }
 
-{!nickname ? (
-<div style={{padding:20}}>
-<h2>Enter Nick</h2>
-<input value={inputNick} onChange={e=>setInputNick(e.target.value)} />
-<input type="number" value={bet} onChange={e=>setBet(+e.target.value)} />
-<button onClick={join}>Join</button>
-</div>
-):(
+    function StatCard({label, value, hint, accent = false}){
+      return (
+        <div className="grid-card min-w-0">
+          <div className="text-[11px] uppercase tracking-[0.18em] muted font-extrabold">{label}</div>
+          <div className={`mt-1 text-[18px] font-black truncate ${accent ? "text-blue-400" : ""}`}>{value}</div>
+          <div className="mt-1 text-[11px] muted truncate">{hint}</div>
+        </div>
+      );
+    }
 
-<>
-{tab==="games" && (
-<div>
-<h2 style={{textAlign:"center"}}>Arena</h2>
+    function TabIcon({type}){
+      return <span className="nav-ic" aria-hidden="true"></span>;
+    }
 
-<div className="arena">
-{players.map((p,i)=>{
-let width=(p.amount/total)*300;
-let div=(
-<div key={i} className="zone" style={{
-left:offset,
-top:0,
-width:width,
-height:300,
-background:p.color
-}}>
-<div style={{position:"absolute",left:"50%",top:"50%"}}>
-{p.name}
-</div>
-</div>
-);
-offset+=width;
-return div;
-})}
+    function App(){
+      const [lang, setLang] = useLocal("tonarena_lang", "ru");
+      const [nickname, setNickname] = useLocal("tonarena_nick", "");
+      const [roomId, setRoomId] = useLocal("tonarena_room", ROOM_DEFAULT);
+      const [tab, setTab] = useState("games");
+      const [nickInput, setNickInput] = useState(nickname || "");
+      const [roomInput, setRoomInput] = useState(roomId || ROOM_DEFAULT);
+      const [betAmount, setBetAmount] = useState(1);
+      const [supportOpen, setSupportOpen] = useState(false);
+      const [players, setPlayers] = useState([]);
+      const [room, setRoom] = useState({
+        status:"waiting",
+        timer: ROUND_SECONDS,
+        host:"",
+        winner:null,
+        bank:0,
+        lastGame:null,
+        startedAt:null,
+        spin:0,
+        phaseText:"waiting"
+      });
+      const [arrow, setArrow] = useState({
+        active:false,
+        x:0,
+        y:0,
+        vx:0,
+        vy:0,
+        angle:0
+      });
+      const [arrowHistory, setArrowHistory] = useState([]);
+      const [myStats, setMyStats] = useState({
+        betsCount:0,
+        wins:0,
+        totalBet:0,
+        refs:0
+      });
+      const [notice, setNotice] = useState("");
+      const [copied, setCopied] = useState(false);
+      const [roomReady, setRoomReady] = useState(false);
+      const [offlinePreview, setOfflinePreview] = useState(false);
+      const [selectedRoom, setSelectedRoom] = useState(roomId || ROOM_DEFAULT);
 
-{ball.active && <div className="ball" style={{left:ball.x,top:ball.y}}></div>}
-</div>
+      const arenaRef = useRef(null);
+      const timerRef = useRef(null);
+      const physRef = useRef(null);
+      const resolveLockRef = useRef(false);
+      const uidRef = useRef("guest");
+      const roomPath = useMemo(() => `rooms/${selectedRoom}`, [selectedRoom]);
 
-<button onClick={startGame}>START</button>
-</div>
-)}
+      const roomPlayers = useMemo(() => {
+        return [...players].sort((a,b)=>(a.joinedAt || 0) - (b.joinedAt || 0));
+      }, [players]);
 
-{tab==="ref" && (
-<div style={{padding:20}}>
-<h2>Referral</h2>
-<p>Приглашай друзей и получай 10%</p>
-<input value={"https://tonarena/ref123"} readOnly/>
-</div>
-)}
+      const totalBank = useMemo(() => {
+        return roomPlayers.reduce((s,p)=>s + Number(p.amount || 0), 0);
+      }, [roomPlayers]);
 
-{tab==="profile" && (
-<div style={{padding:20}}>
-<h2>Profile</h2>
-<p>Nick: {nickname}</p>
-<button onClick={()=>alert("Скоро")}>Support</button>
-</div>
-)}
+      const fee = useMemo(() => getCommission(totalBank), [totalBank]);
+      const payout = useMemo(() => getPayout(totalBank), [totalBank]);
+      const shares = useMemo(() => progressWidth(roomPlayers), [roomPlayers]);
 
-</>
-)}
+      const currentPlayer = useMemo(() => {
+        if(!nickname) return null;
+        return roomPlayers.find(p => p.nicknameKey === nickKey(nickname)) || null;
+      }, [roomPlayers, nickname]);
 
-<div className="bottom-nav">
-<button className={tab==="games"?"active":""} onClick={()=>setTab("games")}>Games</button>
-<button className={tab==="ref"?"active":""} onClick={()=>setTab("ref")}>Ref</button>
-<button className={tab==="profile"?"active":""} onClick={()=>setTab("profile")}>Profile</button>
-</div>
+      const topPlayer = useMemo(() => {
+        if(!roomPlayers.length) return null;
+        return roomPlayers.reduce((best, cur) => Number(cur.amount || 0) > Number(best?.amount || 0) ? cur : best, null);
+      }, [roomPlayers]);
 
-</div>
-);
-}
+      const winnerPlayer = useMemo(() => {
+        if(!room.winner) return null;
+        return roomPlayers.find(p => p.nicknameKey === room.winner.nicknameKey) || null;
+      }, [room.winner, roomPlayers]);
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+      const roomLink = useMemo(() => {
+        const ref = makeReferralCode(nickname || "friend");
+        return `${BASE_URL}/?ref=${encodeURIComponent(ref)}`;
+      }, [nickname]);
 
-</script>
+      const langText = (k) => t(lang, k);
+
+      const canEnter = useMemo(() => safeNick(nickInput).length >= 2, [nickInput]);
+      const isNicknameUnique = useMemo(() => {
+        if(!canEnter) return false;
+        const key = nickKey(safeNick(nickInput));
+        if(!roomPlayers.length) return true;
+        return !roomPlayers.some(p => p.nicknameKey === key);
+      }, [canEnter, nickInput, roomPlayers]);
+
+      useEffect(() => {
+        firebase.auth().signInAnonymously().catch(()=>{});
+        setRoomReady(true);
+      }, []);
+
+      useEffect(() => {
+        const url = new URL(window.location.href);
+        const ref = url.searchParams.get("ref");
+        if(ref && !localStorage.getItem("tonarena_ref")){
+          localStorage.setItem("tonarena_ref", ref);
+          setMyStats(s => ({...s, refs: (s.refs || 0)}));
+        }
+      }, []);
+
+      useEffect(() => {
+        if(!nickname) return;
+        uidRef.current = nickKey(nickname) || "guest";
+        setSelectedRoom(roomId || ROOM_DEFAULT);
+      }, [nickname, roomId]);
+
+      useEffect(() => {
+        if(!nickname) return;
+        const roomRef = db.ref(roomPath);
+        const onValue = (snap) => {
+          const data = snap.val() || {};
+          const pl = data.players ? Object.values(data.players) : [];
+          setPlayers(pl);
+          setRoom({
+            status: data.status || "waiting",
+            timer: Number(data.timer ?? ROUND_SECONDS),
+            host: data.host || "",
+            winner: data.winner || null,
+            bank: Number(data.bank || 0),
+            lastGame: data.lastGame || null,
+            startedAt: data.startedAt || null,
+            spin: Number(data.spin || 0),
+            phaseText: data.phaseText || "waiting"
+          });
+          setArrowHistory(Array.isArray(data.arrowHistory) ? data.arrowHistory : []);
+        };
+        roomRef.on("value", onValue);
+        return () => roomRef.off("value", onValue);
+      }, [roomPath, nickname]);
+
+      useEffect(() => {
+        if(!nickname) return;
+        const ref = db.ref(`stats/${nickKey(nickname)}`);
+        const onValue = (snap) => {
+          const data = snap.val() || {};
+          setMyStats({
+            betsCount: Number(data.betsCount || 0),
+            wins: Number(data.wins || 0),
+            totalBet: Number(data.totalBet || 0),
+            refs: Number(data.refs || 0)
+          });
+        };
+        ref.on("value", onValue);
+        return () => ref.off("value", onValue);
+      }, [nickname]);
+
+      useEffect(() => {
+        if(!nickname) return;
+        if(room.status !== "betting") {
+          if(timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
+          return;
+        }
+        if(!room.host || room.host !== nickKey(nickname)) return;
+
+        if(timerRef.current){
+          clearInterval(timerRef.current);
+          timerRef.current = null;
+        }
+
+        timerRef.current = setInterval(() => {
+          db.ref(`${roomPath}/timer`).transaction((cur) => {
+            const next = Math.max(0, Number(cur || ROUND_SECONDS) - 1);
+            return next;
+          }, async (err, committed, snap) => {
+            if(err || !committed || !snap) return;
+            const current = Number(snap.val() || 0);
+            if(current <= 0 && !resolveLockRef.current){
+              resolveLockRef.current = true;
+              clearInterval(timerRef.current);
+              timerRef.current = null;
+              await resolveRound();
+            }
+          });
+        }, 1000);
+
+        return () => {
+          if(timerRef.current){
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
+        };
+      }, [room.status, room.host, nickname, roomPath]);
+
+      useEffect(() => {
+        if(tab === "games") setSupportOpen(false);
+      }, [tab]);
+
+      async function enterNick(){
+        const clean = safeNick(nickInput);
+        if(clean.length < 2){
+          alert("Ник слишком короткий");
+          return;
+        }
+
+        const key = nickKey(clean);
+        const collision = roomPlayers.some(p => p.nicknameKey === key);
+
+        if(collision){
+          alert("Такой ник уже есть в этой комнате");
+          return;
+        }
+
+        setNickname(clean);
+        setRoomId(roomId || ROOM_DEFAULT);
+        setSelectedRoom(roomId || ROOM_DEFAULT);
+        setTab("games");
+
+        const statsRef = db.ref(`stats/${key}`);
+        const statsSnap = await statsRef.once("value");
+        if(!statsSnap.exists()){
+          await statsRef.set({
+            betsCount: 0,
+            wins: 0,
+            totalBet: 0,
+            refs: 0,
+            createdAt: Date.now()
+          });
+        }
+
+        const roomRef = db.ref(roomPath);
+        const roomSnap = await roomRef.once("value");
+        const data = roomSnap.val() || {};
+        if(!data.status) {
+          await roomRef.set({
+            status:"waiting",
+            timer: ROUND_SECONDS,
+            bank: 0,
+            host:key,
+            winner:null,
+            lastGame:null,
+            startedAt:null,
+            phaseText:"waiting",
+            players:{}
+          });
+        }
+      }
+
+      async function openRoom(){
+        const next = String(roomInput || ROOM_DEFAULT).trim() || ROOM_DEFAULT;
+        setRoomId(next);
+        setSelectedRoom(next);
+        setNotice(`${lang === "ru" ? "Комната открыта" : "Room opened"}: ${next}`);
+        resolveLockRef.current = false;
+      }
+
+      async function joinOrUpdateBet(){
+        if(!nickname){
+          alert(lang === "ru" ? "Сначала введи ник" : "Enter nickname first");
+          return;
+        }
+
+        const amount = Number(betAmount);
+        if(!amount || amount <= 0){
+          alert(lang === "ru" ? "Ставка должна быть больше 0" : "Bet must be greater than 0");
+          return;
+        }
+
+        const key = nickKey(nickname);
+        const playerRef = db.ref(`${roomPath}/players/${key}`);
+        const currentSnap = await playerRef.once("value");
+        const exists = currentSnap.val();
+
+        const payload = {
+          nickname,
+          nicknameKey: key,
+          amount,
+          color: exists?.color || seededColor(key + selectedRoom),
+          avatar: exists?.avatar || randomAvatar(key),
+          joinedAt: exists?.joinedAt || Date.now(),
+          updatedAt: Date.now(),
+          referralCode: makeReferralCode(nickname),
+          refSource: localStorage.getItem("tonarena_ref") || null
+        };
+
+        await playerRef.set(payload);
+
+        const statsRef = db.ref(`stats/${key}`);
+        await statsRef.transaction((cur) => {
+          const d = cur || {betsCount:0, wins:0, totalBet:0, refs:0};
+          d.betsCount = Number(d.betsCount || 0) + 1;
+          d.totalBet = +(Number(d.totalBet || 0) + amount).toFixed(2);
+          d.lastBetAt = Date.now();
+          return d;
+        });
+
+        if(!room.host){
+          await db.ref(`${roomPath}/host`).set(key);
+        }
+
+        const roomSnap = await db.ref(roomPath).once("value");
+        const data = roomSnap.val() || {};
+        if((data.status || "waiting") === "waiting" && (Object.keys(data.players || {}).length + 1) >= 2){
+          await db.ref(roomPath).update({
+            status:"betting",
+            timer: ROUND_SECONDS,
+            phaseText:"betting",
+            startedAt: data.startedAt || Date.now(),
+            host: data.host || key
+          });
+        } else {
+          await db.ref(`${roomPath}/status`).set(data.status || "waiting");
+        }
+
+        setNotice(lang === "ru" ? "Ставка добавлена" : "Bet updated");
+      }
+
+      async function startRound(){
+        if(!nickname){
+          alert(lang === "ru" ? "Сначала введи ник" : "Enter nickname first");
+          return;
+        }
+
+        if(roomPlayers.length < 2){
+          alert(lang === "ru" ? "Нужно минимум 2 игрока" : "Need at least 2 players");
+          return;
+        }
+
+        const key = nickKey(nickname);
+        await db.ref(roomPath).update({
+          status:"betting",
+          timer: ROUND_SECONDS,
+          host:key,
+          winner:null,
+          phaseText:"betting",
+          startedAt: Date.now(),
+          spin: 0
+        });
+
+        resolveLockRef.current = false;
+        setNotice(lang === "ru" ? "Раунд запущен" : "Round started");
+      }
+
+      async function resetRoom(){
+        if(!nickname) return;
+        const key = nickKey(nickname);
+        await db.ref(roomPath).set({
+          status:"waiting",
+          timer: ROUND_SECONDS,
+          bank: 0,
+          host:key,
+          winner:null,
+          lastGame:null,
+          startedAt:null,
+          phaseText:"waiting",
+          spin: 0,
+          arrowHistory: [],
+          players:{}
+        });
+        resolveLockRef.current = false;
+        setArrow(a => ({...a, active:false}));
+        setNotice(lang === "ru" ? "Комната сброшена" : "Room reset");
+      }
+
+      function computeArrowWinner(finalX){
+        const zoneCount = roomPlayers.length;
+        if(!zoneCount) return null;
+
+        const w = 1000; // arena logical width
+        const segments = shares.length
+          ? shares
+          : roomPlayers.map(p => ({...p, share: 1 / zoneCount}));
+
+        let acc = 0;
+        for(const p of segments){
+          const start = acc * w;
+          const end = (acc + p.share) * w;
+          if(finalX >= start && finalX <= end){
+            return p;
+          }
+          acc += p.share;
+        }
+        return segments[segments.length - 1] || null;
+      }
+
+      async function pushArrowHistory(entry){
+        const snap = await db.ref(`${roomPath}/arrowHistory`).once("value");
+        const arr = Array.isArray(snap.val()) ? snap.val() : [];
+        const next = [...arr, entry].slice(-12);
+        await db.ref(`${roomPath}/arrowHistory`).set(next);
+      }
+
+      async function resolveRound(){
+        const snap = await db.ref(roomPath).once("value");
+        const data = snap.val() || {};
+        const pl = data.players ? Object.values(data.players) : [];
+
+        if(pl.length < 2){
+          await db.ref(roomPath).update({
+            status:"waiting",
+            timer: ROUND_SECONDS,
+            phaseText:"waiting"
+          });
+          resolveLockRef.current = false;
+          return;
+        }
+
+        const board = arenaRef.current?.getBoundingClientRect();
+        const arenaSize = Math.max(260, Math.min(board?.width || 320, 380));
+        const margin = 18;
+        const usable = arenaSize - margin * 2;
+
+        const startX = margin + Math.random() * usable;
+        const startY = margin + Math.random() * usable;
+        const vx = (Math.random() * 6 + 5) * (Math.random() < 0.5 ? -1 : 1);
+        const vy = (Math.random() * 5 + 4) * (Math.random() < 0.5 ? -1 : 1);
+
+        setArrow({
+          active:true,
+          x:startX,
+          y:startY,
+          vx,
+          vy,
+          angle:Math.random() * 360
+        });
+
+        await db.ref(`${roomPath}/status`).set("spinning");
+        await db.ref(`${roomPath}/phaseText`).set("spinning");
+
+        let x = startX;
+        let y = startY;
+        let dx = vx;
+        let dy = vy;
+        let angle = Math.random() * 360;
+        const gravity = 0.01;
+        const drag = 0.997;
+        const bounce = 0.93;
+        const t0 = performance.now();
+        const duration = 10000 + Math.random() * 1500;
+
+        if(physRef.current) cancelAnimationFrame(physRef.current);
+
+        const step = (now) => {
+          const elapsed = now - t0;
+
+          dx *= drag;
+          dy *= drag;
+          dy += gravity * 0.2;
+
+          x += dx;
+          y += dy;
+          angle += 21 + Math.random() * 4;
+
+          const min = margin;
+          const max = margin + usable;
+
+          if(x <= min){
+            x = min;
+            dx = Math.abs(dx) * bounce;
+          }
+          if(x >= max){
+            x = max;
+            dx = -Math.abs(dx) * bounce;
+          }
+          if(y <= min){
+            y = min;
+            dy = Math.abs(dy) * bounce;
+          }
+          if(y >= max){
+            y = max;
+            dy = -Math.abs(dy) * bounce;
+          }
+
+          const speed = Math.sqrt(dx*dx + dy*dy);
+          setArrow({active:true, x, y, vx:dx, vy:dy, angle});
+
+          if(elapsed < duration && speed > 0.28){
+            physRef.current = requestAnimationFrame(step);
+          }else{
+            const finalX = Math.max(0, Math.min(999, ((x - min) / usable) * 1000));
+            const winner = computeArrowWinner(finalX) || weightedPick(pl);
+
+            setArrow(a => ({...a, active:false}));
+            setTimeout(async () => {
+              const latestSnap = await db.ref(roomPath).once("value");
+              const latest = latestSnap.val() || {};
+              const latestPlayers = latest.players ? Object.values(latest.players) : pl;
+              const latestBank = latestPlayers.reduce((s,p)=>s + Number(p.amount || 0), 0);
+              const latestPayout = getPayout(latestBank);
+              const latestFee = getCommission(latestBank);
+
+              if(!winner){
+                await db.ref(roomPath).update({
+                  status:"finished",
+                  timer:0,
+                  phaseText:"finished",
+                  winner:null,
+                  lastGame:{
+                    at: Date.now(),
+                    roomId: selectedRoom,
+                    bank: latestBank,
+                    payout: latestPayout,
+                    fee: latestFee,
+                    winnerName: null,
+                    winnerKey: null
+                  }
+                });
+                resolveLockRef.current = false;
+                return;
+              }
+
+              await db.ref(roomPath).update({
+                status:"finished",
+                timer:0,
+                phaseText:"finished",
+                winner:{
+                  nickname: winner.nickname,
+                  nicknameKey: winner.nicknameKey,
+                  amount: winner.amount
+                },
+                lastGame:{
+                  at: Date.now(),
+                  roomId: selectedRoom,
+                  bank: latestBank,
+                  payout: latestPayout,
+                  fee: latestFee,
+                  winnerName: winner.nickname,
+                  winnerKey: winner.nicknameKey,
+                  winnerAmount: winner.amount
+                },
+                arrowHistory: firebase.database.ServerValue.increment ? null : latest.arrowHistory || []
+              });
+
+              const winnerStatsRef = db.ref(`stats/${winner.nicknameKey}`);
+              await winnerStatsRef.transaction((cur) => {
+                const d = cur || {betsCount:0, wins:0, totalBet:0, refs:0};
+                d.wins = Number(d.wins || 0) + 1;
+                d.lastWinAt = Date.now();
+                return d;
+              });
+
+              await pushArrowHistory({
+                at: Date.now(),
+                winner: winner.nickname,
+                winnerKey: winner.nicknameKey,
+                bank: latestBank,
+                fee: latestFee,
+                payout: latestPayout
+              });
+
+              resolveLockRef.current = false;
+            }, 220);
+          }
+        };
+
+        physRef.current = requestAnimationFrame(step);
+      }
+
+      const shareMap = useMemo(() => {
+        const total = roomPlayers.reduce((s,p)=>s + Number(p.amount || 0), 0);
+        if(total <= 0) return roomPlayers.map(p => ({...p, share: 1 / Math.max(roomPlayers.length, 1)}));
+        return roomPlayers.map(p => ({...p, share: Number(p.amount || 0) / total}));
+      }, [roomPlayers]);
+
+      const arenaZones = useMemo(() => {
+        const list = shareMap;
+        let left = 0;
+        return list.map((p, idx) => {
+          const width = Math.max(0.05, p.share) * 100;
+          const result = {
+            ...p,
+            left,
+            width,
+            color: p.color || seededColor(p.nicknameKey || p.nickname || String(idx)),
+          };
+          left += width;
+          return result;
+        });
+      }, [shareMap]);
+
+      const openSupport = () => setSupportOpen(true);
+      const closeSupport = () => setSupportOpen(false);
+
+      async function copyReferral(){
+        try{
+          await navigator.clipboard.writeText(roomLink);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1400);
+        }catch{
+          alert(roomLink);
+        }
+      }
+
+      function renderNicknameGate(){
+        if(nickname) return null;
+        return (
+          <div className="modal-backdrop">
+            <div className="modal">
+              <div className="scanline"></div>
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="badge blue">{langText("walletMode")}</div>
+                  <div className="mt-3 text-2xl font-black">{langText("enterNick")}</div>
+                  <div className="mt-2 text-sm muted">{langText("testMode")}</div>
+                </div>
+                <div className="w-14 h-14 rounded-2xl bg-white/6 border border-white/10 flex items-center justify-center">
+                  <span className="text-xl">⚡</span>
+                </div>
+              </div>
+
+              <div className="mt-5 space-y-3">
+                <input
+                  className="input"
+                  value={nickInput}
+                  onChange={(e)=>setNickInput(e.target.value)}
+                  placeholder={langText("nickHint")}
+                  maxLength={18}
+                />
+
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    className="input"
+                    type="text"
+                    value={roomInput}
+                    onChange={(e)=>setRoomInput(e.target.value)}
+                    placeholder={langText("room")}
+                    maxLength={20}
+                  />
+                  <button className="btn-main rounded-[18px] font-extrabold px-4" onClick={openRoom}>
+                    {langText("openRoom")}
+                  </button>
+                </div>
+
+                <button
+                  className={`w-full rounded-[18px] px-4 py-3 font-extrabold ${canEnter && isNicknameUnique ? "btn-green" : "btn-dark"}`}
+                  onClick={enterNick}
+                  disabled={!canEnter || !isNicknameUnique}
+                >
+                  {langText("continue")}
+                </button>
+
+                <div className="text-[11px] muted leading-5">
+                  {langText("howItWorks")}
+                  <br />
+                  {langText("howText")}
+                </div>
+                {!isNicknameUnique ? (
+                  <div className="text-[12px] text-amber-300 font-bold">Ник уже занят в этой комнате</div>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      function renderTopBar(){
+        return (
+          <div className="flex items-center justify-between gap-3 mb-4">
+            <div className="chip">
+              <span className="indicator"></span>
+              <span className="text-sm font-bold">{langText("online")}: {roomPlayers.length}</span>
+            </div>
+
+            <div className="text-center">
+              <div className="text-xs muted uppercase tracking-[0.22em] font-bold">TON ARENA</div>
+              <div className="mt-1 text-[11px] muted">{APP_VERSION}</div>
+            </div>
+
+            <button className="chip" onClick={() => setRoomInput(roomId || ROOM_DEFAULT) } title={langText("room")}>
+              <span className="text-sm font-bold">{shortNick(nickname || "guest")}</span>
+            </button>
+          </div>
+        );
+      }
+
+      function renderHero(){
+        return (
+          <div className="hero mb-4">
+            <div className="relative z-10">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="badge blue">{langText("walletMode")}</div>
+                  <div className="mt-3 text-3xl font-black leading-none">{langText("appTitle")}</div>
+                  <div className="mt-2 text-[13px] opacity-90">{langText("subtitle")}</div>
+                </div>
+                <div className="w-16 h-16 rounded-[22px] bg-black/18 border border-white/12 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-full bg-white/12 pulse"></div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 mt-4">
+                <StatCard label={langText("bank")} value={`${formatTON(totalBank)} TON`} hint={langText("feeNote")} accent />
+                <StatCard label={langText("timer")} value={`${room.timer}s`} hint={room.phaseText || room.status} />
+                <StatCard label={langText("players")} value={`${roomPlayers.length}`} hint={langText("liveArena")} />
+              </div>
+
+              <div className="mt-4 flex items-center gap-2">
+                <input
+                  className="input"
+                  value={roomInput}
+                  onChange={(e)=>setRoomInput(e.target.value)}
+                  placeholder={`${langText("room")} / room_1`}
+                  maxLength={20}
+                />
+                <button className="btn-main rounded-[18px] px-4 py-3 font-extrabold" onClick={openRoom}>
+                  {langText("openRoom")}
+                </button>
+              </div>
+
+              <div className="mt-3 flex items-center justify-between gap-2">
+                <div className="text-[11px] muted leading-5">
+                  {langText("testMode")}<br />
+                  {langText("roomId")}: {selectedRoom}
+                </div>
+                <div className="badge good">{roomReady ? "RTDB ready" : "Connecting"}</div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      function renderGameControls(){
+        return (
+          <Card className="mb-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <div className="text-[11px] uppercase tracking-[0.18em] muted font-extrabold">{langText("bet")}</div>
+                <input
+                  className="input mt-2"
+                  type="number"
+                  min="0.1"
+                  step="0.1"
+                  value={betAmount}
+                  onChange={(e)=>setBetAmount(Number(e.target.value))}
+                />
+              </div>
+
+              <div className="flex flex-col justify-end gap-2">
+                <button className="btn-main rounded-[18px] px-4 py-3 font-extrabold" onClick={joinOrUpdateBet}>
+                  {langText("join")}
+                </button>
+                <div className="text-[11px] muted leading-5">
+                  One nickname = one player slot.
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <button className="btn-green rounded-[18px] px-4 py-3 font-extrabold" onClick={startRound}>
+                {langText("start")}
+              </button>
+              <button className="btn-dark rounded-[18px] px-4 py-3 font-extrabold" onClick={resetRoom}>
+                {langText("reset")}
+              </button>
+            </div>
+          </Card>
+        );
+      }
+
+      function renderArena(){
+        return (
+          <Card className="mb-4">
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <div>
+                <div className="text-[11px] uppercase tracking-[0.18em] muted font-extrabold">{langText("room")}</div>
+                <div className="text-lg font-black">{selectedRoom}</div>
+              </div>
+              <div className={`badge ${room.status === "spinning" ? "warn" : room.status === "finished" ? "good" : "blue"}`}>
+                {room.status}
+              </div>
+            </div>
+
+            <div className="arena-shell" ref={arenaRef}>
+              <div className="arena-inner">
+                {arenaZones.map((p, idx) => {
+                  const left = p.left;
+                  const width = p.width;
+                  const highlight = winnerPlayer && winnerPlayer.nicknameKey === p.nicknameKey;
+                  return (
+                    <div
+                      key={`${p.nicknameKey}-${idx}`}
+                      className="player-zone"
+                      style={{
+                        left: `${left}%`,
+                        width: `${width}%`,
+                        background: p.color || seededColor(p.nicknameKey || p.nickname || String(idx)),
+                        boxShadow: highlight ? "inset 0 0 0 2px rgba(255,255,255,.20), inset 0 0 30px rgba(255,255,255,.08)" : "none"
+                      }}
+                    >
+                      <div className="zone-label">
+                        <div className="avatar-ring">
+                          <div className="avatar">
+                            <img src={p.avatar || randomAvatar(p.nicknameKey || p.nickname || String(idx))} alt="" />
+                          </div>
+                        </div>
+                        <div className="zone-title">{shortNick(p.nickname || p.nicknameKey || "player")}</div>
+                        <div className="zone-sub">
+                          {formatTON(p.amount)} TON · {Math.max(1, Math.round((Number(p.share || 0) * 100)))}%
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+
+                {roomPlayers.length === 0 ? (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="text-lg font-black">{langText("noPlayers")}</div>
+                      <div className="text-sm muted mt-2">{langText("room")}: {selectedRoom}</div>
+                    </div>
+                  </div>
+                ) : null}
+
+                <div className="pointer-line">
+                  {langText("commission")}: 10%
+                </div>
+
+                <div className="arrow-wrap">
+                  {arrow.active ? (
+                    <div
+                      style={{
+                        position:"absolute",
+                        left: `${arrow.x}px`,
+                        top: `${arrow.y}px`,
+                        transform: `translate(-50%, -50%) rotate(${arrow.angle}deg)`,
+                        transition:"none"
+                      }}
+                    >
+                      <div className="arrow-core">
+                        <div className="arrow-head"></div>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              <StatCard label={langText("bank")} value={`${formatTON(totalBank)} TON`} hint={`${langText("payout")}: ${formatTON(payout)} TON`} accent />
+              <StatCard label={langText("timer")} value={`${room.timer}s`} hint={room.status === "finished" ? langText("roundFinished") : room.phaseText || room.status} />
+              <StatCard label={langText("winner")} value={winnerPlayer ? shortNick(winnerPlayer.nickname) : "—"} hint={room.winner ? `${formatTON(room.winner.amount)} TON` : langText("noLast")} />
+            </div>
+          </Card>
+        );
+      }
+
+      function renderPlayers(){
+        return (
+          <Card className="mb-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-[11px] uppercase tracking-[0.18em] muted font-extrabold">{langText("players")}</div>
+                <div className="text-lg font-black">{roomPlayers.length}</div>
+              </div>
+              <div className="chip">
+                <span className="text-[11px] muted">{langText("bank")}</span>
+                <span className="font-black">{formatTON(totalBank)} TON</span>
+              </div>
+            </div>
+
+            <div className="mt-4 max-h-[250px] overflow-auto thin-scroll pr-1">
+              {roomPlayers.length ? roomPlayers.map((p, idx) => (
+                <div key={`${p.nicknameKey}-${idx}`} className="flex items-center justify-between gap-3 py-3 border-b border-white/8 last:border-b-0">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-11 h-11 rounded-full overflow-hidden border border-white/10" style={{background:p.color || seededColor(p.nicknameKey || p.nickname || String(idx))}}>
+                      <img src={p.avatar || randomAvatar(p.nicknameKey || p.nickname || String(idx))} alt="" className="w-full h-full object-cover" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="font-extrabold truncate">
+                        {p.nickname}
+                        {winnerPlayer && winnerPlayer.nicknameKey === p.nicknameKey ? <span className="ml-2 text-[10px] text-emerald-400 uppercase tracking-[0.18em]">winner</span> : null}
+                      </div>
+                      <div className="text-[11px] muted truncate">
+                        {langText("playerZone")} · {Math.max(1, Math.round(Number(p.share || 0) * 100))}%
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <div className="font-black text-blue-300">{formatTON(p.amount)} TON</div>
+                    <div className="text-[10px] muted">{p.joinedAt ? new Date(p.joinedAt).toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"}) : ""}</div>
+                  </div>
+                </div>
+              )) : (
+                <div className="py-10 text-center muted">{langText("noPlayers")}</div>
+              )}
+            </div>
+          </Card>
+        );
+      }
+
+      function renderLastGame(){
+        const g = room.lastGame;
+        return (
+          <Card className="mb-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-[11px] uppercase tracking-[0.18em] muted font-extrabold">Last game</div>
+                <div className="text-lg font-black">History</div>
+              </div>
+              <div className="text-[11px] muted">Firebase RTDB</div>
+            </div>
+
+            <div className="mt-4 rounded-[20px] border border-white/10 bg-black/25 p-4">
+              {g ? (
+                <>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="font-black truncate">{g.winnerName || "—"}</div>
+                      <div className="text-[11px] muted truncate">{g.winnerKey || ""}</div>
+                    </div>
+                    <div className="font-black text-blue-300 shrink-0">{formatTON(g.payout || 0)} TON</div>
+                  </div>
+                  <div className="mt-2 text-[11px] muted">
+                    Room: {g.roomId || selectedRoom} · {g.at ? new Date(g.at).toLocaleString() : ""}
+                  </div>
+                  <div className="mt-2 text-[11px] muted">
+                    {langText("feeNote")}: {formatTON(g.fee || 0)} TON
+                  </div>
+                </>
+              ) : (
+                <div className="text-sm muted">{langText("noLast")}</div>
+              )}
+            </div>
+
+            <div className="mt-3 text-[11px] muted leading-6">
+              Сейчас это тестовая версия. Потом сюда можно вернуть TonConnect, реальные транзакции и депозитный escrow.
+            </div>
+          </Card>
+        );
+      }
+
+      function renderGamesTab(){
+        return (
+          <>
+            {renderHero()}
+            {renderGameControls()}
+            {renderArena()}
+            {renderPlayers()}
+            {renderLastGame()}
+          </>
+        );
+      }
+
+      function renderRefsTab(){
+        return (
+          <Card className="mb-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="badge blue">Referrals</div>
+                <div className="mt-3 text-2xl font-black">{langText("referralTitle")}</div>
+              </div>
+              <div className="w-12 h-12 rounded-2xl bg-white/7 border border-white/10 flex items-center justify-center">
+                <span>↗</span>
+              </div>
+            </div>
+
+            <div className="mt-4 text-[13px] leading-6 muted">
+              {langText("referralDesc")}
+            </div>
+
+            <div className="mt-4 grid gap-3">
+              <div className="grid-card">
+                <div className="text-[11px] uppercase tracking-[0.18em] muted font-extrabold">{langText("referralLink")}</div>
+                <div className="mt-2 break-all text-[13px] font-bold">{roomLink}</div>
+                <button className="mt-3 btn-main rounded-[18px] px-4 py-3 font-extrabold" onClick={copyReferral}>
+                  {copied ? langText("copied") : langText("copy")}
+                </button>
+              </div>
+
+              <div className="grid-card">
+                <div className="text-[11px] uppercase tracking-[0.18em] muted font-extrabold">{langText("howItWorks")}</div>
+                <div className="mt-2 text-[13px] leading-6 muted">
+                  1) Игрок переходит по ссылке.<br/>
+                  2) Вводит ник и входит в комнату.<br/>
+                  3) Делает ставку.<br/>
+                  4) Ты получаешь реферальный бонус по правилам системы.
+                </div>
+              </div>
+
+              <div className="grid-card">
+                <div className="text-[11px] uppercase tracking-[0.18em] muted font-extrabold">{langText("commission")}</div>
+                <div className="mt-2 text-[13px] leading-6 muted">
+                  Платформа удерживает 10% от банка. Это отдельная комиссия матча.
+                </div>
+              </div>
+            </div>
+          </Card>
+        );
+      }
+
+      function renderProfileTab(){
+        return (
+          <Card className="mb-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="badge blue">{langText("profileInfo")}</div>
+                <div className="mt-3 text-2xl font-black">{nickname || "Guest"}</div>
+                <div className="mt-1 text-sm muted">{langText("testMode")}</div>
+              </div>
+              <div className="w-14 h-14 rounded-[20px] overflow-hidden border border-white/10">
+                <img src={randomAvatar(nickKey(nickname || "guest"))} alt="" className="w-full h-full object-cover" />
+              </div>
+            </div>
+
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <button
+                className={`rounded-[18px] px-4 py-3 font-extrabold ${lang === "ru" ? "btn-main" : "btn-dark"}`}
+                onClick={() => setLang("ru")}
+              >
+                Русский
+              </button>
+              <button
+                className={`rounded-[18px] px-4 py-3 font-extrabold ${lang === "en" ? "btn-main" : "btn-dark"}`}
+                onClick={() => setLang("en")}
+              >
+                English
+              </button>
+            </div>
+
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <StatCard label={langText("betsCount")} value={myStats.betsCount} hint={langText("stats")} />
+              <StatCard label={langText("wins")} value={myStats.wins} hint={langText("stats")} />
+              <StatCard label={langText("totalBet")} value={`${formatTON(myStats.totalBet)} TON`} hint={langText("stats")} />
+              <StatCard label={langText("rooms")} value={1} hint={selectedRoom} />
+            </div>
+
+            <div className="mt-4 grid gap-2">
+              <button className="btn-dark rounded-[18px] px-4 py-3 font-extrabold" onClick={openSupport}>
+                {langText("support")}
+              </button>
+            </div>
+
+            <div className="mt-4 text-[11px] muted leading-6">
+              Nickname: {nickname || "—"}<br/>
+              Room: {selectedRoom}<br/>
+              Referral code: {makeReferralCode(nickname || "guest")}
+            </div>
+          </Card>
+        );
+      }
+
+      function renderBottomNav(){
+        return (
+          <div className="nav-inner">
+            <button className={`nav-btn ${tab==="games" ? "active" : ""}`} onClick={()=>setTab("games")}>
+              <TabIcon type="games" />
+              <span>{langText("games")}</span>
+            </button>
+            <button className={`nav-btn ${tab==="refs" ? "active" : ""}`} onClick={()=>setTab("refs")}>
+              <TabIcon type="refs" />
+              <span>{langText("refs")}</span>
+            </button>
+            <button className={`nav-btn ${tab==="profile" ? "active" : ""}`} onClick={()=>setTab("profile")}>
+              <TabIcon type="profile" />
+              <span>{langText("profile")}</span>
+            </button>
+          </div>
+        );
+      }
+
+      function renderSupportSheet(){
+        if(!supportOpen) return null;
+        return (
+          <div className="support-mask">
+            <div className="support-sheet">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="badge warn">{langText("supportTitle")}</div>
+                  <div className="mt-3 text-2xl font-black">{langText("comingSoon")}</div>
+                </div>
+                <button className="btn-dark rounded-[14px] px-3 py-2 font-bold" onClick={closeSupport}>
+                  {langText("back")}
+                </button>
+              </div>
+
+              <div className="mt-4 grid-card">
+                <div className="text-[13px] leading-6 muted">
+                  {langText("supportText")}
+                </div>
+              </div>
+
+              <div className="mt-3 grid-card">
+                <div className="text-[11px] uppercase tracking-[0.18em] muted font-extrabold">Note</div>
+                <div className="mt-2 text-[13px] leading-6 muted">
+                  Здесь позже появится чат поддержки, FAQ и кнопка связи.
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <>
+          {renderNicknameGate()}
+          {renderSupportSheet()}
+
+          <div className="app">
+            {renderTopBar()}
+
+            {tab === "games" ? renderGamesTab() : null}
+            {tab === "refs" ? renderRefsTab() : null}
+            {tab === "profile" ? renderProfileTab() : null}
+
+            {notice ? (
+              <div className="mb-4 text-center text-[11px] muted">{notice}</div>
+            ) : null}
+          </div>
+
+          <div className="nav-bar">
+            <div id="nav-anchor">{renderBottomNav()}</div>
+          </div>
+        </>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
 </body>
 </html>
