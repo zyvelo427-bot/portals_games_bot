@@ -496,17 +496,62 @@
     .badge.good{background:rgba(34,197,94,.10); border-color:rgba(34,197,94,.16)}
     .badge.warn{background:rgba(245,158,11,.10); border-color:rgba(245,158,11,.18)}
     .badge.blue{background:rgba(91,140,255,.10); border-color:rgba(91,140,255,.18)}
+
+    .mini-stat{
+      display:flex;
+      flex-direction:column;
+      gap:3px;
+      padding:12px 14px;
+      border-radius:18px;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.08);
+      min-width:0;
+    }
+    .mini-label{
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.18em;
+      font-weight:900;
+      color:rgba(255,255,255,.56);
+    }
+    .mini-value{
+      font-size:18px;
+      font-weight:900;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .mini-hint{
+      font-size:11px;
+      color:rgba(255,255,255,.58);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .section-title{
+      font-size:12px;
+      font-weight:900;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+      color:rgba(255,255,255,.55);
+    }
+
+    .row-divider{
+      height:1px;
+      background:rgba(255,255,255,.08);
+      margin:10px 0;
+    }
   </style>
 </head>
 <body>
   <div id="root"></div>
-
   <div class="nav-bar">
-    <div class="nav-inner" id="nav-anchor"></div>
+    <div id="nav-anchor"></div>
   </div>
 
   <script type="text/babel">
-    const {useEffect, useMemo, useRef, useState} = React;
+    const { useEffect, useMemo, useRef, useState } = React;
 
     const firebaseConfig = {
       apiKey: "AIzaSyCsgo_VhjPWLyUtZCE0jCzqCmQa-du0qwI",
@@ -521,10 +566,9 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const APP_VERSION = "v3 arena";
-    const ROOM_DEFAULT = "room_1";
     const ROUND_SECONDS = 20;
     const FEE_RATE = 0.10;
+    const ROOM_DEFAULT = "room_1";
     const BASE_URL = "https://zyvelo427-bot.github.io/portals_games_bot";
 
     const LANGS = {
@@ -572,8 +616,7 @@
         noLast: "Пока нет завершённых раундов",
         roomId: "ID комнаты",
         liveArena: "Живая арена",
-        walletMode: "Режим теста",
-        testMode: "Без TonConnect. Для тестирования по нику.",
+        testMode: "Без TonConnect. Тест по нику.",
         openRoom: "Открыть",
         playerZone: "Зона",
         payout: "Выплата",
@@ -581,6 +624,8 @@
         languageShort: "RU",
         profileInfo: "Профиль и настройки",
         supportTitle: "Поддержка",
+        testFlow: "Тестовый сценарий",
+        testFlowText: "Меняй ник, ставь сумму и добавляй следующего игрока с того же телефона. Ник должен быть уникальным в комнате.",
       },
       en: {
         appTitle: "TON Arena",
@@ -626,7 +671,6 @@
         noLast: "No finished rounds yet",
         roomId: "Room ID",
         liveArena: "Live arena",
-        walletMode: "Test mode",
         testMode: "No TonConnect. Nickname test mode.",
         openRoom: "Open",
         playerZone: "Zone",
@@ -635,6 +679,8 @@
         languageShort: "EN",
         profileInfo: "Profile and settings",
         supportTitle: "Support",
+        testFlow: "Test flow",
+        testFlowText: "Change the nickname, place the amount and add another player from the same phone. The nickname must be unique inside the room.",
       }
     };
 
@@ -653,11 +699,6 @@
     function shortNick(s){
       if(!s) return "—";
       return s.length > 12 ? s.slice(0, 12) + "…" : s;
-    }
-
-    function shortAddr(s){
-      if(!s) return "—";
-      return s.length > 14 ? s.slice(0, 6) + "…" + s.slice(-4) : s;
     }
 
     function formatTON(v){
@@ -687,42 +728,11 @@
 
     function makeReferralCode(nick){
       const base = nickKey(nick) || "guest";
-      return base + "-tonarena";
-    }
-
-    function weightedPick(players){
-      const arr = players
-        .map(p => ({...p, amount:Number(p.amount || 0)}))
-        .filter(p => p.amount > 0);
-      const total = arr.reduce((s,p)=>s+p.amount,0);
-      if(total <= 0) return arr[0] || null;
-      const r = Math.random() * total;
-      let a = 0;
-      for(const p of arr){
-        a += p.amount;
-        if(r <= a) return p;
-      }
-      return arr[arr.length - 1] || null;
-    }
-
-    function getCommission(bank){
-      return +(Number(bank || 0) * FEE_RATE).toFixed(2);
-    }
-
-    function getPayout(bank){
-      return +(Number(bank || 0) - getCommission(bank)).toFixed(2);
-    }
-
-    function progressWidth(players){
-      const total = players.reduce((s,p)=>s + Number(p.amount || 0), 0);
-      return total <= 0 ? [] : players.map(p => ({
-        ...p,
-        share: Number(p.amount || 0) / total
-      }));
+      return `${base}-tonarena`;
     }
 
     function randomAvatar(seed){
-      return `https://api.dicebear.com/9.x/identicon/svg?seed=${encodeURIComponent(seed)}`;
+      return `https://api.dicebear.com/9.x/identicon/svg?seed=${encodeURIComponent(seed || "guest")}`;
     }
 
     function useLocal(key, fallback){
@@ -742,28 +752,46 @@
       return [value, setValue];
     }
 
-    function Card({children, className = ""}){
-      return <div className={`glass rounded-[28px] p-4 ${className}`}>{children}</div>;
+    function getCommission(bank){
+      return +(Number(bank || 0) * FEE_RATE).toFixed(2);
     }
 
-    function StatCard({label, value, hint, accent = false}){
-      return (
-        <div className="grid-card min-w-0">
-          <div className="text-[11px] uppercase tracking-[0.18em] muted font-extrabold">{label}</div>
-          <div className={`mt-1 text-[18px] font-black truncate ${accent ? "text-blue-400" : ""}`}>{value}</div>
-          <div className="mt-1 text-[11px] muted truncate">{hint}</div>
-        </div>
-      );
+    function getPayout(bank){
+      return +(Number(bank || 0) - getCommission(bank)).toFixed(2);
     }
 
-    function TabIcon({type}){
-      return <span className="nav-ic" aria-hidden="true"></span>;
+    function weightedPick(players){
+      const arr = players
+        .map(p => ({...p, amount:Number(p.amount || 0)}))
+        .filter(p => p.amount > 0);
+
+      const total = arr.reduce((s,p)=>s+p.amount,0);
+      if(total <= 0) return arr[0] || null;
+
+      const r = Math.random() * total;
+      let a = 0;
+      for(const p of arr){
+        a += p.amount;
+        if(r <= a) return p;
+      }
+      return arr[arr.length - 1] || null;
+    }
+
+    function computeShares(players){
+      const total = players.reduce((s,p)=>s + Number(p.amount || 0), 0);
+      if(total <= 0 && players.length){
+        return players.map(p => ({...p, share: 1 / players.length}));
+      }
+      if(total <= 0) return [];
+      return players.map(p => ({...p, share: Number(p.amount || 0) / total}));
     }
 
     function App(){
       const [lang, setLang] = useLocal("tonarena_lang", "ru");
       const [nickname, setNickname] = useLocal("tonarena_nick", "");
       const [roomId, setRoomId] = useLocal("tonarena_room", ROOM_DEFAULT);
+      const [clientId] = useLocal("tonarena_client_id", `client_${Math.random().toString(36).slice(2,10)}`);
+
       const [tab, setTab] = useState("games");
       const [nickInput, setNickInput] = useState(nickname || "");
       const [roomInput, setRoomInput] = useState(roomId || ROOM_DEFAULT);
@@ -775,11 +803,11 @@
         timer: ROUND_SECONDS,
         host:"",
         winner:null,
-        bank:0,
         lastGame:null,
         startedAt:null,
-        spin:0,
-        phaseText:"waiting"
+        phaseText:"waiting",
+        timerOwner:"",
+        arrowHistory:[]
       });
       const [arrow, setArrow] = useState({
         active:false,
@@ -789,7 +817,7 @@
         vy:0,
         angle:0
       });
-      const [arrowHistory, setArrowHistory] = useState([]);
+      const [history, setHistory] = useState([]);
       const [myStats, setMyStats] = useState({
         betsCount:0,
         wins:0,
@@ -799,14 +827,15 @@
       const [notice, setNotice] = useState("");
       const [copied, setCopied] = useState(false);
       const [roomReady, setRoomReady] = useState(false);
-      const [offlinePreview, setOfflinePreview] = useState(false);
-      const [selectedRoom, setSelectedRoom] = useState(roomId || ROOM_DEFAULT);
+      const [gateOpen, setGateOpen] = useState(!nickname);
+      const [draftNick, setDraftNick] = useState(nickname || "");
 
       const arenaRef = useRef(null);
       const timerRef = useRef(null);
       const physRef = useRef(null);
       const resolveLockRef = useRef(false);
-      const uidRef = useRef("guest");
+
+      const selectedRoom = roomId || ROOM_DEFAULT;
       const roomPath = useMemo(() => `rooms/${selectedRoom}`, [selectedRoom]);
 
       const roomPlayers = useMemo(() => {
@@ -819,7 +848,7 @@
 
       const fee = useMemo(() => getCommission(totalBank), [totalBank]);
       const payout = useMemo(() => getPayout(totalBank), [totalBank]);
-      const shares = useMemo(() => progressWidth(roomPlayers), [roomPlayers]);
+      const shares = useMemo(() => computeShares(roomPlayers), [roomPlayers]);
 
       const currentPlayer = useMemo(() => {
         if(!nickname) return null;
@@ -842,14 +871,8 @@
       }, [nickname]);
 
       const langText = (k) => t(lang, k);
-
-      const canEnter = useMemo(() => safeNick(nickInput).length >= 2, [nickInput]);
-      const isNicknameUnique = useMemo(() => {
-        if(!canEnter) return false;
-        const key = nickKey(safeNick(nickInput));
-        if(!roomPlayers.length) return true;
-        return !roomPlayers.some(p => p.nicknameKey === key);
-      }, [canEnter, nickInput, roomPlayers]);
+      const cleanNick = safeNick(draftNick || nickname);
+      const canUseNick = cleanNick.length >= 2;
 
       useEffect(() => {
         firebase.auth().signInAnonymously().catch(()=>{});
@@ -857,43 +880,55 @@
       }, []);
 
       useEffect(() => {
+        setDraftNick(nickname || "");
+      }, [nickname]);
+
+      useEffect(() => {
         const url = new URL(window.location.href);
         const ref = url.searchParams.get("ref");
         if(ref && !localStorage.getItem("tonarena_ref")){
           localStorage.setItem("tonarena_ref", ref);
-          setMyStats(s => ({...s, refs: (s.refs || 0)}));
         }
       }, []);
 
       useEffect(() => {
-        if(!nickname) return;
-        uidRef.current = nickKey(nickname) || "guest";
-        setSelectedRoom(roomId || ROOM_DEFAULT);
-      }, [nickname, roomId]);
+        if(!nickname) {
+          setGateOpen(true);
+          return;
+        }
+        setGateOpen(false);
+      }, [nickname]);
 
       useEffect(() => {
-        if(!nickname) return;
         const roomRef = db.ref(roomPath);
+
         const onValue = (snap) => {
           const data = snap.val() || {};
           const pl = data.players ? Object.values(data.players) : [];
+          const hist = Array.isArray(data.arrowHistory)
+            ? data.arrowHistory
+            : data.arrowHistory && typeof data.arrowHistory === "object"
+              ? Object.values(data.arrowHistory)
+              : [];
+
           setPlayers(pl);
           setRoom({
             status: data.status || "waiting",
             timer: Number(data.timer ?? ROUND_SECONDS),
             host: data.host || "",
             winner: data.winner || null,
-            bank: Number(data.bank || 0),
             lastGame: data.lastGame || null,
             startedAt: data.startedAt || null,
-            spin: Number(data.spin || 0),
-            phaseText: data.phaseText || "waiting"
+            phaseText: data.phaseText || "waiting",
+            timerOwner: data.timerOwner || "",
+            arrowHistory: hist
           });
-          setArrowHistory(Array.isArray(data.arrowHistory) ? data.arrowHistory : []);
+          setHistory(hist);
         };
+
         roomRef.on("value", onValue);
         return () => roomRef.off("value", onValue);
-      }, [roomPath, nickname]);
+      }, [roomPath]);
 
       useEffect(() => {
         if(!nickname) return;
@@ -912,15 +947,15 @@
       }, [nickname]);
 
       useEffect(() => {
-        if(!nickname) return;
         if(room.status !== "betting") {
-          if(timerRef.current) {
+          if(timerRef.current){
             clearInterval(timerRef.current);
             timerRef.current = null;
           }
           return;
         }
-        if(!room.host || room.host !== nickKey(nickname)) return;
+
+        if(room.timerOwner !== clientId) return;
 
         if(timerRef.current){
           clearInterval(timerRef.current);
@@ -949,34 +984,23 @@
             timerRef.current = null;
           }
         };
-      }, [room.status, room.host, nickname, roomPath]);
+      }, [room.status, room.timerOwner, clientId, roomPath]);
 
-      useEffect(() => {
-        if(tab === "games") setSupportOpen(false);
-      }, [tab]);
-
-      async function enterNick(){
-        const clean = safeNick(nickInput);
+      async function useNicknameNow(){
+        const clean = safeNick(draftNick);
         if(clean.length < 2){
-          alert("Ник слишком короткий");
-          return;
-        }
-
-        const key = nickKey(clean);
-        const collision = roomPlayers.some(p => p.nicknameKey === key);
-
-        if(collision){
-          alert("Такой ник уже есть в этой комнате");
-          return;
+          alert(lang === "ru" ? "Ник слишком короткий" : "Nickname is too short");
+          return false;
         }
 
         setNickname(clean);
-        setRoomId(roomId || ROOM_DEFAULT);
-        setSelectedRoom(roomId || ROOM_DEFAULT);
-        setTab("games");
+        setDraftNick(clean);
+        setGateOpen(false);
 
+        const key = nickKey(clean);
         const statsRef = db.ref(`stats/${key}`);
         const statsSnap = await statsRef.once("value");
+
         if(!statsSnap.exists()){
           await statsRef.set({
             betsCount: 0,
@@ -987,37 +1011,26 @@
           });
         }
 
-        const roomRef = db.ref(roomPath);
-        const roomSnap = await roomRef.once("value");
-        const data = roomSnap.val() || {};
-        if(!data.status) {
-          await roomRef.set({
-            status:"waiting",
-            timer: ROUND_SECONDS,
-            bank: 0,
-            host:key,
-            winner:null,
-            lastGame:null,
-            startedAt:null,
-            phaseText:"waiting",
-            players:{}
-          });
-        }
+        return true;
       }
 
       async function openRoom(){
         const next = String(roomInput || ROOM_DEFAULT).trim() || ROOM_DEFAULT;
         setRoomId(next);
-        setSelectedRoom(next);
         setNotice(`${lang === "ru" ? "Комната открыта" : "Room opened"}: ${next}`);
         resolveLockRef.current = false;
       }
 
       async function joinOrUpdateBet(){
-        if(!nickname){
+        const nick = safeNick(draftNick || nickname);
+        if(!nick){
           alert(lang === "ru" ? "Сначала введи ник" : "Enter nickname first");
           return;
         }
+
+        setNickname(nick);
+        setDraftNick(nick);
+        setGateOpen(false);
 
         const amount = Number(betAmount);
         if(!amount || amount <= 0){
@@ -1025,20 +1038,20 @@
           return;
         }
 
-        const key = nickKey(nickname);
+        const key = nickKey(nick);
         const playerRef = db.ref(`${roomPath}/players/${key}`);
         const currentSnap = await playerRef.once("value");
-        const exists = currentSnap.val();
+        const existing = currentSnap.val();
 
         const payload = {
-          nickname,
+          nickname: nick,
           nicknameKey: key,
           amount,
-          color: exists?.color || seededColor(key + selectedRoom),
-          avatar: exists?.avatar || randomAvatar(key),
-          joinedAt: exists?.joinedAt || Date.now(),
+          color: existing?.color || seededColor(key + selectedRoom),
+          avatar: existing?.avatar || randomAvatar(key),
+          joinedAt: existing?.joinedAt || Date.now(),
           updatedAt: Date.now(),
-          referralCode: makeReferralCode(nickname),
+          referralCode: makeReferralCode(nick),
           refSource: localStorage.getItem("tonarena_ref") || null
         };
 
@@ -1046,36 +1059,36 @@
 
         const statsRef = db.ref(`stats/${key}`);
         await statsRef.transaction((cur) => {
-          const d = cur || {betsCount:0, wins:0, totalBet:0, refs:0};
+          const d = cur || { betsCount:0, wins:0, totalBet:0, refs:0 };
           d.betsCount = Number(d.betsCount || 0) + 1;
           d.totalBet = +(Number(d.totalBet || 0) + amount).toFixed(2);
           d.lastBetAt = Date.now();
           return d;
         });
 
-        if(!room.host){
-          await db.ref(`${roomPath}/host`).set(key);
-        }
-
         const roomSnap = await db.ref(roomPath).once("value");
         const data = roomSnap.val() || {};
-        if((data.status || "waiting") === "waiting" && (Object.keys(data.players || {}).length + 1) >= 2){
+        const count = Object.keys(data.players || {}).length + (existing ? 0 : 1);
+
+        if((data.status || "waiting") === "waiting" && count >= 2){
           await db.ref(roomPath).update({
             status:"betting",
             timer: ROUND_SECONDS,
             phaseText:"betting",
             startedAt: data.startedAt || Date.now(),
-            host: data.host || key
+            host: data.host || key,
+            timerOwner: clientId
           });
-        } else {
-          await db.ref(`${roomPath}/status`).set(data.status || "waiting");
+        }else if((data.status || "waiting") === "betting" && !data.timerOwner){
+          await db.ref(`${roomPath}/timerOwner`).set(clientId);
         }
 
         setNotice(lang === "ru" ? "Ставка добавлена" : "Bet updated");
       }
 
       async function startRound(){
-        if(!nickname){
+        const nick = safeNick(draftNick || nickname);
+        if(!nick){
           alert(lang === "ru" ? "Сначала введи ник" : "Enter nickname first");
           return;
         }
@@ -1085,7 +1098,7 @@
           return;
         }
 
-        const key = nickKey(nickname);
+        const key = nickKey(nick);
         await db.ref(roomPath).update({
           status:"betting",
           timer: ROUND_SECONDS,
@@ -1093,7 +1106,7 @@
           winner:null,
           phaseText:"betting",
           startedAt: Date.now(),
-          spin: 0
+          timerOwner: clientId
         });
 
         resolveLockRef.current = false;
@@ -1101,50 +1114,48 @@
       }
 
       async function resetRoom(){
-        if(!nickname) return;
-        const key = nickKey(nickname);
+        const nick = safeNick(draftNick || nickname);
+        if(!nick) return;
+        const key = nickKey(nick);
+
         await db.ref(roomPath).set({
           status:"waiting",
           timer: ROUND_SECONDS,
-          bank: 0,
           host:key,
           winner:null,
-          lastGame:null,
+          lastGame: room.lastGame || null,
           startedAt:null,
           phaseText:"waiting",
-          spin: 0,
+          timerOwner: clientId,
           arrowHistory: [],
           players:{}
         });
+
         resolveLockRef.current = false;
         setArrow(a => ({...a, active:false}));
         setNotice(lang === "ru" ? "Комната сброшена" : "Room reset");
       }
 
-      function computeArrowWinner(finalX){
-        const zoneCount = roomPlayers.length;
-        if(!zoneCount) return null;
-
-        const w = 1000; // arena logical width
-        const segments = shares.length
-          ? shares
-          : roomPlayers.map(p => ({...p, share: 1 / zoneCount}));
-
+      function computeWinnerByX(finalX){
+        if(!shares.length) return null;
         let acc = 0;
-        for(const p of segments){
-          const start = acc * w;
-          const end = (acc + p.share) * w;
-          if(finalX >= start && finalX <= end){
+        for(const p of shares){
+          const next = acc + p.share;
+          if(finalX >= acc && finalX <= next){
             return p;
           }
-          acc += p.share;
+          acc = next;
         }
-        return segments[segments.length - 1] || null;
+        return shares[shares.length - 1] || null;
       }
 
-      async function pushArrowHistory(entry){
+      async function pushHistoryEntry(entry){
         const snap = await db.ref(`${roomPath}/arrowHistory`).once("value");
-        const arr = Array.isArray(snap.val()) ? snap.val() : [];
+        const arr = Array.isArray(snap.val())
+          ? snap.val()
+          : snap.val() && typeof snap.val() === "object"
+            ? Object.values(snap.val())
+            : [];
         const next = [...arr, entry].slice(-12);
         await db.ref(`${roomPath}/arrowHistory`).set(next);
       }
@@ -1158,7 +1169,8 @@
           await db.ref(roomPath).update({
             status:"waiting",
             timer: ROUND_SECONDS,
-            phaseText:"waiting"
+            phaseText:"waiting",
+            winner:null
           });
           resolveLockRef.current = false;
           return;
@@ -1169,145 +1181,135 @@
         const margin = 18;
         const usable = arenaSize - margin * 2;
 
-        const startX = margin + Math.random() * usable;
-        const startY = margin + Math.random() * usable;
-        const vx = (Math.random() * 6 + 5) * (Math.random() < 0.5 ? -1 : 1);
-        const vy = (Math.random() * 5 + 4) * (Math.random() < 0.5 ? -1 : 1);
+        let x = margin + Math.random() * usable;
+        let y = margin + Math.random() * usable;
+        let vx = (Math.random() * 6 + 5) * (Math.random() < 0.5 ? -1 : 1);
+        let vy = (Math.random() * 5 + 4) * (Math.random() < 0.5 ? -1 : 1);
+        let angle = Math.random() * 360;
 
         setArrow({
           active:true,
-          x:startX,
-          y:startY,
-          vx,
-          vy,
-          angle:Math.random() * 360
+          x,y,vx,vy,angle
         });
 
-        await db.ref(`${roomPath}/status`).set("spinning");
-        await db.ref(`${roomPath}/phaseText`).set("spinning");
+        await db.ref(roomPath).update({
+          status:"spinning",
+          phaseText:"spinning"
+        });
 
-        let x = startX;
-        let y = startY;
-        let dx = vx;
-        let dy = vy;
-        let angle = Math.random() * 360;
-        const gravity = 0.01;
+        let started = performance.now();
+        let duration = 10000 + Math.random() * 1300;
         const drag = 0.997;
         const bounce = 0.93;
-        const t0 = performance.now();
-        const duration = 10000 + Math.random() * 1500;
+        const gravity = 0.01;
 
         if(physRef.current) cancelAnimationFrame(physRef.current);
 
         const step = (now) => {
-          const elapsed = now - t0;
+          const elapsed = now - started;
 
-          dx *= drag;
-          dy *= drag;
-          dy += gravity * 0.2;
+          vx *= drag;
+          vy *= drag;
+          vy += gravity * 0.2;
 
-          x += dx;
-          y += dy;
-          angle += 21 + Math.random() * 4;
+          x += vx;
+          y += vy;
+          angle += 20 + Math.random() * 4;
 
           const min = margin;
           const max = margin + usable;
 
           if(x <= min){
             x = min;
-            dx = Math.abs(dx) * bounce;
+            vx = Math.abs(vx) * bounce;
           }
           if(x >= max){
             x = max;
-            dx = -Math.abs(dx) * bounce;
+            vx = -Math.abs(vx) * bounce;
           }
           if(y <= min){
             y = min;
-            dy = Math.abs(dy) * bounce;
+            vy = Math.abs(vy) * bounce;
           }
           if(y >= max){
             y = max;
-            dy = -Math.abs(dy) * bounce;
+            vy = -Math.abs(vy) * bounce;
           }
 
-          const speed = Math.sqrt(dx*dx + dy*dy);
-          setArrow({active:true, x, y, vx:dx, vy:dy, angle});
+          const speed = Math.sqrt(vx*vx + vy*vy);
+          setArrow({active:true, x, y, vx, vy, angle});
 
           if(elapsed < duration && speed > 0.28){
             physRef.current = requestAnimationFrame(step);
           }else{
-            const finalX = Math.max(0, Math.min(999, ((x - min) / usable) * 1000));
-            const winner = computeArrowWinner(finalX) || weightedPick(pl);
-
+            const normalizedX = Math.max(0, Math.min(1, (x - min) / usable));
+            const winner = computeWinnerByX(normalizedX) || weightedPick(pl);
             setArrow(a => ({...a, active:false}));
+
             setTimeout(async () => {
               const latestSnap = await db.ref(roomPath).once("value");
               const latest = latestSnap.val() || {};
               const latestPlayers = latest.players ? Object.values(latest.players) : pl;
               const latestBank = latestPlayers.reduce((s,p)=>s + Number(p.amount || 0), 0);
-              const latestPayout = getPayout(latestBank);
               const latestFee = getCommission(latestBank);
+              const latestPayout = getPayout(latestBank);
 
-              if(!winner){
-                await db.ref(roomPath).update({
-                  status:"finished",
-                  timer:0,
-                  phaseText:"finished",
-                  winner:null,
-                  lastGame:{
-                    at: Date.now(),
-                    roomId: selectedRoom,
-                    bank: latestBank,
-                    payout: latestPayout,
-                    fee: latestFee,
-                    winnerName: null,
-                    winnerKey: null
-                  }
-                });
-                resolveLockRef.current = false;
-                return;
-              }
+              const finalWinner = winner || null;
 
               await db.ref(roomPath).update({
                 status:"finished",
                 timer:0,
                 phaseText:"finished",
-                winner:{
-                  nickname: winner.nickname,
-                  nicknameKey: winner.nicknameKey,
-                  amount: winner.amount
-                },
+                winner: finalWinner ? {
+                  nickname: finalWinner.nickname,
+                  nicknameKey: finalWinner.nicknameKey,
+                  amount: finalWinner.amount
+                } : null,
                 lastGame:{
                   at: Date.now(),
                   roomId: selectedRoom,
                   bank: latestBank,
                   payout: latestPayout,
                   fee: latestFee,
-                  winnerName: winner.nickname,
-                  winnerKey: winner.nicknameKey,
-                  winnerAmount: winner.amount
-                },
-                arrowHistory: firebase.database.ServerValue.increment ? null : latest.arrowHistory || []
+                  winnerName: finalWinner ? finalWinner.nickname : null,
+                  winnerKey: finalWinner ? finalWinner.nicknameKey : null,
+                  winnerAmount: finalWinner ? finalWinner.amount : null
+                }
               });
 
-              const winnerStatsRef = db.ref(`stats/${winner.nicknameKey}`);
-              await winnerStatsRef.transaction((cur) => {
-                const d = cur || {betsCount:0, wins:0, totalBet:0, refs:0};
-                d.wins = Number(d.wins || 0) + 1;
-                d.lastWinAt = Date.now();
-                return d;
-              });
+              if(finalWinner){
+                const winnerStatsRef = db.ref(`stats/${finalWinner.nicknameKey}`);
+                await winnerStatsRef.transaction((cur) => {
+                  const d = cur || { betsCount:0, wins:0, totalBet:0, refs:0 };
+                  d.wins = Number(d.wins || 0) + 1;
+                  d.lastWinAt = Date.now();
+                  return d;
+                });
+              }
 
-              await pushArrowHistory({
+              await pushHistoryEntry({
                 at: Date.now(),
-                winner: winner.nickname,
-                winnerKey: winner.nicknameKey,
+                roomId: selectedRoom,
+                winnerName: finalWinner ? finalWinner.nickname : null,
+                winnerKey: finalWinner ? finalWinner.nicknameKey : null,
                 bank: latestBank,
                 fee: latestFee,
                 payout: latestPayout
               });
 
               resolveLockRef.current = false;
+
+              setTimeout(async () => {
+                const cleanPlayers = {};
+                await db.ref(roomPath).update({
+                  status:"waiting",
+                  timer: ROUND_SECONDS,
+                  phaseText:"waiting",
+                  winner:null,
+                  timerOwner: clientId,
+                  players: cleanPlayers
+                });
+              }, 8000);
             }, 220);
           }
         };
@@ -1315,50 +1317,28 @@
         physRef.current = requestAnimationFrame(step);
       }
 
-      const shareMap = useMemo(() => {
-        const total = roomPlayers.reduce((s,p)=>s + Number(p.amount || 0), 0);
-        if(total <= 0) return roomPlayers.map(p => ({...p, share: 1 / Math.max(roomPlayers.length, 1)}));
-        return roomPlayers.map(p => ({...p, share: Number(p.amount || 0) / total}));
-      }, [roomPlayers]);
-
-      const arenaZones = useMemo(() => {
-        const list = shareMap;
-        let left = 0;
-        return list.map((p, idx) => {
-          const width = Math.max(0.05, p.share) * 100;
-          const result = {
-            ...p,
-            left,
-            width,
-            color: p.color || seededColor(p.nicknameKey || p.nickname || String(idx)),
-          };
-          left += width;
-          return result;
-        });
-      }, [shareMap]);
-
-      const openSupport = () => setSupportOpen(true);
-      const closeSupport = () => setSupportOpen(false);
-
-      async function copyReferral(){
-        try{
-          await navigator.clipboard.writeText(roomLink);
-          setCopied(true);
-          setTimeout(() => setCopied(false), 1400);
-        }catch{
-          alert(roomLink);
+      async function addQuickDemoPlayer(){
+        const nick = safeNick(draftNick || nickname);
+        if(!nick){
+          alert(lang === "ru" ? "Сначала введи ник" : "Enter nickname first");
+          return;
         }
+        const quick = nick + "_" + Math.floor(Math.random() * 1000);
+        setDraftNick(quick);
+        setNickname(quick);
+        await joinOrUpdateBet();
       }
 
-      function renderNicknameGate(){
-        if(nickname) return null;
+      function renderGate(){
+        if(!gateOpen) return null;
+
         return (
           <div className="modal-backdrop">
             <div className="modal">
               <div className="scanline"></div>
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <div className="badge blue">{langText("walletMode")}</div>
+                  <div className="badge blue">{langText("testMode")}</div>
                   <div className="mt-3 text-2xl font-black">{langText("enterNick")}</div>
                   <div className="mt-2 text-sm muted">{langText("testMode")}</div>
                 </div>
@@ -1370,8 +1350,8 @@
               <div className="mt-5 space-y-3">
                 <input
                   className="input"
-                  value={nickInput}
-                  onChange={(e)=>setNickInput(e.target.value)}
+                  value={draftNick}
+                  onChange={(e)=>setDraftNick(e.target.value)}
                   placeholder={langText("nickHint")}
                   maxLength={18}
                 />
@@ -1391,9 +1371,12 @@
                 </div>
 
                 <button
-                  className={`w-full rounded-[18px] px-4 py-3 font-extrabold ${canEnter && isNicknameUnique ? "btn-green" : "btn-dark"}`}
-                  onClick={enterNick}
-                  disabled={!canEnter || !isNicknameUnique}
+                  className={`w-full rounded-[18px] px-4 py-3 font-extrabold ${canUseNick ? "btn-green" : "btn-dark"}`}
+                  onClick={async () => {
+                    const ok = await useNicknameNow();
+                    if(ok) setGateOpen(false);
+                  }}
+                  disabled={!canUseNick}
                 >
                   {langText("continue")}
                 </button>
@@ -1403,9 +1386,6 @@
                   <br />
                   {langText("howText")}
                 </div>
-                {!isNicknameUnique ? (
-                  <div className="text-[12px] text-amber-300 font-bold">Ник уже занят в этой комнате</div>
-                ) : null}
               </div>
             </div>
           </div>
@@ -1422,10 +1402,10 @@
 
             <div className="text-center">
               <div className="text-xs muted uppercase tracking-[0.22em] font-bold">TON ARENA</div>
-              <div className="mt-1 text-[11px] muted">{APP_VERSION}</div>
+              <div className="mt-1 text-[11px] muted">nickname test build</div>
             </div>
 
-            <button className="chip" onClick={() => setRoomInput(roomId || ROOM_DEFAULT) } title={langText("room")}>
+            <button className="chip" onClick={() => setGateOpen(true)} title={langText("profileInfo")}>
               <span className="text-sm font-bold">{shortNick(nickname || "guest")}</span>
             </button>
           </div>
@@ -1438,7 +1418,7 @@
             <div className="relative z-10">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <div className="badge blue">{langText("walletMode")}</div>
+                  <div className="badge blue">{langText("testMode")}</div>
                   <div className="mt-3 text-3xl font-black leading-none">{langText("appTitle")}</div>
                   <div className="mt-2 text-[13px] opacity-90">{langText("subtitle")}</div>
                 </div>
@@ -1448,9 +1428,21 @@
               </div>
 
               <div className="grid grid-cols-3 gap-2 mt-4">
-                <StatCard label={langText("bank")} value={`${formatTON(totalBank)} TON`} hint={langText("feeNote")} accent />
-                <StatCard label={langText("timer")} value={`${room.timer}s`} hint={room.phaseText || room.status} />
-                <StatCard label={langText("players")} value={`${roomPlayers.length}`} hint={langText("liveArena")} />
+                <div className="mini-stat">
+                  <div className="mini-label">{langText("bank")}</div>
+                  <div className="mini-value">{formatTON(totalBank)} TON</div>
+                  <div className="mini-hint">{langText("feeNote")}</div>
+                </div>
+                <div className="mini-stat">
+                  <div className="mini-label">{langText("timer")}</div>
+                  <div className="mini-value">{room.timer}s</div>
+                  <div className="mini-hint">{room.phaseText || room.status}</div>
+                </div>
+                <div className="mini-stat">
+                  <div className="mini-label">{langText("players")}</div>
+                  <div className="mini-value">{roomPlayers.length}</div>
+                  <div className="mini-hint">{langText("liveArena")}</div>
+                </div>
               </div>
 
               <div className="mt-4 flex items-center gap-2">
@@ -1478,9 +1470,56 @@
         );
       }
 
+      function renderIdentityCard(){
+        return (
+          <div className="glass rounded-[28px] p-4 mb-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="section-title">{langText("profileInfo")}</div>
+                <div className="mt-1 text-xl font-black">{nickname || "Guest"}</div>
+              </div>
+              <div className="badge blue">
+                {shortNick(nickname || "guest")}
+              </div>
+            </div>
+
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <input
+                className="input"
+                value={draftNick}
+                onChange={(e)=>setDraftNick(e.target.value)}
+                placeholder={langText("nickHint")}
+                maxLength={18}
+              />
+              <button className="btn-main rounded-[18px] px-4 py-3 font-extrabold" onClick={async () => {
+                const ok = await useNicknameNow();
+                if(ok) setNotice(lang === "ru" ? "Ник обновлён" : "Nickname updated");
+              }}>
+                {langText("continue")}
+              </button>
+            </div>
+
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <div className="grid-card">
+                <div className="text-[11px] uppercase tracking-[0.18em] muted font-extrabold">{langText("roomId")}</div>
+                <div className="mt-1 font-black">{selectedRoom}</div>
+              </div>
+              <div className="grid-card">
+                <div className="text-[11px] uppercase tracking-[0.18em] muted font-extrabold">Test</div>
+                <div className="mt-1 font-black">Same phone</div>
+              </div>
+            </div>
+
+            <div className="mt-3 text-[11px] muted leading-5">
+              {langText("testFlowText")}
+            </div>
+          </div>
+        );
+      }
+
       function renderGameControls(){
         return (
-          <Card className="mb-4">
+          <div className="glass rounded-[28px] p-4 mb-4">
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <div className="text-[11px] uppercase tracking-[0.18em] muted font-extrabold">{langText("bet")}</div>
@@ -1504,21 +1543,24 @@
               </div>
             </div>
 
-            <div className="mt-3 grid grid-cols-2 gap-2">
+            <div className="mt-3 grid grid-cols-3 gap-2">
               <button className="btn-green rounded-[18px] px-4 py-3 font-extrabold" onClick={startRound}>
                 {langText("start")}
               </button>
               <button className="btn-dark rounded-[18px] px-4 py-3 font-extrabold" onClick={resetRoom}>
                 {langText("reset")}
               </button>
+              <button className="btn-dark rounded-[18px] px-4 py-3 font-extrabold" onClick={addQuickDemoPlayer}>
+                Demo +
+              </button>
             </div>
-          </Card>
+          </div>
         );
       }
 
       function renderArena(){
         return (
-          <Card className="mb-4">
+          <div className="glass rounded-[28px] p-4 mb-4">
             <div className="flex items-center justify-between gap-3 mb-3">
               <div>
                 <div className="text-[11px] uppercase tracking-[0.18em] muted font-extrabold">{langText("room")}</div>
@@ -1531,9 +1573,9 @@
 
             <div className="arena-shell" ref={arenaRef}>
               <div className="arena-inner">
-                {arenaZones.map((p, idx) => {
-                  const left = p.left;
-                  const width = p.width;
+                {shares.map((p, idx) => {
+                  const left = shares.slice(0, idx).reduce((s, x) => s + x.share * 100, 0);
+                  const width = Math.max(0.05, p.share) * 100;
                   const highlight = winnerPlayer && winnerPlayer.nicknameKey === p.nicknameKey;
                   return (
                     <div
@@ -1558,7 +1600,7 @@
                         </div>
                       </div>
                     </div>
-                  )
+                  );
                 })}
 
                 {roomPlayers.length === 0 ? (
@@ -1595,20 +1637,32 @@
             </div>
 
             <div className="mt-3 grid grid-cols-3 gap-2">
-              <StatCard label={langText("bank")} value={`${formatTON(totalBank)} TON`} hint={`${langText("payout")}: ${formatTON(payout)} TON`} accent />
-              <StatCard label={langText("timer")} value={`${room.timer}s`} hint={room.status === "finished" ? langText("roundFinished") : room.phaseText || room.status} />
-              <StatCard label={langText("winner")} value={winnerPlayer ? shortNick(winnerPlayer.nickname) : "—"} hint={room.winner ? `${formatTON(room.winner.amount)} TON` : langText("noLast")} />
+              <div className="mini-stat">
+                <div className="mini-label">{langText("bank")}</div>
+                <div className="mini-value">{formatTON(totalBank)} TON</div>
+                <div className="mini-hint">{langText("payout")}: {formatTON(payout)} TON</div>
+              </div>
+              <div className="mini-stat">
+                <div className="mini-label">{langText("timer")}</div>
+                <div className="mini-value">{room.timer}s</div>
+                <div className="mini-hint">{room.status === "finished" ? langText("roundFinished") : room.phaseText || room.status}</div>
+              </div>
+              <div className="mini-stat">
+                <div className="mini-label">{langText("winner")}</div>
+                <div className="mini-value">{winnerPlayer ? shortNick(winnerPlayer.nickname) : "—"}</div>
+                <div className="mini-hint">{room.winner ? `${formatTON(room.winner.amount)} TON` : langText("noLast")}</div>
+              </div>
             </div>
-          </Card>
+          </div>
         );
       }
 
       function renderPlayers(){
         return (
-          <Card className="mb-4">
+          <div className="glass rounded-[28px] p-4 mb-4">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-[11px] uppercase tracking-[0.18em] muted font-extrabold">{langText("players")}</div>
+                <div className="section-title">{langText("players")}</div>
                 <div className="text-lg font-black">{roomPlayers.length}</div>
               </div>
               <div className="chip">
@@ -1643,17 +1697,17 @@
                 <div className="py-10 text-center muted">{langText("noPlayers")}</div>
               )}
             </div>
-          </Card>
+          </div>
         );
       }
 
       function renderLastGame(){
         const g = room.lastGame;
         return (
-          <Card className="mb-4">
+          <div className="glass rounded-[28px] p-4 mb-4">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-[11px] uppercase tracking-[0.18em] muted font-extrabold">Last game</div>
+                <div className="section-title">Last game</div>
                 <div className="text-lg font-black">History</div>
               </div>
               <div className="text-[11px] muted">Firebase RTDB</div>
@@ -1681,10 +1735,30 @@
               )}
             </div>
 
-            <div className="mt-3 text-[11px] muted leading-6">
+            <div className="mt-4">
+              <div className="section-title">Arrow history</div>
+              <div className="mt-3 max-h-[160px] overflow-auto thin-scroll pr-1">
+                {history.length ? history.slice().reverse().map((h, i) => (
+                  <div key={i} className="flex items-center justify-between gap-3 py-2 border-b border-white/8 last:border-b-0">
+                    <div className="min-w-0">
+                      <div className="font-bold truncate">{h.winnerName || "—"}</div>
+                      <div className="text-[11px] muted truncate">{h.roomId || selectedRoom}</div>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <div className="font-black text-blue-300">{formatTON(h.payout || 0)} TON</div>
+                      <div className="text-[10px] muted">{h.at ? new Date(h.at).toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"}) : ""}</div>
+                    </div>
+                  </div>
+                )) : (
+                  <div className="text-sm muted">{langText("noLast")}</div>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-4 text-[11px] muted leading-6">
               Сейчас это тестовая версия. Потом сюда можно вернуть TonConnect, реальные транзакции и депозитный escrow.
             </div>
-          </Card>
+          </div>
         );
       }
 
@@ -1692,6 +1766,7 @@
         return (
           <>
             {renderHero()}
+            {renderIdentityCard()}
             {renderGameControls()}
             {renderArena()}
             {renderPlayers()}
@@ -1702,7 +1777,7 @@
 
       function renderRefsTab(){
         return (
-          <Card className="mb-4">
+          <div className="glass rounded-[28px] p-4 mb-4">
             <div className="flex items-center justify-between">
               <div>
                 <div className="badge blue">Referrals</div>
@@ -1721,7 +1796,15 @@
               <div className="grid-card">
                 <div className="text-[11px] uppercase tracking-[0.18em] muted font-extrabold">{langText("referralLink")}</div>
                 <div className="mt-2 break-all text-[13px] font-bold">{roomLink}</div>
-                <button className="mt-3 btn-main rounded-[18px] px-4 py-3 font-extrabold" onClick={copyReferral}>
+                <button className="mt-3 btn-main rounded-[18px] px-4 py-3 font-extrabold" onClick={async () => {
+                  try{
+                    await navigator.clipboard.writeText(roomLink);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 1400);
+                  }catch{
+                    alert(roomLink);
+                  }
+                }}>
                   {copied ? langText("copied") : langText("copy")}
                 </button>
               </div>
@@ -1743,13 +1826,13 @@
                 </div>
               </div>
             </div>
-          </Card>
+          </div>
         );
       }
 
       function renderProfileTab(){
         return (
-          <Card className="mb-4">
+          <div className="glass rounded-[28px] p-4 mb-4">
             <div className="flex items-center justify-between">
               <div>
                 <div className="badge blue">{langText("profileInfo")}</div>
@@ -1777,15 +1860,34 @@
             </div>
 
             <div className="mt-4 grid grid-cols-2 gap-2">
-              <StatCard label={langText("betsCount")} value={myStats.betsCount} hint={langText("stats")} />
-              <StatCard label={langText("wins")} value={myStats.wins} hint={langText("stats")} />
-              <StatCard label={langText("totalBet")} value={`${formatTON(myStats.totalBet)} TON`} hint={langText("stats")} />
-              <StatCard label={langText("rooms")} value={1} hint={selectedRoom} />
+              <div className="mini-stat">
+                <div className="mini-label">{langText("betsCount")}</div>
+                <div className="mini-value">{myStats.betsCount}</div>
+                <div className="mini-hint">{langText("stats")}</div>
+              </div>
+              <div className="mini-stat">
+                <div className="mini-label">{langText("wins")}</div>
+                <div className="mini-value">{myStats.wins}</div>
+                <div className="mini-hint">{langText("stats")}</div>
+              </div>
+              <div className="mini-stat">
+                <div className="mini-label">{langText("totalBet")}</div>
+                <div className="mini-value">{formatTON(myStats.totalBet)} TON</div>
+                <div className="mini-hint">{langText("stats")}</div>
+              </div>
+              <div className="mini-stat">
+                <div className="mini-label">{langText("rooms")}</div>
+                <div className="mini-value">1</div>
+                <div className="mini-hint">{selectedRoom}</div>
+              </div>
             </div>
 
             <div className="mt-4 grid gap-2">
-              <button className="btn-dark rounded-[18px] px-4 py-3 font-extrabold" onClick={openSupport}>
+              <button className="btn-dark rounded-[18px] px-4 py-3 font-extrabold" onClick={() => setSupportOpen(true)}>
                 {langText("support")}
+              </button>
+              <button className="btn-dark rounded-[18px] px-4 py-3 font-extrabold" onClick={() => setGateOpen(true)}>
+                Change nickname
               </button>
             </div>
 
@@ -1794,7 +1896,7 @@
               Room: {selectedRoom}<br/>
               Referral code: {makeReferralCode(nickname || "guest")}
             </div>
-          </Card>
+          </div>
         );
       }
 
@@ -1802,15 +1904,15 @@
         return (
           <div className="nav-inner">
             <button className={`nav-btn ${tab==="games" ? "active" : ""}`} onClick={()=>setTab("games")}>
-              <TabIcon type="games" />
+              <span className="nav-ic"></span>
               <span>{langText("games")}</span>
             </button>
             <button className={`nav-btn ${tab==="refs" ? "active" : ""}`} onClick={()=>setTab("refs")}>
-              <TabIcon type="refs" />
+              <span className="nav-ic"></span>
               <span>{langText("refs")}</span>
             </button>
             <button className={`nav-btn ${tab==="profile" ? "active" : ""}`} onClick={()=>setTab("profile")}>
-              <TabIcon type="profile" />
+              <span className="nav-ic"></span>
               <span>{langText("profile")}</span>
             </button>
           </div>
@@ -1825,9 +1927,9 @@
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <div className="badge warn">{langText("supportTitle")}</div>
-                  <div className="mt-3 text-2xl font-black">{langText("comingSoon")}</div>
+                  <div className="mt-3 text-2xl font-black">{langText("supportSoon")}</div>
                 </div>
-                <button className="btn-dark rounded-[14px] px-3 py-2 font-bold" onClick={closeSupport}>
+                <button className="btn-dark rounded-[14px] px-3 py-2 font-bold" onClick={() => setSupportOpen(false)}>
                   {langText("back")}
                 </button>
               </div>
@@ -1851,12 +1953,11 @@
 
       return (
         <>
-          {renderNicknameGate()}
+          {renderGate()}
           {renderSupportSheet()}
 
           <div className="app">
             {renderTopBar()}
-
             {tab === "games" ? renderGamesTab() : null}
             {tab === "refs" ? renderRefsTab() : null}
             {tab === "profile" ? renderProfileTab() : null}
