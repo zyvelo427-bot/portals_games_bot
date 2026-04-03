@@ -6,40 +6,54 @@
 <title>TON Arena</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
+
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 
+<!-- Ton Connect -->
+<script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+
 <style>
 body {
-  background:#000;
-  color:#fff;
-  margin:0;
-  font-family:sans-serif;
+  background: radial-gradient(circle at top, #111 0%, #000 60%);
+  color:white;
+  font-family: sans-serif;
 }
 
-.glass {
-  background: linear-gradient(145deg,#1a1a1c,#0a0a0b);
+.card {
+  background: rgba(255,255,255,0.05);
   border:1px solid rgba(255,255,255,0.08);
-  border-radius:24px;
+  border-radius:20px;
+  backdrop-filter: blur(10px);
+}
+
+.btn {
+  background:#2563eb;
+  padding:10px 14px;
+  border-radius:12px;
+  font-weight:bold;
+}
+
+.btn:hover {
+  background:#1d4ed8;
 }
 
 .player {
   position:absolute;
-  width:60px;
-  height:60px;
+  width:50px;
+  height:50px;
   border-radius:50%;
+  background:#3b82f6;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:11px;
-  font-weight:bold;
-  background:#2563eb;
-  transition: all 0.5s ease;
+  font-size:10px;
 }
 </style>
 </head>
@@ -69,8 +83,25 @@ function App(){
   const [players,setPlayers] = useState([]);
   const [bank,setBank] = useState(0);
   const [timer,setTimer] = useState(0);
-  const [username,setUsername] = useState("Player");
+  const [wallet,setWallet] = useState(null);
 
+  // TON Connect init
+  useEffect(()=>{
+
+    const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+      manifestUrl: "https://your-site.com/tonconnect-manifest.json",
+      buttonRootId: "ton-connect-button"
+    });
+
+    tonConnectUI.onStatusChange(wallet=>{
+      if(wallet){
+        setWallet(wallet.account.address);
+      }
+    });
+
+  },[]);
+
+  // Firebase sync
   useEffect(()=>{
 
     firebase.auth().signInAnonymously();
@@ -91,27 +122,33 @@ function App(){
     const ref = db.ref("game");
 
     ref.child("players").push({
-      name: username,
-      amount: amount
+      name: wallet || "Guest",
+      amount: amount,
+      wallet: wallet
     });
 
     ref.child("bank").transaction(v=>(v||0)+amount);
   };
 
   const startGame = ()=>{
+
     if(players.length < 2) return;
 
     let t = 20;
 
     const interval = setInterval(()=>{
+
       t--;
+
       db.ref("game").update({timer:t});
 
       if(t<=0){
         clearInterval(interval);
         pickWinner();
       }
+
     },1000);
+
   };
 
   const pickWinner = ()=>{
@@ -124,37 +161,51 @@ function App(){
     for(let p of players){
       sum += p.amount;
       if(rand <= sum){
+
         db.ref("game").update({winner:p.name});
+
         alert("🏆 Winner: " + p.name);
+
         break;
       }
     }
   };
 
   return (
-    <div className="p-6 max-w-md mx-auto">
+    <div className="max-w-md mx-auto p-4">
 
-      <div className="glass p-6 text-center">
-        <h1 className="text-2xl font-bold text-blue-500">TON Arena</h1>
-
-        <p className="text-sm mt-2">Банк: {bank}</p>
-        <p className="text-sm">Таймер: {timer}</p>
-        <p className="text-sm">Игроков: {players.length}</p>
+      {/* Header */}
+      <div className="card p-5 text-center">
+        <h1 className="text-2xl font-bold text-blue-400">TON Arena</h1>
+        <p className="text-sm mt-2">Wallet: {wallet || "Not connected"}</p>
       </div>
 
-      <div className="flex gap-2 mt-4">
+      {/* Ton connect button */}
+      <div id="ton-connect-button" className="mt-4"></div>
+
+      {/* Stats */}
+      <div className="card p-4 mt-4 flex justify-between text-sm">
+        <div>Bank: {bank}</div>
+        <div>Players: {players.length}</div>
+        <div>Timer: {timer}</div>
+      </div>
+
+      {/* Bets */}
+      <div className="grid grid-cols-4 gap-2 mt-4">
         {[1,5,10,25].map(v=>(
-          <button key={v} onClick={()=>bet(v)} className="glass px-4 py-2 flex-1">
+          <button key={v} onClick={()=>bet(v)} className="btn">
             {v} TON
           </button>
         ))}
       </div>
 
-      <button onClick={startGame} className="glass w-full mt-4 py-3">
+      {/* Start */}
+      <button onClick={startGame} className="btn w-full mt-4">
         Start Game
       </button>
 
-      <div className="glass mt-6 h-64 relative overflow-hidden">
+      {/* Arena */}
+      <div className="card mt-6 h-64 relative overflow-hidden">
 
         {players.map((p,i)=>(
           <div
@@ -165,10 +216,21 @@ function App(){
               top: Math.random()*80+"%"
             }}
           >
-            {p.name}
+            {p.name.slice(0,4)}
           </div>
         ))}
 
+      </div>
+
+      {/* Player list */}
+      <div className="card mt-4 p-3">
+        <h2 className="text-sm mb-2">Players</h2>
+        {players.map((p,i)=>(
+          <div key={i} className="flex justify-between text-xs border-b border-white/10 py-1">
+            <span>{p.name}</span>
+            <span>{p.amount} TON</span>
+          </div>
+        ))}
       </div>
 
     </div>
