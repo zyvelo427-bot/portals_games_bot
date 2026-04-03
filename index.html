@@ -11,49 +11,37 @@
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 
-<!-- Ton Connect -->
 <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
 
 <style>
 body {
-  background: radial-gradient(circle at top, #111 0%, #000 60%);
+  background: radial-gradient(circle at top, #0f172a, #000);
   color:white;
-  font-family: sans-serif;
+  font-family:sans-serif;
 }
 
 .card {
   background: rgba(255,255,255,0.05);
+  border-radius:16px;
+  padding:16px;
   border:1px solid rgba(255,255,255,0.08);
-  border-radius:20px;
-  backdrop-filter: blur(10px);
-}
-
-.btn {
-  background:#2563eb;
-  padding:10px 14px;
-  border-radius:12px;
-  font-weight:bold;
-}
-
-.btn:hover {
-  background:#1d4ed8;
 }
 
 .player {
   position:absolute;
-  width:50px;
-  height:50px;
+  width:44px;
+  height:44px;
   border-radius:50%;
   background:#3b82f6;
   display:flex;
   align-items:center;
   justify-content:center;
   font-size:10px;
+  transition: all 0.8s ease;
 }
 </style>
 </head>
@@ -80,20 +68,21 @@ const { useState, useEffect } = React;
 
 function App(){
 
+  const [wallet,setWallet] = useState(null);
+  const [betAmount,setBetAmount] = useState(1);
   const [players,setPlayers] = useState([]);
   const [bank,setBank] = useState(0);
   const [timer,setTimer] = useState(0);
-  const [wallet,setWallet] = useState(null);
 
-  // TON Connect init
+  // Ton Connect
   useEffect(()=>{
 
-    const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+    const ton = new TON_CONNECT_UI.TonConnectUI({
       manifestUrl: "https://your-site.com/tonconnect-manifest.json",
-      buttonRootId: "ton-connect-button"
+      buttonRootId: "ton-connect"
     });
 
-    tonConnectUI.onStatusChange(wallet=>{
+    ton.onStatusChange(wallet=>{
       if(wallet){
         setWallet(wallet.account.address);
       }
@@ -106,9 +95,7 @@ function App(){
 
     firebase.auth().signInAnonymously();
 
-    const ref = db.ref("game");
-
-    ref.on("value", snap=>{
+    db.ref("game").on("value", snap=>{
       const data = snap.val() || {};
       setPlayers(data.players ? Object.values(data.players) : []);
       setBank(data.bank || 0);
@@ -117,19 +104,34 @@ function App(){
 
   },[]);
 
-  const bet = (amount)=>{
+  // Join game (ОДИН игрок = ОДНА запись)
+  const joinGame = ()=>{
 
-    const ref = db.ref("game");
+    if(!wallet) return;
 
-    ref.child("players").push({
-      name: wallet || "Guest",
-      amount: amount,
-      wallet: wallet
+    const ref = db.ref("game/players");
+
+    // проверка: уже есть ставка?
+    ref.orderByChild("wallet").equalTo(wallet).once("value", snap=>{
+
+      if(snap.exists()){
+        alert("Ты уже в игре");
+        return;
+      }
+
+      ref.push({
+        name: wallet.slice(0,6),
+        wallet: wallet,
+        amount: betAmount
+      });
+
+      db.ref("game/bank").transaction(v=>(v||0)+betAmount);
+
     });
 
-    ref.child("bank").transaction(v=>(v||0)+amount);
   };
 
+  // Start
   const startGame = ()=>{
 
     if(players.length < 2) return;
@@ -139,7 +141,6 @@ function App(){
     const interval = setInterval(()=>{
 
       t--;
-
       db.ref("game").update({timer:t});
 
       if(t<=0){
@@ -161,11 +162,8 @@ function App(){
     for(let p of players){
       sum += p.amount;
       if(rand <= sum){
-
         db.ref("game").update({winner:p.name});
-
-        alert("🏆 Winner: " + p.name);
-
+        alert("Winner: " + p.name);
         break;
       }
     }
@@ -174,57 +172,62 @@ function App(){
   return (
     <div className="max-w-md mx-auto p-4">
 
-      {/* Header */}
-      <div className="card p-5 text-center">
-        <h1 className="text-2xl font-bold text-blue-400">TON Arena</h1>
-        <p className="text-sm mt-2">Wallet: {wallet || "Not connected"}</p>
+      <div className="card text-center">
+        <h1 className="text-xl font-bold text-blue-400">TON Arena</h1>
+        <p className="text-xs mt-1">Wallet: {wallet || "Not connected"}</p>
       </div>
 
-      {/* Ton connect button */}
-      <div id="ton-connect-button" className="mt-4"></div>
+      <div id="ton-connect" className="mt-3"></div>
 
-      {/* Stats */}
-      <div className="card p-4 mt-4 flex justify-between text-sm">
+      <div className="card mt-4 flex justify-between text-sm">
         <div>Bank: {bank}</div>
         <div>Players: {players.length}</div>
         <div>Timer: {timer}</div>
       </div>
 
-      {/* Bets */}
-      <div className="grid grid-cols-4 gap-2 mt-4">
-        {[1,5,10,25].map(v=>(
-          <button key={v} onClick={()=>bet(v)} className="btn">
-            {v} TON
-          </button>
-        ))}
+      <div className="card mt-4">
+        <p className="text-sm mb-2">Bet amount</p>
+
+        <input
+          type="number"
+          value={betAmount}
+          onChange={e=>setBetAmount(Number(e.target.value))}
+          className="w-full p-2 rounded bg-black border border-white/20"
+        />
+
+        <button onClick={joinGame} className="mt-3 w-full bg-blue-600 p-2 rounded">
+          Join Game
+        </button>
       </div>
 
-      {/* Start */}
-      <button onClick={startGame} className="btn w-full mt-4">
+      <button onClick={startGame} className="w-full mt-4 bg-green-600 p-2 rounded">
         Start Game
       </button>
 
-      {/* Arena */}
       <div className="card mt-6 h-64 relative overflow-hidden">
 
-        {players.map((p,i)=>(
-          <div
-            key={i}
-            className="player"
-            style={{
-              left: Math.random()*80+"%",
-              top: Math.random()*80+"%"
-            }}
-          >
-            {p.name.slice(0,4)}
-          </div>
-        ))}
+        {players.map((p,i)=>{
+
+          const angle = (i / players.length) * Math.PI * 2;
+          const radius = 80;
+
+          const x = 120 + Math.cos(angle) * radius;
+          const y = 100 + Math.sin(angle) * radius;
+
+          return (
+            <div
+              key={i}
+              className="player"
+              style={{left:x, top:y}}
+            >
+              {p.name}
+            </div>
+          );
+        })}
 
       </div>
 
-      {/* Player list */}
-      <div className="card mt-4 p-3">
-        <h2 className="text-sm mb-2">Players</h2>
+      <div className="card mt-4">
         {players.map((p,i)=>(
           <div key={i} className="flex justify-between text-xs border-b border-white/10 py-1">
             <span>{p.name}</span>
