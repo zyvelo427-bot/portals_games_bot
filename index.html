@@ -1,247 +1,1083 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TON Arena</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
+  <title>TON Arena</title>
 
-<script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
 
-<script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+  <style>
+    :root {
+      --bg: #050608;
+      --panel: rgba(255,255,255,0.05);
+      --panel-2: rgba(255,255,255,0.07);
+      --line: rgba(255,255,255,0.10);
+      --text: #eef2ff;
+      --muted: rgba(255,255,255,0.56);
+      --accent: #4f8cff;
+      --accent-2: #7c3aed;
+      --good: #22c55e;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+    }
 
-<style>
-body {
-  background: radial-gradient(circle at top, #0f172a, #000);
-  color:white;
-  font-family:sans-serif;
-}
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at top, rgba(79,140,255,0.20), transparent 32%),
+        radial-gradient(circle at 20% 20%, rgba(124,58,237,0.14), transparent 28%),
+        radial-gradient(circle at 80% 0%, rgba(34,197,94,0.10), transparent 22%),
+        linear-gradient(180deg, #0a0b10 0%, #050608 55%, #000 100%);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      overflow-x: hidden;
+    }
 
-.card {
-  background: rgba(255,255,255,0.05);
-  border-radius:16px;
-  padding:16px;
-  border:1px solid rgba(255,255,255,0.08);
-}
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 34px 34px;
+      mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+      opacity: 0.3;
+    }
 
-.player {
-  position:absolute;
-  width:44px;
-  height:44px;
-  border-radius:50%;
-  background:#3b82f6;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:10px;
-  transition: all 0.8s ease;
-}
-</style>
+    .app-shell {
+      max-width: 430px;
+      margin: 0 auto;
+      padding: 14px 14px 24px;
+      position: relative;
+    }
+
+    .glass {
+      background: linear-gradient(180deg, rgba(255,255,255,0.075), rgba(255,255,255,0.035));
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow:
+        0 10px 40px rgba(0,0,0,0.35),
+        inset 0 1px 0 rgba(255,255,255,0.05);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    .soft-line {
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .btn-main {
+      background: linear-gradient(180deg, rgba(79,140,255,1), rgba(62,116,245,1));
+      box-shadow:
+        0 10px 30px rgba(79,140,255,0.25),
+        inset 0 1px 0 rgba(255,255,255,0.18);
+    }
+
+    .btn-main:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .btn-green {
+      background: linear-gradient(180deg, rgba(34,197,94,1), rgba(22,163,74,1));
+      box-shadow:
+        0 10px 30px rgba(34,197,94,0.22),
+        inset 0 1px 0 rgba(255,255,255,0.18);
+    }
+
+    .btn-dark {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .chip {
+      background: rgba(79,140,255,0.16);
+      border: 1px solid rgba(79,140,255,0.22);
+      box-shadow: 0 0 20px rgba(79,140,255,0.12);
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .scanline {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.05), transparent);
+      transform: translateY(-100%);
+      animation: scan 4.8s linear infinite;
+      pointer-events: none;
+      opacity: 0.5;
+    }
+
+    @keyframes scan {
+      0% { transform: translateY(-100%); }
+      100% { transform: translateY(100%); }
+    }
+
+    @keyframes floaty {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-6px); }
+    }
+
+    .floaty {
+      animation: floaty 4s ease-in-out infinite;
+    }
+
+    .pulse {
+      animation: pulse 2.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 0.92; }
+      50% { transform: scale(1.03); opacity: 1; }
+    }
+
+    .arena-card {
+      position: relative;
+      overflow: hidden;
+      border-radius: 28px;
+      background:
+        radial-gradient(circle at 30% 25%, rgba(255,255,255,0.13), transparent 18%),
+        radial-gradient(circle at 70% 22%, rgba(124,58,237,0.26), transparent 18%),
+        linear-gradient(135deg, rgba(16,185,129,0.92) 0%, rgba(59,130,246,0.88) 22%, rgba(236,72,153,0.92) 48%, rgba(251,191,36,0.86) 74%, rgba(34,197,94,0.86) 100%);
+      box-shadow:
+        0 20px 70px rgba(0,0,0,0.45),
+        inset 0 1px 0 rgba(255,255,255,0.08);
+      min-height: 460px;
+    }
+
+    .arena-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(155deg, rgba(0,0,0,0.2) 0 32%, transparent 32% 54%, rgba(0,0,0,0.12) 54% 100%),
+        radial-gradient(circle at center, transparent 0 26%, rgba(255,255,255,0.06) 26.5% 27.5%, transparent 28%);
+      mix-blend-mode: screen;
+      pointer-events: none;
+    }
+
+    .arena-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at center, transparent 44%, rgba(0,0,0,0.22) 100%);
+      pointer-events: none;
+    }
+
+    .wheel-wrap {
+      position: absolute;
+      left: 50%;
+      top: 54%;
+      transform: translate(-50%, -50%);
+      width: 360px;
+      height: 360px;
+      pointer-events: none;
+    }
+
+    .wheel-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 9999px;
+      transform: rotate(0deg);
+      transition: transform 6.2s cubic-bezier(0.12, 0.85, 0.12, 1);
+      filter: drop-shadow(0 0 24px rgba(255,255,255,0.18));
+    }
+
+    .wheel-shell {
+      position: absolute;
+      inset: 12px;
+      border-radius: 9999px;
+      background:
+        radial-gradient(circle at center, rgba(255,255,255,0.12) 0 13%, rgba(255,255,255,0.05) 13.5% 14.5%, transparent 15%),
+        conic-gradient(from 90deg,
+          rgba(255,255,255,0.18) 0deg,
+          rgba(255,255,255,0.06) 45deg,
+          rgba(255,255,255,0.18) 90deg,
+          rgba(255,255,255,0.06) 135deg,
+          rgba(255,255,255,0.18) 180deg,
+          rgba(255,255,255,0.06) 225deg,
+          rgba(255,255,255,0.18) 270deg,
+          rgba(255,255,255,0.06) 315deg,
+          rgba(255,255,255,0.18) 360deg);
+      border: 1px solid rgba(255,255,255,0.20);
+      box-shadow:
+        inset 0 0 0 2px rgba(255,255,255,0.04),
+        inset 0 0 50px rgba(0,0,0,0.34),
+        0 0 60px rgba(0,0,0,0.30);
+      overflow: hidden;
+    }
+
+    .wheel-shell::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 50% 50%, transparent 0 48%, rgba(255,255,255,0.10) 48.5% 49.5%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(0,0,0,0.00), rgba(0,0,0,0.08));
+      pointer-events: none;
+    }
+
+    .player-badge {
+      position: absolute;
+      width: 62px;
+      height: 62px;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      border: 1px solid rgba(255,255,255,0.18);
+      box-shadow:
+        0 10px 30px rgba(0,0,0,0.22),
+        0 0 20px rgba(255,255,255,0.12);
+      user-select: none;
+      transform-origin: center;
+      transition: transform 0.55s ease, box-shadow 0.55s ease, filter 0.55s ease;
+      overflow: hidden;
+    }
+
+    .player-badge img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .player-badge .initials {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-shadow: 0 1px 8px rgba(0,0,0,0.35);
+    }
+
+    .player-badge.active {
+      transform: scale(1.14);
+      box-shadow:
+        0 0 0 2px rgba(255,255,255,0.18),
+        0 0 36px rgba(255,255,255,0.36),
+        0 0 44px rgba(79,140,255,0.28);
+      filter: saturate(1.15);
+    }
+
+    .center-core {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 166px;
+      height: 166px;
+      transform: translate(-50%, -50%);
+      border-radius: 9999px;
+      background:
+        radial-gradient(circle at 32% 28%, rgba(255,255,255,0.33), transparent 20%),
+        radial-gradient(circle at center, rgba(11,15,28,0.76) 0 46%, rgba(12,20,40,0.88) 55%, rgba(0,0,0,0.92) 100%);
+      border: 1px solid rgba(255,255,255,0.18);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.18),
+        0 0 0 10px rgba(255,255,255,0.03),
+        0 0 55px rgba(0,0,0,0.30);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      z-index: 6;
+    }
+
+    .center-core .title {
+      font-weight: 900;
+      letter-spacing: 0.10em;
+      font-size: 11px;
+      color: rgba(255,255,255,0.78);
+      text-transform: uppercase;
+    }
+
+    .center-core .value {
+      margin-top: 6px;
+      font-size: 34px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .center-core .sub {
+      margin-top: 8px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.62);
+    }
+
+    .pointer {
+      position: absolute;
+      left: 50%;
+      top: 4px;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 14px solid transparent;
+      border-right: 14px solid transparent;
+      border-bottom: 24px solid rgba(255,255,255,0.92);
+      filter: drop-shadow(0 0 10px rgba(255,255,255,0.45));
+      z-index: 10;
+    }
+
+    .room-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 9999px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.10);
+    }
+
+    .small-stat {
+      padding: 12px 14px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .list-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .list-row:last-child {
+      border-bottom: 0;
+    }
+
+    .thin-scroll::-webkit-scrollbar { height: 6px; width: 6px; }
+    .thin-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 999px; }
+    .thin-scroll::-webkit-scrollbar-track { background: transparent; }
+  </style>
 </head>
 
 <body>
-<div id="root"></div>
+  <div id="root"></div>
 
-<script type="text/babel">
+  <script type="text/babel">
+    const { useEffect, useMemo, useRef, useState } = React;
 
-const firebaseConfig = {
-  apiKey: "AIzaSyCsgo_VhjPWLyUtZCE0jCzqCmQa-du0qwI",
-  authDomain: "portals-c5000.firebaseapp.com",
-  databaseURL: "https://portals-c5000-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "portals-c5000",
-  storageBucket: "portals-c5000.firebasestorage.app",
-  messagingSenderId: "24003070752",
-  appId: "1:24003070752:web:0b83600a20383640e5a545"
-};
+    const firebaseConfig = {
+      apiKey: "AIzaSyCsgo_VhjPWLyUtZCE0jCzqCmQa-du0qwI",
+      authDomain: "portals-c5000.firebaseapp.com",
+      databaseURL: "https://portals-c5000-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "portals-c5000",
+      storageBucket: "portals-c5000.firebasestorage.app",
+      messagingSenderId: "24003070752",
+      appId: "1:24003070752:web:0b83600a20383640e5a545"
+    };
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-const { useState, useEffect } = React;
+    const ROOM_DEFAULT = "room_1";
+    const ROUND_SECONDS = 18;
 
-function App(){
+    const BASE_URL = "https://zyvelo427-bot.github.io/portals_games_bot";
+    const TONCONNECT_MANIFEST_URL = `${BASE_URL}/tonconnect-manifest.json`;
 
-  const [wallet,setWallet] = useState(null);
-  const [betAmount,setBetAmount] = useState(1);
-  const [players,setPlayers] = useState([]);
-  const [bank,setBank] = useState(0);
-  const [timer,setTimer] = useState(0);
+    const COLORS = [
+      "linear-gradient(135deg, #3b82f6, #1d4ed8)",
+      "linear-gradient(135deg, #8b5cf6, #6d28d9)",
+      "linear-gradient(135deg, #ec4899, #db2777)",
+      "linear-gradient(135deg, #f59e0b, #d97706)",
+      "linear-gradient(135deg, #10b981, #059669)",
+      "linear-gradient(135deg, #14b8a6, #0f766e)",
+      "linear-gradient(135deg, #ef4444, #b91c1c)",
+      "linear-gradient(135deg, #06b6d4, #0284c7)"
+    ];
 
-  // Ton Connect
-  useEffect(()=>{
-
-    const ton = new TON_CONNECT_UI.TonConnectUI({
-      manifestUrl: "https://your-site.com/tonconnect-manifest.json",
-      buttonRootId: "ton-connect"
-    });
-
-    ton.onStatusChange(wallet=>{
-      if(wallet){
-        setWallet(wallet.account.address);
-      }
-    });
-
-  },[]);
-
-  // Firebase sync
-  useEffect(()=>{
-
-    firebase.auth().signInAnonymously();
-
-    db.ref("game").on("value", snap=>{
-      const data = snap.val() || {};
-      setPlayers(data.players ? Object.values(data.players) : []);
-      setBank(data.bank || 0);
-      setTimer(data.timer || 0);
-    });
-
-  },[]);
-
-  // Join game (ОДИН игрок = ОДНА запись)
-  const joinGame = ()=>{
-
-    if(!wallet) return;
-
-    const ref = db.ref("game/players");
-
-    // проверка: уже есть ставка?
-    ref.orderByChild("wallet").equalTo(wallet).once("value", snap=>{
-
-      if(snap.exists()){
-        alert("Ты уже в игре");
-        return;
-      }
-
-      ref.push({
-        name: wallet.slice(0,6),
-        wallet: wallet,
-        amount: betAmount
-      });
-
-      db.ref("game/bank").transaction(v=>(v||0)+betAmount);
-
-    });
-
-  };
-
-  // Start
-  const startGame = ()=>{
-
-    if(players.length < 2) return;
-
-    let t = 20;
-
-    const interval = setInterval(()=>{
-
-      t--;
-      db.ref("game").update({timer:t});
-
-      if(t<=0){
-        clearInterval(interval);
-        pickWinner();
-      }
-
-    },1000);
-
-  };
-
-  const pickWinner = ()=>{
-
-    let total = players.reduce((a,p)=>a+p.amount,0);
-    let rand = Math.random()*total;
-
-    let sum = 0;
-
-    for(let p of players){
-      sum += p.amount;
-      if(rand <= sum){
-        db.ref("game").update({winner:p.name});
-        alert("Winner: " + p.name);
-        break;
-      }
+    function shortAddress(addr) {
+      if (!addr) return "—";
+      if (addr.length <= 10) return addr;
+      return `${addr.slice(0, 4)}…${addr.slice(-4)}`;
     }
-  };
 
-  return (
-    <div className="max-w-md mx-auto p-4">
+    function walletKey(addr) {
+      return String(addr || "").replace(/[^a-zA-Z0-9]/g, "_");
+    }
 
-      <div className="card text-center">
-        <h1 className="text-xl font-bold text-blue-400">TON Arena</h1>
-        <p className="text-xs mt-1">Wallet: {wallet || "Not connected"}</p>
-      </div>
+    function seededColor(seed) {
+      let h = 0;
+      for (let i = 0; i < seed.length; i++) {
+        h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+      }
+      return COLORS[h % COLORS.length];
+    }
 
-      <div id="ton-connect" className="mt-3"></div>
+    function weightedPick(players) {
+      const normalized = players
+        .map(p => ({ ...p, amount: Number(p.amount || 0) }))
+        .filter(p => p.amount > 0);
 
-      <div className="card mt-4 flex justify-between text-sm">
-        <div>Bank: {bank}</div>
-        <div>Players: {players.length}</div>
-        <div>Timer: {timer}</div>
-      </div>
+      const total = normalized.reduce((s, p) => s + p.amount, 0);
+      if (total <= 0) return normalized[0] || null;
 
-      <div className="card mt-4">
-        <p className="text-sm mb-2">Bet amount</p>
+      const r = Math.random() * total;
+      let acc = 0;
+      for (const p of normalized) {
+        acc += p.amount;
+        if (r <= acc) return p;
+      }
+      return normalized[normalized.length - 1] || null;
+    }
 
-        <input
-          type="number"
-          value={betAmount}
-          onChange={e=>setBetAmount(Number(e.target.value))}
-          className="w-full p-2 rounded bg-black border border-white/20"
-        />
+    function formatTON(value) {
+      const n = Number(value || 0);
+      if (Number.isInteger(n)) return String(n);
+      return n.toFixed(2).replace(/\.?0+$/, "");
+    }
 
-        <button onClick={joinGame} className="mt-3 w-full bg-blue-600 p-2 rounded">
-          Join Game
-        </button>
-      </div>
+    function TopCard({ title, value, subtitle, accent = false }) {
+      return (
+        <div className="small-stat flex-1 min-w-0">
+          <div className="text-[12px] uppercase tracking-[0.18em] muted font-semibold">{title}</div>
+          <div className={`mt-1 text-[18px] font-extrabold truncate ${accent ? "text-blue-400" : ""}`}>{value}</div>
+          <div className="mt-1 text-[11px] muted truncate">{subtitle}</div>
+        </div>
+      );
+    }
 
-      <button onClick={startGame} className="w-full mt-4 bg-green-600 p-2 rounded">
-        Start Game
-      </button>
-
-      <div className="card mt-6 h-64 relative overflow-hidden">
-
-        {players.map((p,i)=>{
-
-          const angle = (i / players.length) * Math.PI * 2;
-          const radius = 80;
-
-          const x = 120 + Math.cos(angle) * radius;
-          const y = 100 + Math.sin(angle) * radius;
-
-          return (
+    function PlayerRow({ player, active }) {
+      return (
+        <div className="list-row">
+          <div className="flex items-center gap-3 min-w-0">
             <div
-              key={i}
-              className="player"
-              style={{left:x, top:y}}
+              className="w-10 h-10 rounded-full overflow-hidden border border-white/10 soft-line flex items-center justify-center shrink-0"
+              style={{ background: seededColor(player.wallet || player.name || "seed") }}
             >
-              {p.name}
+              {player.avatar ? (
+                <img src={player.avatar} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-[10px] font-black">
+                  {shortAddress(player.name || player.wallet).slice(0, 2).toUpperCase()}
+                </span>
+              )}
             </div>
-          );
-        })}
-
-      </div>
-
-      <div className="card mt-4">
-        {players.map((p,i)=>(
-          <div key={i} className="flex justify-between text-xs border-b border-white/10 py-1">
-            <span>{p.name}</span>
-            <span>{p.amount} TON</span>
+            <div className="min-w-0">
+              <div className="font-semibold truncate">
+                {player.name || shortAddress(player.wallet)}
+                {active ? <span className="ml-2 text-[10px] text-emerald-400 uppercase tracking-[0.18em]">Winner</span> : null}
+              </div>
+              <div className="text-[11px] muted truncate">{shortAddress(player.wallet)}</div>
+            </div>
           </div>
-        ))}
-      </div>
 
-    </div>
-  );
-}
+          <div className="text-right shrink-0">
+            <div className="font-extrabold text-blue-300">{formatTON(player.amount)} TON</div>
+            <div className="text-[10px] muted">{player.joinedAt ? new Date(player.joinedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""}</div>
+          </div>
+        </div>
+      );
+    }
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+    function WheelArena({ players, spinDeg, winnerWallet, status, bank, timer, topPlayer }) {
+      const count = players.length;
+      const radius = 132;
 
-</script>
+      return (
+        <div className="arena-card glass">
+          <div className="scanline"></div>
+
+          <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-10">
+            <div className="room-pill">
+              <span className={`w-2.5 h-2.5 rounded-full ${status === "spinning" ? "bg-yellow-400 pulse" : status === "betting" ? "bg-green-400 pulse" : "bg-blue-400"}`}></span>
+              <span className="text-sm font-semibold capitalize">{status || "waiting"}</span>
+            </div>
+
+            <div className="room-pill">
+              <span className="text-[12px] muted">Bank</span>
+              <span className="font-bold text-white">{formatTON(bank)} TON</span>
+            </div>
+          </div>
+
+          <div className="absolute top-16 left-4 right-4 z-10 flex gap-2">
+            <div className="flex-1 rounded-2xl bg-black/18 border border-white/10 px-3 py-2">
+              <div className="text-[10px] uppercase tracking-[0.18em] muted font-semibold">Top game</div>
+              <div className="mt-1 flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="font-bold truncate">{topPlayer ? (topPlayer.name || shortAddress(topPlayer.wallet)) : "—"}</div>
+                  <div className="text-[11px] muted truncate">{topPlayer ? shortAddress(topPlayer.wallet) : "No bets yet"}</div>
+                </div>
+                <div className="font-extrabold text-blue-300 shrink-0">{topPlayer ? `${formatTON(topPlayer.amount)} TON` : "0 TON"}</div>
+              </div>
+            </div>
+
+            <div className="flex-1 rounded-2xl bg-black/18 border border-white/10 px-3 py-2">
+              <div className="text-[10px] uppercase tracking-[0.18em] muted font-semibold">Timer</div>
+              <div className="mt-1 flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="font-bold truncate">
+                    {status === "finished" ? "Round finished" : status === "spinning" ? "Spinning" : "Live"}
+                  </div>
+                  <div className="text-[11px] muted truncate">
+                    {status === "finished" ? "Waiting for next round" : "Case battle / PvP room"}
+                  </div>
+                </div>
+                <div className="font-black text-white text-xl shrink-0">{timer}</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="wheel-wrap">
+            <div className="pointer"></div>
+
+            <div className="wheel-ring" style={{ transform: `rotate(${spinDeg}deg)` }}>
+              <div className="wheel-shell"></div>
+
+              {players.map((p, i) => {
+                const angle = (360 / Math.max(players.length, 1)) * i;
+                const rotate = angle;
+                const avatarSeed = p.wallet || p.name || String(i);
+                const active = winnerWallet && p.wallet === winnerWallet;
+
+                return (
+                  <div
+                    key={`${p.wallet || p.name}-${i}`}
+                    className={`player-badge ${active ? "active" : ""}`}
+                    style={{
+                      left: "50%",
+                      top: "50%",
+                      transform: `translate(-50%, -50%) rotate(${rotate}deg) translateY(-${radius}px) rotate(${-rotate}deg)`,
+                      background: seededColor(avatarSeed)
+                    }}
+                  >
+                    {p.avatar ? (
+                      <img src={p.avatar} alt="" />
+                    ) : (
+                      <div className="initials">
+                        {shortAddress(p.name || p.wallet).replace("…", "").slice(0, 2).toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="center-core">
+              <div className="title">TON ARENA</div>
+              <div className="value">{count}</div>
+              <div className="sub">{count === 1 ? "player in room" : "players in room"}</div>
+              <div className="mt-4 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[11px] font-semibold">
+                {status === "spinning" ? "Selecting winner..." : status === "finished" ? "Winner locked" : "Waiting / betting"}
+              </div>
+            </div>
+          </div>
+
+          <div className="absolute bottom-4 left-4 right-4 z-10 flex items-center justify-between gap-3">
+            <div className="room-pill">
+              <span className="text-[12px] muted">Room</span>
+              <span className="font-bold">Live arena</span>
+            </div>
+            <div className="room-pill">
+              <span className="text-[12px] muted">Winner</span>
+              <span className="font-bold truncate max-w-[170px]">
+                {winnerWallet ? shortAddress(winnerWallet) : "—"}
+              </span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function App() {
+      const [walletAddress, setWalletAddress] = useState("");
+      const [roomInput, setRoomInput] = useState(ROOM_DEFAULT);
+      const [roomId, setRoomId] = useState(ROOM_DEFAULT);
+      const [room, setRoom] = useState({
+        status: "waiting",
+        bank: 0,
+        timer: ROUND_SECONDS,
+        hostWallet: "",
+        winnerWallet: "",
+        winnerName: "",
+        lastGame: null
+      });
+      const [players, setPlayers] = useState([]);
+      const [betAmount, setBetAmount] = useState(1);
+      const [spinning, setSpinning] = useState(false);
+      const [spinDeg, setSpinDeg] = useState(0);
+      const [onlineCount, setOnlineCount] = useState(0);
+      const [ready, setReady] = useState(false);
+
+      const tonConnectRef = useRef(null);
+      const timerIntervalRef = useRef(null);
+      const resolutionLockRef = useRef(false);
+
+      const roomPath = useMemo(() => `rooms/${roomId}`, [roomId]);
+
+      const playersList = useMemo(() => {
+        return [...players].sort((a, b) => (a.joinedAt || 0) - (b.joinedAt || 0));
+      }, [players]);
+
+      const bank = useMemo(() => {
+        return playersList.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+      }, [playersList]);
+
+      const topPlayer = useMemo(() => {
+        if (!playersList.length) return null;
+        return playersList.reduce((best, p) => {
+          const bestAmt = Number(best?.amount || 0);
+          const curAmt = Number(p.amount || 0);
+          return curAmt > bestAmt ? p : best;
+        }, null);
+      }, [playersList]);
+
+      const currentPlayer = useMemo(() => {
+        if (!walletAddress) return null;
+        return playersList.find(p => p.wallet === walletAddress) || null;
+      }, [playersList, walletAddress]);
+
+      const lastGame = room.lastGame || null;
+
+      useEffect(() => {
+        const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+          manifestUrl: TONCONNECT_MANIFEST_URL,
+          buttonRootId: "ton-connect-button"
+        });
+
+        tonConnectRef.current = tonConnectUI;
+
+        tonConnectUI.onStatusChange((wallet) => {
+          if (wallet && wallet.account && wallet.account.address) {
+            setWalletAddress(wallet.account.address);
+          } else {
+            setWalletAddress("");
+          }
+        });
+
+        setReady(true);
+      }, []);
+
+      useEffect(() => {
+        firebase.auth().signInAnonymously().catch(() => {});
+      }, []);
+
+      useEffect(() => {
+        const ref = db.ref(roomPath);
+
+        const onValue = (snap) => {
+          const data = snap.val() || {};
+          const pl = data.players ? Object.values(data.players) : [];
+          setPlayers(pl);
+
+          setRoom({
+            status: data.status || "waiting",
+            bank: Number(data.bank || 0),
+            timer: Number(data.timer ?? ROUND_SECONDS),
+            hostWallet: data.hostWallet || "",
+            winnerWallet: data.winnerWallet || "",
+            winnerName: data.winnerName || "",
+            lastGame: data.lastGame || null
+          });
+
+          setOnlineCount(pl.length);
+          setSpinning(data.status === "spinning");
+        };
+
+        ref.on("value", onValue);
+        return () => ref.off("value", onValue);
+      }, [roomPath]);
+
+      useEffect(() => {
+        if (!walletAddress) return;
+        if (!room.status) return;
+
+        const isHost = room.hostWallet && room.hostWallet === walletAddress;
+        const shouldRun = room.status === "betting" && isHost;
+
+        if (!shouldRun) {
+          if (timerIntervalRef.current) {
+            clearInterval(timerIntervalRef.current);
+            timerIntervalRef.current = null;
+          }
+          return;
+        }
+
+        if (timerIntervalRef.current) {
+          clearInterval(timerIntervalRef.current);
+        }
+
+        timerIntervalRef.current = setInterval(() => {
+          db.ref(`${roomPath}/timer`).transaction((current) => {
+            const next = Math.max(0, Number(current || ROUND_SECONDS) - 1);
+            return next;
+          }, async (err, committed, snap) => {
+            if (err || !committed || !snap) return;
+            const currentTimer = Number(snap.val() || 0);
+
+            if (currentTimer <= 0 && !resolutionLockRef.current) {
+              resolutionLockRef.current = true;
+              clearInterval(timerIntervalRef.current);
+              timerIntervalRef.current = null;
+              await resolveRound();
+            }
+          });
+        }, 1000);
+
+        return () => {
+          if (timerIntervalRef.current) {
+            clearInterval(timerIntervalRef.current);
+            timerIntervalRef.current = null;
+          }
+        };
+      }, [room.status, room.hostWallet, walletAddress, roomPath]);
+
+      async function openRoom() {
+        const next = String(roomInput || ROOM_DEFAULT).trim() || ROOM_DEFAULT;
+        setRoomId(next);
+        resolutionLockRef.current = false;
+        setSpinDeg(0);
+      }
+
+      async function joinGame() {
+        if (!walletAddress) {
+          alert("Сначала подключи кошелёк TON");
+          return;
+        }
+
+        const amount = Number(betAmount);
+        if (!amount || amount <= 0) {
+          alert("Укажи ставку больше 0");
+          return;
+        }
+
+        const key = walletKey(walletAddress);
+        const playerRef = db.ref(`${roomPath}/players/${key}`);
+
+        const payload = {
+          wallet: walletAddress,
+          name: shortAddress(walletAddress),
+          amount,
+          avatar: `https://api.dicebear.com/9.x/identicon/svg?seed=${encodeURIComponent(walletAddress)}`,
+          joinedAt: Date.now(),
+          updatedAt: Date.now()
+        };
+
+        try {
+          const snap = await playerRef.once("value");
+          const existing = snap.val();
+
+          await playerRef.set({
+            ...(existing || {}),
+            ...payload
+          });
+
+          if (!room.hostWallet) {
+            await db.ref(`${roomPath}/hostWallet`).set(walletAddress);
+          }
+
+          const currentStatusSnap = await db.ref(`${roomPath}/status`).once("value");
+          const currentStatus = currentStatusSnap.val() || "waiting";
+          if (currentStatus === "waiting" && playersList.length + 1 >= 2) {
+            await db.ref(`${roomPath}/status`).set("betting");
+            await db.ref(`${roomPath}/timer`).set(ROUND_SECONDS);
+          }
+
+          alert(existing ? "Ставка обновлена" : "Ты вошёл в игру");
+        } catch (e) {
+          console.error(e);
+          alert("Ошибка при входе в комнату");
+        }
+      }
+
+      async function startRound() {
+        if (!walletAddress) {
+          alert("Сначала подключи кошелёк");
+          return;
+        }
+
+        if (playersList.length < 2) {
+          alert("Нужно минимум 2 игрока");
+          return;
+        }
+
+        resolutionLockRef.current = false;
+        setSpinDeg(0);
+        setSpinning(false);
+
+        await db.ref(roomPath).update({
+          status: "betting",
+          timer: ROUND_SECONDS,
+          hostWallet: walletAddress,
+          winnerWallet: "",
+          winnerName: "",
+          lastGame: room.lastGame || null,
+          startedAt: Date.now()
+        });
+      }
+
+      async function resolveRound() {
+        const snap = await db.ref(roomPath).once("value");
+        const data = snap.val() || {};
+        const pl = data.players ? Object.values(data.players) : [];
+
+        if (pl.length < 2) {
+          await db.ref(roomPath).update({
+            status: "waiting",
+            timer: ROUND_SECONDS
+          });
+          resolutionLockRef.current = false;
+          return;
+        }
+
+        const winner = weightedPick(pl);
+        if (!winner) {
+          resolutionLockRef.current = false;
+          return;
+        }
+
+        const winnerIndex = pl.findIndex(p => p.wallet === winner.wallet);
+        const segment = 360 / pl.length;
+        const targetCenter = winnerIndex * segment + segment / 2;
+        const finalRotation = 360 * 6 + (360 - targetCenter);
+
+        setSpinning(true);
+        setSpinDeg(finalRotation);
+
+        setTimeout(async () => {
+          const latestSnap = await db.ref(roomPath).once("value");
+          const latest = latestSnap.val() || {};
+          const latestPlayers = latest.players ? Object.values(latest.players) : [];
+          const total = latestPlayers.reduce((s, p) => s + (Number(p.amount) || 0), 0);
+
+          await db.ref(roomPath).update({
+            status: "finished",
+            timer: 0,
+            winnerWallet: winner.wallet,
+            winnerName: winner.name || shortAddress(winner.wallet),
+            lastGame: {
+              winnerWallet: winner.wallet,
+              winnerName: winner.name || shortAddress(winner.wallet),
+              bank: total,
+              roomId,
+              at: Date.now()
+            },
+            endedAt: Date.now()
+          });
+
+          setSpinning(false);
+        }, 6200);
+      }
+
+      async function resetRoom() {
+        if (!walletAddress) return;
+        await db.ref(roomPath).set({
+          status: "waiting",
+          timer: ROUND_SECONDS,
+          bank: 0,
+          hostWallet: walletAddress,
+          winnerWallet: "",
+          winnerName: "",
+          lastGame: room.lastGame || null,
+          players: {}
+        });
+        resolutionLockRef.current = false;
+        setSpinDeg(0);
+        setSpinning(false);
+      }
+
+      const myBet = currentPlayer ? currentPlayer.amount : 0;
+
+      return (
+        <div className="app-shell">
+          <div className="flex items-center justify-between mb-4">
+            <button className="room-pill px-4 py-3" onClick={() => history.back()}>
+              <span className="text-lg">×</span>
+              <span className="font-semibold">Закрыть</span>
+            </button>
+
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-2 text-sm">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                <span className="font-semibold">{onlineCount} online</span>
+              </div>
+              <div className="text-[11px] muted mt-1">TON Arena</div>
+            </div>
+
+            <button className="room-pill px-4 py-3">
+              <span className="font-semibold">{walletAddress ? shortAddress(walletAddress) : "Guest"}</span>
+            </button>
+          </div>
+
+          <div className="glass rounded-[28px] p-4 mb-4 relative overflow-hidden">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <div className="text-[12px] uppercase tracking-[0.22em] muted font-semibold">Room</div>
+                <div className="mt-1 text-2xl font-black text-blue-400">TON Arena</div>
+              </div>
+              <div className="room-pill">
+                <span className="text-[12px] muted">Room ID</span>
+                <span className="font-bold">{roomId}</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 mt-4">
+              <TopCard title="Bank" value={`${formatTON(bank)} TON`} subtitle="Сумма ставок" accent />
+              <TopCard title="Timer" value={`${room.timer}s`} subtitle={`Status: ${room.status}`} />
+              <TopCard title="Players" value={`${playersList.length}`} subtitle="В комнате" />
+            </div>
+
+            <div className="mt-4 flex gap-2">
+              <input
+                value={roomInput}
+                onChange={(e) => setRoomInput(e.target.value)}
+                className="w-full rounded-2xl bg-black/35 border border-white/10 px-4 py-3 outline-none text-sm"
+                placeholder="room_1"
+              />
+              <button className="btn-main rounded-2xl px-4 py-3 font-bold" onClick={openRoom}>
+                Open
+              </button>
+            </div>
+
+            <div className="mt-3 flex items-center justify-between gap-2">
+              <div id="ton-connect-button" className="min-h-[42px]"></div>
+              <div className="text-[11px] muted text-right">
+                {ready ? "Ton Connect ready" : "Connecting..."}
+                <br />
+                {walletAddress ? `Wallet: ${shortAddress(walletAddress)}` : "Wallet not connected"}
+              </div>
+            </div>
+          </div>
+
+          <div className="glass rounded-[28px] p-4 mb-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <div className="text-[12px] uppercase tracking-[0.18em] muted font-semibold">Bet amount</div>
+                <input
+                  type="number"
+                  min="0.1"
+                  step="0.1"
+                  value={betAmount}
+                  onChange={(e) => setBetAmount(Number(e.target.value))}
+                  className="mt-2 w-full rounded-2xl bg-black/35 border border-white/10 px-4 py-3 outline-none text-sm"
+                />
+              </div>
+
+              <div className="flex flex-col justify-end gap-2">
+                <button
+                  onClick={joinGame}
+                  disabled={!walletAddress}
+                  className="btn-main rounded-2xl px-4 py-3 font-extrabold"
+                >
+                  Join / Update Bet
+                </button>
+                <div className="text-[11px] muted">
+                  One wallet = one slot. Ставка обновляет запись этого же кошелька.
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-3 flex gap-2">
+              <button
+                className="flex-1 btn-green rounded-2xl px-4 py-3 font-extrabold"
+                onClick={startRound}
+              >
+                Start Round
+              </button>
+              <button
+                className="flex-1 btn-dark rounded-2xl px-4 py-3 font-extrabold"
+                onClick={resetRoom}
+              >
+                Reset Room
+              </button>
+            </div>
+          </div>
+
+          <div className="mb-4">
+            <WheelArena
+              players={playersList}
+              spinDeg={spinDeg}
+              winnerWallet={room.winnerWallet}
+              status={room.status}
+              bank={bank}
+              timer={room.timer}
+              topPlayer={topPlayer}
+            />
+          </div>
+
+          <div className="glass rounded-[28px] p-4 mb-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-[12px] uppercase tracking-[0.18em] muted font-semibold">Room feed</div>
+                <div className="text-lg font-extrabold">Players</div>
+              </div>
+              <div className="room-pill">
+                <span className="text-[12px] muted">My bet</span>
+                <span className="font-bold">{myBet ? `${formatTON(myBet)} TON` : "0 TON"}</span>
+              </div>
+            </div>
+
+            <div className="mt-4 max-h-[260px] overflow-auto thin-scroll pr-1">
+              {playersList.length ? (
+                playersList.map((p) => (
+                  <PlayerRow key={p.wallet || p.name} player={p} active={room.winnerWallet === p.wallet} />
+                ))
+              ) : (
+                <div className="py-10 text-center muted">
+                  Пока нет игроков. Подключи кошелёк и зайди в комнату.
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="glass rounded-[28px] p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-[12px] uppercase tracking-[0.18em] muted font-semibold">Last game</div>
+                <div className="text-lg font-extrabold">History</div>
+              </div>
+              <div className="text-[11px] muted">Firebase RTDB</div>
+            </div>
+
+            <div className="mt-4 rounded-2xl bg-black/28 border border-white/10 p-4">
+              {lastGame ? (
+                <>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="font-bold truncate">{lastGame.winnerName || shortAddress(lastGame.winnerWallet)}</div>
+                      <div className="text-[11px] muted truncate">{shortAddress(lastGame.winnerWallet)}</div>
+                    </div>
+                    <div className="font-black text-blue-300 shrink-0">{formatTON(lastGame.bank)} TON</div>
+                  </div>
+                  <div className="mt-2 text-[11px] muted">
+                    Room: {lastGame.roomId || roomId} · {lastGame.at ? new Date(lastGame.at).toLocaleString() : ""}
+                  </div>
+                </>
+              ) : (
+                <div className="text-sm muted">Пока нет завершённых раундов.</div>
+              )}
+            </div>
+
+            <div className="mt-4 text-[11px] muted leading-6">
+              Сейчас Ton Connect используется как идентификатор игрока. Реальные переводы TON можно добавить позже через контракт или серверный escrow.
+            </div>
+          </div>
+
+          <div className="h-10"></div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
 </body>
 </html>
