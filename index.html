@@ -6,6 +6,8 @@
   <title>TON Arena</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
@@ -56,14 +58,10 @@
       mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
     }
 
-    button, input {
-      font: inherit;
-    }
-
     .app {
-      max-width: 470px;
+      max-width: 520px;
       margin: 0 auto;
-      padding: 14px 14px 108px;
+      padding: 10px 12px 120px;
       position: relative;
       z-index: 1;
     }
@@ -76,17 +74,7 @@
       -webkit-backdrop-filter: blur(18px);
     }
 
-    .glass-strong {
-      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.05));
-      border: 1px solid rgba(255,255,255,.10);
-      box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,.06);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-    }
-
     .muted { color: var(--muted); }
-    .soft-line { border: 1px solid rgba(255,255,255,.08); }
-
     .chip {
       display: inline-flex;
       align-items: center;
@@ -153,7 +141,6 @@
       background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
       border: 1px solid rgba(255,255,255,.07);
     }
-
     .nav-ic {
       width: 17px;
       height: 17px;
@@ -241,36 +228,6 @@
       background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.9), rgba(255,255,255,.16) 20%, rgba(91,140,255,.08) 44%, rgba(0,0,0,.75) 100%);
       border: 1px solid rgba(255,255,255,.10);
       box-shadow: inset 0 1px 0 rgba(255,255,255,.12);
-    }
-
-    .shell {
-      position: relative;
-      border-radius: var(--radius);
-      overflow: hidden;
-      background:
-        radial-gradient(circle at 18% 12%, rgba(255,255,255,.12), transparent 17%),
-        radial-gradient(circle at 82% 18%, rgba(139,92,246,.22), transparent 18%),
-        linear-gradient(135deg, rgba(16,185,129,.82) 0%, rgba(59,130,246,.86) 22%, rgba(236,72,153,.90) 48%, rgba(245,158,11,.82) 72%, rgba(34,197,94,.86) 100%);
-      box-shadow: 0 20px 70px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.08);
-    }
-
-    .shell::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background:
-        linear-gradient(155deg, rgba(0,0,0,.20) 0 32%, transparent 32% 56%, rgba(0,0,0,.10) 56% 100%),
-        radial-gradient(circle at center, transparent 0 26%, rgba(255,255,255,.06) 26.5% 27.5%, transparent 28%);
-      mix-blend-mode: screen;
-      pointer-events: none;
-    }
-
-    .shell::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at center, transparent 42%, rgba(0,0,0,.22) 100%);
-      pointer-events: none;
     }
 
     .arena-shell {
@@ -382,13 +339,6 @@
       display: block;
     }
 
-    .avatar-fallback {
-      font-size: 12px;
-      font-weight: 900;
-      letter-spacing: .05em;
-      text-shadow: 0 1px 8px rgba(0,0,0,.45);
-    }
-
     .zone-title {
       font-size: 12px;
       font-weight: 900;
@@ -462,44 +412,65 @@
       color: rgba(255,255,255,.88);
     }
 
-    .arrow-wrap {
+    .history-trigger {
       position: absolute;
-      inset: 0;
-      pointer-events: none;
-      z-index: 20;
+      top: 12px;
+      left: 12px;
+      z-index: 22;
+      width: 36px;
+      height: 36px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.25);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 24px rgba(0,0,0,.25);
     }
 
-    .arrow-core {
+    .ball {
       position: absolute;
-      width: 22px;
-      height: 22px;
+      width: 2.3%;
+      height: 2.3%;
       border-radius: 999px;
-      background: radial-gradient(circle at 30% 30%, #fff, #f5f5f5 20%, #cbd5e1 100%);
-      box-shadow: 0 0 18px rgba(255,255,255,.42), 0 0 30px rgba(91,140,255,.28);
-      transform: translate(-50%, -50%);
+      transform: translate(-50%, -50%) scale(1);
+      background: radial-gradient(circle at 30% 30%, #ffffff 0%, #f8fafc 30%, #cbd5e1 100%);
+      box-shadow: 0 0 18px rgba(255,255,255,.55), 0 0 40px rgba(91,140,255,.20);
+      z-index: 25;
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
-    .arrow-head {
-      width: 0;
-      height: 0;
-      border-left: 7px solid transparent;
-      border-right: 7px solid transparent;
-      border-top: 16px solid rgba(255,255,255,.96);
-      filter: drop-shadow(0 0 8px rgba(255,255,255,.45));
-      transform: translateY(14px);
+    .ball.zoom {
+      width: 4.3%;
+      height: 4.3%;
+      box-shadow: 0 0 26px rgba(255,255,255,.72), 0 0 56px rgba(91,140,255,.32);
     }
 
-    .top-pill {
-      display: inline-flex;
+    .ball-arrow {
+      width: 0;
+      height: 0;
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+      border-top: 8px solid rgba(13,18,30,.84);
+      transform: translateY(7px);
+      opacity: .9;
+    }
+
+    .top-line {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 10px;
       align-items: center;
-      gap: 8px;
-      padding: 11px 14px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.10);
+      margin-bottom: 10px;
+    }
+
+    .top-center {
+      text-align: center;
+      font-size: 11px;
+      color: rgba(255,255,255,.62);
     }
 
     .mini-stat {
@@ -545,12 +516,6 @@
       color: rgba(255,255,255,.55);
     }
 
-    .row-divider {
-      height: 1px;
-      background: rgba(255,255,255,.08);
-      margin: 10px 0;
-    }
-
     .thin-scroll::-webkit-scrollbar { height: 6px; width: 6px; }
     .thin-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,.14); border-radius: 999px; }
     .thin-scroll::-webkit-scrollbar-track { background: transparent; }
@@ -560,8 +525,8 @@
       left: 50%;
       transform: translateX(-50%);
       bottom: 0;
-      width: min(470px, 100%);
-      padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+      width: min(520px, 100%);
+      padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
       z-index: 40;
       background: linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,.48) 14%, rgba(0,0,0,.74));
       backdrop-filter: blur(16px);
@@ -668,13 +633,19 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      animation: fadeIntro 1.2s ease forwards;
+      animation: fadeIntro 1.8s ease forwards;
     }
 
     @keyframes fadeIntro {
       0%   { opacity: 1; }
       80%  { opacity: 1; }
       100% { opacity: 0; visibility: hidden; }
+    }
+
+    .portal-sizes {
+      display: grid;
+      place-items: center;
+      min-height: 220px;
     }
 
     .row {
@@ -770,31 +741,125 @@
       color: #fff;
     }
 
-    .portal-sizes {
-      display: grid;
-      place-items: center;
-      min-height: 220px;
-    }
-
     .support-note {
       font-size: 13px;
       color: rgba(255,255,255,.70);
       line-height: 1.65;
     }
 
-    .dim {
-      opacity: .74;
+    .dim { opacity: .74; }
+
+    .preset-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr auto;
+      gap: 8px;
+    }
+
+    .preset-chip {
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 16px;
+      padding: 12px 10px;
+      background: rgba(255,255,255,.05);
+      color: #fff;
+      font-weight: 900;
+    }
+
+    .preset-chip.active {
+      background: linear-gradient(180deg, rgba(91,140,255,1), rgba(70,119,250,1));
+    }
+
+    .clock-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.25);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .arena-wrap {
+      position: relative;
+      margin-top: 10px;
+    }
+
+    .arena-hero {
+      padding: 10px;
+      border-radius: 30px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+    }
+
+    .top-topline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .top-left-stack {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .open-history {
+      width: 36px;
+      height: 36px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.24);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .arena-title-line {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .title-big {
+      font-size: 14px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.60);
+      font-weight: 900;
+    }
+
+    .arena-count {
+      font-size: 11px;
+      color: rgba(255,255,255,.58);
+    }
+
+    .arena-shell.referenced {
+      border-radius: 32px;
+    }
+
+    .player-zone .avatar img {
+      pointer-events: none;
     }
   </style>
 </head>
 <body>
   <div id="root"></div>
-
   <div class="nav-bar">
     <div id="nav-anchor"></div>
   </div>
 
   <script>
+    const h = React.createElement;
+    const F = React.Fragment;
+    const { useEffect, useMemo, useRef, useState } = React;
+
     const firebaseConfig = {
       apiKey: "AIzaSyCsgo_VhjPWLyUtZCE0jCzqCmQa-du0qwI",
       authDomain: "portals-c5000.firebaseapp.com",
@@ -808,202 +873,149 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const ROUND_SECONDS = 20;
+    const ROUND_SECONDS = 30;
     const FEE_RATE = 0.10;
     const ROOM_DEFAULT = "room_1";
-    const ACTIVE_SESSION_MS = 15000;
-    const INTRO_MS = 1200;
+    const ACTIVE_MS = 15000;
+    const INTRO_MS = 1800;
 
     const LANGS = {
       ru: {
-        appTitle: "TON Arena",
-        subtitle: "Квадратная арена • тестовая версия",
-        enterNick: "Введите уникальный ник",
-        nickHint: "Например: dragon77",
-        continue: "Продолжить",
-        room: "Комната",
-        bank: "Банк",
-        timer: "Таймер",
+        online: "Онлайн",
+        balance: "Банк",
         players: "Игроки",
         bet: "Ставка",
         join: "Войти / обновить ставку",
-        start: "Старт раунда",
-        reset: "Сброс комнаты",
-        games: "Игры",
-        refs: "Рефералы",
+        referral: "Рефералы",
         profile: "Профиль",
+        games: "Игры",
         support: "Поддержка",
-        supportSoon: "Скоро добавим",
-        supportText: "Эта секция пока в разработке.",
         back: "Назад",
-        language: "Язык",
-        stats: "Статистика",
-        betsCount: "Количество ставок",
-        wins: "Победы",
-        totalBet: "Всего поставлено",
-        rooms: "Комнаты",
-        online: "Онлайн",
+        continue: "Продолжить",
+        changeNick: "Сменить ник",
+        testMode: "Тест режим",
+        realMode: "Реальный режим",
+        enterNick: "Введите уникальный ник",
+        nickHint: "Например: dragon77",
+        roomHint: "Комната",
+        howItWorks: "Как работает",
+        howText: "Игрок вводит ник, входит в комнату, ставит TON и получает долю арены. Арена квадратная, а белый круг летает с физикой и выбирает победителя по позиции.",
+        autoStart: "Автостарт при 2 игроках",
+        noPlayers: "Пока нет игроков",
+        noLast: "Пока нет завершённых раундов",
         referralTitle: "Реферальная система",
         referralDesc: "Когда приглашённый игрок делает ставку и участвует в матчах, ты получаешь 10% бонуса от его активности как реферальное вознаграждение.",
         referralLink: "Твоя ссылка",
         copy: "Копировать",
         copied: "Скопировано",
-        howItWorks: "Как работает",
-        howText: "Игрок вводит ник, входит в комнату, ставит TON и получает долю арены. Арена квадратная, а стрелка летает по полю с физикой.",
-        winner: "Победитель",
-        commission: "Комиссия",
-        roundFinished: "Раунд завершён",
-        comingSoon: "Скоро",
-        noPlayers: "Пока нет игроков",
-        noRoom: "Комната пуста",
-        noLast: "Пока нет завершённых раундов",
+        profileInfo: "Профиль и настройки",
+        supportSoon: "Скоро добавим",
+        supportText: "Эта секция пока в разработке.",
         roomId: "ID комнаты",
         liveArena: "Живая арена",
-        testMode: "Без TonConnect. Тест по нику.",
-        openRoom: "Открыть",
-        playerZone: "Зона",
-        payout: "Выплата",
         feeNote: "10% комиссия удерживается из банка",
-        profileInfo: "Профиль и настройки",
-        supportTitle: "Поддержка",
-        testFlowText: "Можно создавать много игроков с одного телефона. Ник должен быть уникальным в комнате.",
-        modeTest: "TEST MODE",
-        modeReal: "REAL MODE",
-        changeNick: "Сменить ник",
-        demoPlayer: "Demo +",
-        roomStatusReady: "RTDB ready",
-        roomStatusConnecting: "Connecting",
-        roomStatusLive: "Live",
-        roomStatusFinished: "Finished",
-        onlineHint: "Активные сессии в комнате",
-        winnerByArrow: "Победитель по стрелке",
-        arenaTitle: "Arena",
-        lastGame: "Последняя игра",
+        winner: "Победитель",
         history: "История",
+        editPresets: "Редактировать ставки",
+        allIn: "ALL IN",
+        payout: "Выплата",
+        betsCount: "Количество ставок",
+        wins: "Победы",
+        totalBet: "Всего поставлено",
+        rooms: "Комнаты",
+        stats: "Статистика",
+        modeTest: "TEST",
+        modeReal: "REAL",
+        smallHistory: "История раундов",
+        launch: "Запуск",
+        wait2: "Ждём 2 игроков",
+        finished: "Раунд завершён",
+        round: "Раунд",
+        note: "Сейчас тестовая версия",
+        roomInfo: "Комната живёт отдельно",
+        autoSuffix: "Если ник занят, добавим цифру",
       },
       en: {
-        appTitle: "TON Arena",
-        subtitle: "Square arena • test version",
-        enterNick: "Enter a unique nickname",
-        nickHint: "Example: dragon77",
-        continue: "Continue",
-        room: "Room",
-        bank: "Bank",
-        timer: "Timer",
+        online: "Online",
+        balance: "Bank",
         players: "Players",
         bet: "Bet",
         join: "Join / update bet",
-        start: "Start round",
-        reset: "Reset room",
-        games: "Games",
-        refs: "Referrals",
+        referral: "Referrals",
         profile: "Profile",
+        games: "Games",
         support: "Support",
-        supportSoon: "Coming soon",
-        supportText: "This section is still under development.",
         back: "Back",
-        language: "Language",
-        stats: "Statistics",
-        betsCount: "Bet count",
-        wins: "Wins",
-        totalBet: "Total bet",
-        rooms: "Rooms",
-        online: "Online",
+        continue: "Continue",
+        changeNick: "Change nickname",
+        testMode: "Test mode",
+        realMode: "Real mode",
+        enterNick: "Enter a unique nickname",
+        nickHint: "Example: dragon77",
+        roomHint: "Room",
+        howItWorks: "How it works",
+        howText: "A player enters a nickname, joins a room, places TON and gets a share of the arena. The arena is square, and the white circle flies with physics and selects the winner by position.",
+        autoStart: "Auto-start at 2 players",
+        noPlayers: "No players yet",
+        noLast: "No finished rounds yet",
         referralTitle: "Referral system",
         referralDesc: "When an invited player places a bet and participates in matches, you receive a 10% bonus from their activity as a referral reward.",
         referralLink: "Your link",
         copy: "Copy",
         copied: "Copied",
-        howItWorks: "How it works",
-        howText: "A player enters a nickname, joins a room, places TON and gets a share of the arena. The arena is square, and the arrow flies around with physics.",
-        winner: "Winner",
-        commission: "Commission",
-        roundFinished: "Round finished",
-        comingSoon: "Coming soon",
-        noPlayers: "No players yet",
-        noRoom: "Room is empty",
-        noLast: "No finished rounds yet",
+        profileInfo: "Profile and settings",
+        supportSoon: "Coming soon",
+        supportText: "This section is still under development.",
         roomId: "Room ID",
         liveArena: "Live arena",
-        testMode: "No TonConnect. Nickname test mode.",
-        openRoom: "Open",
-        playerZone: "Zone",
-        payout: "Payout",
         feeNote: "10% fee is deducted from the bank",
-        profileInfo: "Profile and settings",
-        supportTitle: "Support",
-        testFlowText: "You can create many players from one phone. The nickname must be unique inside the room.",
-        modeTest: "TEST MODE",
-        modeReal: "REAL MODE",
-        changeNick: "Change nickname",
-        demoPlayer: "Demo +",
-        roomStatusReady: "RTDB ready",
-        roomStatusConnecting: "Connecting",
-        roomStatusLive: "Live",
-        roomStatusFinished: "Finished",
-        onlineHint: "Active sessions in the room",
-        winnerByArrow: "Winner by arrow",
-        arenaTitle: "Arena",
-        lastGame: "Last game",
+        winner: "Winner",
         history: "History",
+        editPresets: "Edit bets",
+        allIn: "ALL IN",
+        payout: "Payout",
+        betsCount: "Bet count",
+        wins: "Wins",
+        totalBet: "Total bet",
+        rooms: "Rooms",
+        stats: "Statistics",
+        modeTest: "TEST",
+        modeReal: "REAL",
+        smallHistory: "Round history",
+        launch: "Launch",
+        wait2: "Waiting for 2 players",
+        finished: "Round finished",
+        round: "Round",
+        note: "Test version right now",
+        roomInfo: "Room lives separately",
+        autoSuffix: "If nickname is taken, digits will be added",
       }
     };
 
-    const state = {
-      lang: localStorage.getItem("tonarena_lang") || "ru",
-      mode: localStorage.getItem("tonarena_mode") || "test", // test | real
-      nickname: localStorage.getItem("tonarena_nick") || "",
-      roomId: localStorage.getItem("tonarena_room") || ROOM_DEFAULT,
-      betAmount: 1,
-      tab: "games",
-      supportOpen: false,
-      gateOpen: !localStorage.getItem("tonarena_nick"),
-      intro: true,
-      copied: false,
-      notice: "",
-      playersObj: {},
-      sessionsObj: {},
-      room: {
-        status: "waiting",
-        timer: ROUND_SECONDS,
-        host: "",
-        timerOwner: "",
-        phaseText: "waiting",
-        winner: null,
-        lastGame: null,
-        arrowHistory: []
-      },
-      stats: {
-        betsCount: 0,
-        wins: 0,
-        totalBet: 0,
-        refs: 0
-      },
-      arrow: {
-        active: false,
-        x: 0,
-        y: 0,
-        vx: 0,
-        vy: 0,
-        angle: 0
-      }
-    };
+    function t(lang, key) {
+      return (LANGS[lang] && LANGS[lang][key]) || LANGS.ru[key] || key;
+    }
 
-    const root = document.getElementById("root");
-    const navAnchor = document.getElementById("nav-anchor");
+    function usePersistedState(key, fallback) {
+      const [value, setValue] = useState(() => {
+        try {
+          const raw = localStorage.getItem(key);
+          return raw == null ? fallback : JSON.parse(raw);
+        } catch {
+          return fallback;
+        }
+      });
 
-    const sessionIdKey = "tonarena_session_id";
-    const sessionId = localStorage.getItem(sessionIdKey) || makeId("sess");
-    localStorage.setItem(sessionIdKey, sessionId);
+      useEffect(() => {
+        try {
+          localStorage.setItem(key, JSON.stringify(value));
+        } catch {}
+      }, [key, value]);
 
-    let roomRef = null;
-    let statsRef = null;
-    let sessionTouchTimer = null;
-    let timerOwnerLoop = null;
-    let arrowLoop = null;
-    let introTimer = null;
+      return [value, setValue];
+    }
 
-    function makeId(prefix = "id") {
+    function makeId(prefix) {
       return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
     }
 
@@ -1055,1256 +1067,1340 @@
       return `linear-gradient(135deg, ${c[0]}, ${c[1]})`;
     }
 
-    function makeReferralCode(nick) {
-      const base = nickKey(nick) || "guest";
-      return `${base}-tonarena`;
-    }
-
     function randomAvatar(seed) {
       return `https://api.dicebear.com/9.x/identicon/svg?seed=${encodeURIComponent(seed || "guest")}`;
     }
 
-    function t(key) {
-      return LANGS[state.lang]?.[key] ?? LANGS.ru[key] ?? key;
-    }
-
-    function setState(patch) {
-      Object.assign(state, patch);
-      localStorage.setItem("tonarena_lang", state.lang);
-      localStorage.setItem("tonarena_mode", state.mode);
-      localStorage.setItem("tonarena_room", state.roomId);
-      if (state.nickname) localStorage.setItem("tonarena_nick", state.nickname);
-      render();
-    }
-
-    function activeOnlineCount() {
-      const now = Date.now();
-      return Object.values(state.sessionsObj || {})
-        .filter(s => now - Number(s.lastSeen || 0) < ACTIVE_SESSION_MS)
-        .length;
-    }
-
-    function playersArr() {
-      const arr = Object.values(state.playersObj || {});
-      arr.sort((a, b) => Number(a.joinedAt || 0) - Number(b.joinedAt || 0));
-      return arr;
-    }
-
-    function totalBank() {
-      return playersArr().reduce((sum, p) => sum + Number(p.amount || 0), 0);
-    }
-
-    function feeBase() {
-      const arr = playersArr();
-      if (!arr.length) return 0;
-      return Math.min(...arr.map(p => Number(p.amount || 0)));
-    }
-
-    function commissionAmount() {
-      return +(Math.min(totalBank(), feeBase() * FEE_RATE)).toFixed(2);
-    }
-
-    function payoutAmount() {
-      return +(totalBank() - commissionAmount()).toFixed(2);
-    }
-
-    function shares() {
-      const arr = playersArr();
-      const total = arr.reduce((s, p) => s + Number(p.amount || 0), 0);
-      if (!arr.length) return [];
-      if (total <= 0) return arr.map(p => ({ ...p, share: 1 / arr.length }));
-      return arr.map(p => ({ ...p, share: Number(p.amount || 0) / total }));
-    }
-
-    function findWinnerByX(xNorm) {
-      const arr = shares();
-      if (!arr.length) return null;
-      let acc = 0;
-      for (const p of arr) {
-        const next = acc + p.share;
-        if (xNorm >= acc && xNorm <= next) return p;
-        acc = next;
+    function hashString(str) {
+      let h = 2166136261 >>> 0;
+      const s = String(str || "");
+      for (let i = 0; i < s.length; i++) {
+        h ^= s.charCodeAt(i);
+        h = Math.imul(h, 16777619);
       }
-      return arr[arr.length - 1] || null;
+      return h >>> 0;
     }
 
-    function computeArenaStats() {
-      const arr = playersArr();
-      const total = arr.reduce((s, p) => s + Number(p.amount || 0), 0);
-      const max = arr.reduce((m, p) => Math.max(m, Number(p.amount || 0)), 0);
-      const top = arr.reduce((best, p) => Number(p.amount || 0) > Number(best?.amount || 0) ? p : best, null);
-      return { total, max, top };
-    }
-
-    function updateSessionTouch(extra = {}) {
-      const sessionRef = db.ref(`rooms/${state.roomId}/sessions/${sessionId}`);
-      return sessionRef.update({
-        sessionId,
-        roomId: state.roomId,
-        nickname: state.nickname || "",
-        mode: state.mode,
-        lastSeen: Date.now(),
-        updatedAt: Date.now(),
-        ...extra
-      });
-    }
-
-    function attachRoom(roomId) {
-      if (roomRef) roomRef.off();
-      if (statsRef) statsRef.off();
-
-      roomRef = db.ref(`rooms/${roomId}`);
-      statsRef = state.nickname ? db.ref(`stats/${nickKey(state.nickname)}`) : null;
-
-      roomRef.on("value", snap => {
-        const data = snap.val() || {};
-        const players = data.players || {};
-        const sessions = data.sessions || {};
-        const history = Array.isArray(data.arrowHistory)
-          ? data.arrowHistory
-          : data.arrowHistory && typeof data.arrowHistory === "object"
-            ? Object.values(data.arrowHistory)
-            : [];
-
-        state.playersObj = players;
-        state.sessionsObj = sessions;
-        state.room = {
-          status: data.status || "waiting",
-          timer: Number(data.timer ?? ROUND_SECONDS),
-          host: data.host || "",
-          timerOwner: data.timerOwner || "",
-          phaseText: data.phaseText || "waiting",
-          winner: data.winner || null,
-          lastGame: data.lastGame || null,
-          arrowHistory: history
-        };
-
-        render();
-      });
-
-      roomRef.child("sessions").on("value", snap => {
-        state.sessionsObj = snap.val() || {};
-        render();
-      });
-
-      if (state.nickname) {
-        statsRef = db.ref(`stats/${nickKey(state.nickname)}`);
-        statsRef.on("value", snap => {
-          state.stats = snap.val() || { betsCount: 0, wins: 0, totalBet: 0, refs: 0 };
-          render();
-        });
-      }
-
-      startHeartbeat();
-      render();
-    }
-
-    function startHeartbeat() {
-      if (sessionTouchTimer) clearInterval(sessionTouchTimer);
-      updateSessionTouch({ status: "active" }).catch(() => {});
-      sessionTouchTimer = setInterval(() => {
-        updateSessionTouch({ status: "active" }).catch(() => {});
-      }, 3000);
-    }
-
-    function stopTimerLoop() {
-      if (timerOwnerLoop) {
-        clearInterval(timerOwnerLoop);
-        timerOwnerLoop = null;
-      }
-    }
-
-    function maybeStartTimerLoop() {
-      stopTimerLoop();
-
-      if (state.room.status !== "betting") return;
-      if (state.room.timerOwner !== sessionId) return;
-
-      timerOwnerLoop = setInterval(async () => {
-        try {
-          const timerRef = db.ref(`rooms/${state.roomId}/timer`);
-          await timerRef.transaction(current => {
-            const next = Math.max(0, Number(current || ROUND_SECONDS) - 1);
-            return next;
-          }, async (err, committed, snap) => {
-            if (err || !committed || !snap) return;
-            const current = Number(snap.val() || 0);
-            if (current <= 0) {
-              stopTimerLoop();
-              await resolveRound();
-            }
-          });
-        } catch (e) {
-          console.error(e);
-        }
-      }, 1000);
-    }
-
-    function renderIntro() {
-      return `
-        <div class="intro-mask">
-          <div class="portal-sizes">
-            <div class="portal-wrap">
-              <div class="portal-ring"></div>
-              <div class="portal-core"></div>
-            </div>
-            <div style="margin-top:14px;text-align:center;">
-              <div style="font-size:13px;letter-spacing:.22em;text-transform:uppercase;font-weight:900;color:rgba(255,255,255,.68)">TON Arena</div>
-              <div style="margin-top:8px;font-size:14px;color:rgba(255,255,255,.80)">Launching arena...</div>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderGate() {
-      if (!state.gateOpen) return "";
-      return `
-        <div class="overlay">
-          <div class="modal">
-            <div class="space-between">
-              <div>
-                <div class="badge blue">${t("mode" + (state.mode === "test" ? "Test" : "Real"))}</div>
-                <div style="margin-top:14px;font-size:28px;font-weight:900;line-height:1.05">${t("enterNick")}</div>
-                <div style="margin-top:8px;font-size:13px;color:rgba(255,255,255,.70)">${t("testMode")}</div>
-              </div>
-              <div class="top-pill" style="width:52px;height:52px;justify-content:center;padding:0;border-radius:18px">
-                <span style="font-size:22px">⚡</span>
-              </div>
-            </div>
-
-            <div style="margin-top:18px" class="stack">
-              <input id="gateNick" class="input" value="${escapeHtml(state.nickname || "")}" placeholder="${t("nickHint")}" maxlength="18" />
-              <div class="row">
-                <input id="gateRoom" class="input" value="${escapeHtml(state.roomId)}" placeholder="${t("room")}" maxlength="20" />
-                <button data-action="open-room" class="btn-main" style="border-radius:18px;padding:14px 16px;font-weight:900;white-space:nowrap">${t("openRoom")}</button>
-              </div>
-
-              <div class="row">
-                <button data-action="gate-enter" class="btn-green" style="flex:1;border-radius:18px;padding:14px 16px;font-weight:900">${t("continue")}</button>
-                <button data-action="toggle-mode" class="btn-dark" style="border-radius:18px;padding:14px 16px;font-weight:900">
-                  ${state.mode === "test" ? t("modeTest") : t("modeReal")}
-                </button>
-              </div>
-
-              <div style="font-size:11px;line-height:1.7;color:rgba(255,255,255,.62)">
-                ${t("howItWorks")}<br>
-                ${t("testFlowText")}
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderSupport() {
-      if (!state.supportOpen) return "";
-      return `
-        <div class="support-mask">
-          <div class="support-sheet">
-            <div class="space-between">
-              <div>
-                <div class="badge warn">${t("supportTitle")}</div>
-                <div style="margin-top:14px;font-size:28px;font-weight:900">${t("supportSoon")}</div>
-              </div>
-              <button data-action="support-close" class="btn-dark" style="border-radius:14px;padding:10px 12px;font-weight:900">${t("back")}</button>
-            </div>
-            <div class="glass" style="margin-top:14px;border-radius:20px;padding:14px">
-              <div class="support-note">${t("supportText")}</div>
-            </div>
-            <div class="glass" style="margin-top:12px;border-radius:20px;padding:14px">
-              <div class="card-title">Note</div>
-              <div class="support-note" style="margin-top:8px">Здесь позже появится чат поддержки, FAQ и кнопка связи.</div>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderTopBar() {
-      const online = activeOnlineCount();
-      const nick = state.nickname || "guest";
-      return `
-        <div class="space-between" style="margin-bottom:14px">
-          <div class="chip">
-            <span style="width:10px;height:10px;border-radius:999px;background:#22c55e;box-shadow:0 0 12px rgba(34,197,94,.55)"></span>
-            <span style="font-weight:900">${t("online")}: ${online}</span>
-          </div>
-
-          <div style="text-align:center">
-            <div style="font-size:11px;letter-spacing:.22em;text-transform:uppercase;font-weight:900">TON ARENA</div>
-            <div style="margin-top:4px;font-size:11px;color:rgba(255,255,255,.62)">nickname test build</div>
-          </div>
-
-          <button class="chip" data-action="open-profile" title="${t("profileInfo")}">
-            <span style="font-weight:900">${shortNick(nick)}</span>
-          </button>
-        </div>
-      `;
-    }
-
-    function renderHero() {
-      const s = computeArenaStats();
-      return `
-        <div class="shell" style="padding:16px">
-          <div class="space-between" style="align-items:flex-start;gap:12px">
-            <div>
-              <div class="badge blue">${state.mode === "test" ? t("modeTest") : t("modeReal")}</div>
-              <div style="margin-top:14px;font-size:34px;line-height:1;font-weight:900">${t("appTitle")}</div>
-              <div style="margin-top:8px;font-size:13px;color:rgba(255,255,255,.90);max-width:260px">${t("subtitle")}</div>
-            </div>
-            <div style="width:66px;height:66px;border-radius:22px;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center">
-              <div style="width:32px;height:32px;border-radius:999px;background:rgba(255,255,255,.12)"></div>
-            </div>
-          </div>
-
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:16px">
-            <div class="mini-stat">
-              <div class="mini-label">${t("bank")}</div>
-              <div class="mini-value">${formatTON(s.total)} TON</div>
-              <div class="mini-hint">${t("feeNote")}</div>
-            </div>
-            <div class="mini-stat">
-              <div class="mini-label">${t("timer")}</div>
-              <div class="mini-value">${state.room.timer}s</div>
-              <div class="mini-hint">${state.room.phaseText || state.room.status}</div>
-            </div>
-            <div class="mini-stat">
-              <div class="mini-label">${t("players")}</div>
-              <div class="mini-value">${playersArr().length}</div>
-              <div class="mini-hint">${t("liveArena")}</div>
-            </div>
-          </div>
-
-          <div class="row" style="margin-top:14px">
-            <input id="roomInputTop" class="input" value="${escapeHtml(state.roomId)}" placeholder="${t("room")} / room_1" maxlength="20" />
-            <button data-action="open-room" class="btn-main" style="border-radius:18px;padding:14px 16px;font-weight:900;white-space:nowrap">${t("openRoom")}</button>
-          </div>
-
-          <div class="space-between" style="margin-top:12px">
-            <div style="font-size:11px;color:rgba(255,255,255,.62);line-height:1.6">
-              ${t("testMode")}<br>
-              ${t("roomId")}: ${escapeHtml(state.roomId)}
-            </div>
-            <div class="badge good">${state.room.status === "waiting" ? t("roomStatusReady") : state.room.status === "finished" ? t("roomStatusFinished") : t("roomStatusLive")}</div>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderIdentityCard() {
-      return `
-        <div class="glass" style="border-radius:28px;padding:16px;margin-top:14px">
-          <div class="space-between">
-            <div>
-              <div class="section-title">${t("profileInfo")}</div>
-              <div style="margin-top:6px;font-size:22px;font-weight:900">${escapeHtml(state.nickname || "Guest")}</div>
-            </div>
-            <div class="badge blue">${shortNick(state.nickname || "guest")}</div>
-          </div>
-
-          <div style="margin-top:14px" class="row">
-            <input id="nickInputCard" class="input" value="${escapeHtml(state.nickname || "")}" placeholder="${t("nickHint")}" maxlength="18" />
-            <button data-action="save-nick" class="btn-main" style="border-radius:18px;padding:14px 16px;font-weight:900;white-space:nowrap">${t("continue")}</button>
-          </div>
-
-          <div style="margin-top:12px" class="row">
-            <input id="betInputCard" class="input" type="number" min="0.1" step="0.1" value="${escapeHtml(String(state.betAmount || 1))}" />
-            <button data-action="join-bet" class="btn-green" style="border-radius:18px;padding:14px 16px;font-weight:900;white-space:nowrap">${t("join")}</button>
-          </div>
-
-          <div class="row" style="margin-top:12px">
-            <div class="glass" style="flex:1;border-radius:18px;padding:12px 14px">
-              <div class="card-title">${t("roomId")}</div>
-              <div style="margin-top:6px;font-size:18px;font-weight:900">${escapeHtml(state.roomId)}</div>
-            </div>
-            <div class="glass" style="flex:1;border-radius:18px;padding:12px 14px">
-              <div class="card-title">TEST</div>
-              <div style="margin-top:6px;font-size:18px;font-weight:900">Same phone</div>
-            </div>
-          </div>
-
-          <div style="margin-top:12px" class="row">
-            <button data-action="quick-demo" class="btn-dark" style="flex:1;border-radius:18px;padding:14px 16px;font-weight:900">${t("demoPlayer")}</button>
-            <button data-action="toggle-mode" class="btn-dark" style="border-radius:18px;padding:14px 16px;font-weight:900">${state.mode === "test" ? t("modeTest") : t("modeReal")}</button>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderGameControls() {
-      return `
-        <div class="glass" style="border-radius:28px;padding:16px;margin-top:14px">
-          <div class="space-between">
-            <div>
-              <div class="section-title">${t("arenaTitle")}</div>
-              <div style="margin-top:6px;font-size:18px;font-weight:900">${t("room")} ${escapeHtml(state.roomId)}</div>
-            </div>
-            <div class="badge ${state.room.status === 'spinning' ? 'warn' : state.room.status === 'finished' ? 'good' : 'blue'}">
-              ${state.room.status}
-            </div>
-          </div>
-
-          <div style="margin-top:14px" class="row">
-            <button data-action="start-round" class="btn-green" style="flex:1;border-radius:18px;padding:14px 16px;font-weight:900">${t("start")}</button>
-            <button data-action="reset-room" class="btn-danger" style="flex:1;border-radius:18px;padding:14px 16px;font-weight:900">${t("reset")}</button>
-          </div>
-
-          <div style="margin-top:12px;font-size:11px;color:rgba(255,255,255,.58);line-height:1.6">
-            ${t("howItWorks")}<br>
-            ${t("howText")}
-          </div>
-        </div>
-      `;
-    }
-
-    function renderArena() {
-      const arr = playersArr();
-      const sh = shares();
-      const winner = state.room.winner;
-      const winnerPlayer = winner ? arr.find(p => p.nicknameKey === winner.nicknameKey) : null;
-      const s = computeArenaStats();
-
-      let zonesHtml = "";
-      let left = 0;
-      sh.forEach((p, idx) => {
-        const width = Math.max(0.05, p.share) * 100;
-        const highlight = winnerPlayer && winnerPlayer.nicknameKey === p.nicknameKey;
-        zonesHtml += `
-          <div class="player-zone" style="
-            left:${left}%;
-            width:${width}%;
-            background:${p.color || seededColor(p.nicknameKey || p.nickname || String(idx))};
-            box-shadow:${highlight ? "inset 0 0 0 2px rgba(255,255,255,.22), inset 0 0 30px rgba(255,255,255,.08)" : "none"};
-          ">
-            <div class="zone-label">
-              <div class="avatar-ring">
-                <div class="avatar">
-                  <img src="${p.avatar || randomAvatar(p.nicknameKey || p.nickname || String(idx))}" alt="">
-                </div>
-              </div>
-              <div class="zone-title">${escapeHtml(shortNick(p.nickname || p.nicknameKey || "player"))}</div>
-              <div class="zone-sub">
-                ${formatTON(p.amount)} TON · ${Math.max(1, Math.round((Number(p.share || 0) * 100)))}%
-              </div>
-            </div>
-          </div>
-        `;
-        left += width;
-      });
-
-      const arrowHtml = state.arrow.active ? `
-        <div class="arrow-wrap">
-          <div style="position:absolute;left:${state.arrow.x}px;top:${state.arrow.y}px;transform:translate(-50%, -50%) rotate(${state.arrow.angle}deg);transition:none;">
-            <div class="arrow-core">
-              <div class="arrow-head"></div>
-            </div>
-          </div>
-        </div>
-      ` : "";
-
-      return `
-        <div class="glass" style="border-radius:28px;padding:16px;margin-top:14px">
-          <div class="space-between" style="margin-bottom:12px">
-            <div>
-              <div class="section-title">${t("room")}</div>
-              <div style="margin-top:6px;font-size:18px;font-weight:900">${escapeHtml(state.roomId)}</div>
-            </div>
-            <div class="badge ${state.room.status === 'spinning' ? 'warn' : state.room.status === 'finished' ? 'good' : 'blue'}">
-              ${state.room.status}
-            </div>
-          </div>
-
-          <div class="arena-shell" id="arenaShell">
-            <div class="arena-inner">
-              ${zonesHtml || `
-                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
-                  <div style="text-align:center">
-                    <div style="font-size:18px;font-weight:900">${t("noPlayers")}</div>
-                    <div style="margin-top:6px;font-size:13px;color:rgba(255,255,255,.60)">${t("room")}: ${escapeHtml(state.roomId)}</div>
-                  </div>
-                </div>
-              `}
-
-              <div class="pointer-line">${t("commission")}: 10%</div>
-
-              ${arrowHtml}
-
-              <div class="center-core">
-                <div class="title">${t("arenaTitle")}</div>
-                <div class="value">${arr.length}</div>
-                <div class="sub">${arr.length === 1 ? "player in room" : "players in room"}<br>${state.room.phaseText || state.room.status}</div>
-              </div>
-            </div>
-          </div>
-
-          <div style="margin-top:12px" class="row">
-            <div class="mini-stat">
-              <div class="mini-label">${t("bank")}</div>
-              <div class="mini-value">${formatTON(s.total)} TON</div>
-              <div class="mini-hint">${t("payout")}: ${formatTON(payoutAmount())} TON</div>
-            </div>
-            <div class="mini-stat">
-              <div class="mini-label">${t("timer")}</div>
-              <div class="mini-value">${state.room.timer}s</div>
-              <div class="mini-hint">${state.room.status === 'finished' ? t("roundFinished") : state.room.phaseText || state.room.status}</div>
-            </div>
-            <div class="mini-stat">
-              <div class="mini-label">${t("winner")}</div>
-              <div class="mini-value">${winnerPlayer ? shortNick(winnerPlayer.nickname) : "—"}</div>
-              <div class="mini-hint">${winnerPlayer ? `${formatTON(winnerPlayer.amount)} TON` : t("noLast")}</div>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderPlayers() {
-      const arr = playersArr();
-      const winner = state.room.winner;
-      return `
-        <div class="glass" style="border-radius:28px;padding:16px;margin-top:14px">
-          <div class="space-between">
-            <div>
-              <div class="section-title">${t("players")}</div>
-              <div style="margin-top:6px;font-size:18px;font-weight:900">${arr.length}</div>
-            </div>
-            <div class="chip">
-              <span class="muted" style="font-size:11px">${t("online")}</span>
-              <span style="font-weight:900">${activeOnlineCount()}</span>
-            </div>
-          </div>
-
-          <div style="margin-top:14px;max-height:250px;overflow:auto;padding-right:4px" class="thin-scroll">
-            ${arr.length ? arr.map(p => `
-              <div class="list-item">
-                <div class="row" style="min-width:0;flex:1">
-                  <div class="small-icon" style="background:${p.color || seededColor(p.nicknameKey || p.nickname)}">
-                    <img src="${p.avatar || randomAvatar(p.nicknameKey || p.nickname)}" alt="">
-                  </div>
-                  <div style="min-width:0">
-                    <div style="font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
-                      ${escapeHtml(p.nickname)}
-                      ${winner && winner.nicknameKey === p.nicknameKey ? `<span style="margin-left:6px;font-size:10px;color:#34d399;text-transform:uppercase;letter-spacing:.18em;font-weight:900">winner</span>` : ""}
-                    </div>
-                    <div style="font-size:11px;color:rgba(255,255,255,.58);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
-                      ${t("playerZone")} · ${Math.max(1, Math.round(Number(p.share || 0) * 100))}%
-                    </div>
-                  </div>
-                </div>
-                <div style="text-align:right;flex:0 0 auto">
-                  <div style="font-weight:900;color:#93c5fd">${formatTON(p.amount)} TON</div>
-                  <div style="font-size:10px;color:rgba(255,255,255,.55)">
-                    ${p.joinedAt ? new Date(p.joinedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""}
-                  </div>
-                </div>
-              </div>
-            `).join("") : `<div class="empty-box">${t("noPlayers")}</div>`}
-          </div>
-        </div>
-      `;
-    }
-
-    function renderLastGame() {
-      const g = state.room.lastGame;
-      return `
-        <div class="glass" style="border-radius:28px;padding:16px;margin-top:14px">
-          <div class="space-between">
-            <div>
-              <div class="section-title">${t("lastGame")}</div>
-              <div style="margin-top:6px;font-size:18px;font-weight:900">${t("history")}</div>
-            </div>
-            <div class="muted" style="font-size:11px">Firebase RTDB</div>
-          </div>
-
-          <div style="margin-top:14px" class="glass">
-            <div style="border-radius:20px;padding:14px;background:rgba(0,0,0,.24);border:1px solid rgba(255,255,255,.10)">
-              ${g ? `
-                <div class="space-between" style="gap:10px">
-                  <div style="min-width:0">
-                    <div style="font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(g.winnerName || "—")}</div>
-                    <div style="font-size:11px;color:rgba(255,255,255,.58);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(g.winnerKey || "")}</div>
-                  </div>
-                  <div style="font-weight:900;color:#93c5fd;flex:0 0 auto">${formatTON(g.payout || 0)} TON</div>
-                </div>
-                <div style="margin-top:8px;font-size:11px;color:rgba(255,255,255,.58)">
-                  Room: ${escapeHtml(g.roomId || state.roomId)} · ${g.at ? new Date(g.at).toLocaleString() : ""}
-                </div>
-                <div style="margin-top:6px;font-size:11px;color:rgba(255,255,255,.58)">
-                  ${t("feeNote")}: ${formatTON(g.fee || 0)} TON
-                </div>
-              ` : `<div style="font-size:13px;color:rgba(255,255,255,.60)">${t("noLast")}</div>`}
-            </div>
-          </div>
-
-          <div style="margin-top:12px">
-            <div class="section-title">${t("history")}</div>
-            <div style="margin-top:10px;max-height:160px;overflow:auto;padding-right:4px" class="thin-scroll">
-              ${(state.room.arrowHistory || []).slice().reverse().map((h, idx) => `
-                <div class="list-item" style="padding:10px 0" key="${idx}">
-                  <div style="min-width:0">
-                    <div style="font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(h.winnerName || "—")}</div>
-                    <div style="font-size:11px;color:rgba(255,255,255,.58);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(h.roomId || state.roomId)}</div>
-                  </div>
-                  <div style="text-align:right;flex:0 0 auto">
-                    <div style="font-weight:900;color:#93c5fd">${formatTON(h.payout || 0)} TON</div>
-                    <div style="font-size:10px;color:rgba(255,255,255,.55)">${h.at ? new Date(h.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""}</div>
-                  </div>
-                </div>
-              `).join("")}
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderGamesTab() {
-      return `
-        ${renderHero()}
-        ${renderIdentityCard()}
-        ${renderGameControls()}
-        ${renderArena()}
-        ${renderPlayers()}
-        ${renderLastGame()}
-      `;
-    }
-
-    function renderRefsTab() {
-      const link = `${location.origin}${location.pathname}?ref=${encodeURIComponent(makeReferralCode(state.nickname || "friend"))}`;
-      return `
-        <div class="glass" style="border-radius:28px;padding:16px;margin-top:14px">
-          <div class="space-between">
-            <div>
-              <div class="badge blue">Referrals</div>
-              <div style="margin-top:12px;font-size:26px;font-weight:900">${t("referralTitle")}</div>
-            </div>
-            <div style="width:52px;height:52px;border-radius:18px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.10);display:flex;align-items:center;justify-content:center">
-              <span style="font-size:20px">↗</span>
-            </div>
-          </div>
-
-          <div style="margin-top:14px;font-size:13px;line-height:1.7;color:rgba(255,255,255,.72)">
-            ${t("referralDesc")}
-          </div>
-
-          <div style="margin-top:14px" class="stack">
-            <div class="glass" style="border-radius:20px;padding:14px">
-              <div class="card-title">${t("referralLink")}</div>
-              <div style="margin-top:8px;word-break:break-all;font-size:13px;font-weight:900">${escapeHtml(link)}</div>
-              <button data-action="copy-ref" class="btn-main" style="margin-top:12px;width:100%;border-radius:18px;padding:14px 16px;font-weight:900">
-                ${state.copied ? t("copied") : t("copy")}
-              </button>
-            </div>
-
-            <div class="glass" style="border-radius:20px;padding:14px">
-              <div class="card-title">${t("howItWorks")}</div>
-              <div style="margin-top:8px;font-size:13px;line-height:1.7;color:rgba(255,255,255,.72)">
-                1) Игрок переходит по ссылке.<br>
-                2) Вводит ник и входит в комнату.<br>
-                3) Делает ставку.<br>
-                4) Ты получаешь реферальный бонус по правилам системы.
-              </div>
-            </div>
-
-            <div class="glass" style="border-radius:20px;padding:14px">
-              <div class="card-title">${t("commission")}</div>
-              <div style="margin-top:8px;font-size:13px;line-height:1.7;color:rgba(255,255,255,.72)">
-                Платформа удерживает 10% от минимальной ставки в комнате. Это сделано так, чтобы победитель не уходил в минус из-за комиссии.
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderProfileTab() {
-      return `
-        <div class="glass" style="border-radius:28px;padding:16px;margin-top:14px">
-          <div class="space-between">
-            <div>
-              <div class="badge blue">${t("profileInfo")}</div>
-              <div style="margin-top:12px;font-size:26px;font-weight:900">${escapeHtml(state.nickname || "Guest")}</div>
-              <div style="margin-top:4px;font-size:13px;color:rgba(255,255,255,.64)">${t("testMode")}</div>
-            </div>
-            <div class="small-icon" style="width:56px;height:56px;border-radius:20px;background:${seededColor(nickKey(state.nickname || 'guest'))}">
-              <img src="${randomAvatar(nickKey(state.nickname || "guest"))}" alt="">
-            </div>
-          </div>
-
-          <div style="margin-top:14px" class="toggle">
-            <button data-action="lang-ru" class="${state.lang === "ru" ? "active" : ""}">Русский</button>
-            <button data-action="lang-en" class="${state.lang === "en" ? "active" : ""}">English</button>
-          </div>
-
-          <div style="margin-top:14px" class="toggle">
-            <button data-action="mode-test" class="${state.mode === "test" ? "active" : ""}">${t("modeTest")}</button>
-            <button data-action="mode-real" class="${state.mode === "real" ? "active" : ""}">${t("modeReal")}</button>
-          </div>
-
-          <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
-            <div class="mini-stat">
-              <div class="mini-label">${t("betsCount")}</div>
-              <div class="mini-value">${Number(state.stats.betsCount || 0)}</div>
-              <div class="mini-hint">${t("stats")}</div>
-            </div>
-            <div class="mini-stat">
-              <div class="mini-label">${t("wins")}</div>
-              <div class="mini-value">${Number(state.stats.wins || 0)}</div>
-              <div class="mini-hint">${t("stats")}</div>
-            </div>
-            <div class="mini-stat">
-              <div class="mini-label">${t("totalBet")}</div>
-              <div class="mini-value">${formatTON(state.stats.totalBet || 0)} TON</div>
-              <div class="mini-hint">${t("stats")}</div>
-            </div>
-            <div class="mini-stat">
-              <div class="mini-label">${t("rooms")}</div>
-              <div class="mini-value">1</div>
-              <div class="mini-hint">${escapeHtml(state.roomId)}</div>
-            </div>
-          </div>
-
-          <div style="margin-top:14px" class="stack">
-            <button data-action="support-open" class="btn-dark" style="border-radius:18px;padding:14px 16px;font-weight:900">${t("support")}</button>
-            <button data-action="change-nick" class="btn-dark" style="border-radius:18px;padding:14px 16px;font-weight:900">${t("changeNick")}</button>
-          </div>
-
-          <div style="margin-top:14px;font-size:11px;color:rgba(255,255,255,.60);line-height:1.7">
-            Nickname: ${escapeHtml(state.nickname || "—")}<br>
-            Room: ${escapeHtml(state.roomId)}<br>
-            Referral code: ${escapeHtml(makeReferralCode(state.nickname || "guest"))}
-          </div>
-        </div>
-      `;
-    }
-
-    function renderBottomNav() {
-      navAnchor.innerHTML = `
-        <div class="nav-inner">
-          <button class="nav-btn ${state.tab === "games" ? "active" : ""}" data-action="tab-games">
-            <span class="nav-ic"></span>
-            <span>${t("games")}</span>
-          </button>
-          <button class="nav-btn ${state.tab === "refs" ? "active" : ""}" data-action="tab-refs">
-            <span class="nav-ic"></span>
-            <span>${t("refs")}</span>
-          </button>
-          <button class="nav-btn ${state.tab === "profile" ? "active" : ""}" data-action="tab-profile">
-            <span class="nav-ic"></span>
-            <span>${t("profile")}</span>
-          </button>
-        </div>
-      `;
-    }
-
-    function render() {
-      const content =
-        `
-        ${state.intro ? renderIntro() : ""}
-        ${renderGate()}
-        ${renderSupport()}
-        <div class="app">
-          ${renderTopBar()}
-
-          ${state.tab === "games" ? renderGamesTab() : ""}
-          ${state.tab === "refs" ? renderRefsTab() : ""}
-          ${state.tab === "profile" ? renderProfileTab() : ""}
-
-          ${state.notice ? `<div style="margin-top:14px;text-align:center;font-size:11px;color:rgba(255,255,255,.60)">${escapeHtml(state.notice)}</div>` : ""}
-        </div>
-      `;
-
-      root.innerHTML = content;
-      renderBottomNav();
-
-      // wire inputs
-      const gateNick = document.getElementById("gateNick");
-      if (gateNick) gateNick.addEventListener("input", e => setState({ nickname: safeNick(e.target.value) }));
-      const gateRoom = document.getElementById("gateRoom");
-      if (gateRoom) gateRoom.addEventListener("input", e => setState({ roomId: safeNick(e.target.value) || ROOM_DEFAULT }));
-      const roomInputTop = document.getElementById("roomInputTop");
-      if (roomInputTop) roomInputTop.addEventListener("input", e => setState({ roomId: safeNick(e.target.value) || ROOM_DEFAULT }));
-      const nickInputCard = document.getElementById("nickInputCard");
-      if (nickInputCard) nickInputCard.addEventListener("input", e => setState({ nickname: safeNick(e.target.value) }));
-      const betInputCard = document.getElementById("betInputCard");
-      if (betInputCard) betInputCard.addEventListener("input", e => setState({ betAmount: Number(e.target.value) || 0 }));
-
-      maybeStartTimerLoop();
-    }
-
-    function escapeHtml(s) {
-      return String(s ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#39;");
-    }
-
-    async function saveNickname() {
-      const clean = safeNick(state.nickname);
-      if (clean.length < 2) {
-        alert(state.lang === "ru" ? "Ник слишком короткий" : "Nickname is too short");
-        return;
-      }
-      state.nickname = clean;
-      localStorage.setItem("tonarena_nick", clean);
-      state.gateOpen = false;
-      state.notice = state.lang === "ru" ? "Ник сохранён" : "Nickname saved";
-      render();
-      await updateSessionTouch({ nickname: clean });
-      if (statsRef) statsRef.off();
-      statsRef = db.ref(`stats/${nickKey(clean)}`);
-      statsRef.on("value", snap => {
-        state.stats = snap.val() || { betsCount: 0, wins: 0, totalBet: 0, refs: 0 };
-        render();
-      });
-      attachRoom(state.roomId);
-    }
-
-    async function openRoom() {
-      const el = document.getElementById("gateRoom") || document.getElementById("roomInputTop");
-      const next = safeNick(el ? el.value : state.roomId) || ROOM_DEFAULT;
-      state.roomId = next;
-      localStorage.setItem("tonarena_room", next);
-      state.notice = `${t("room")}: ${next}`;
-      attachRoom(next);
-      await updateSessionTouch({ roomId: next });
-    }
-
-    async function joinOrUpdateBet() {
-      const nick = safeNick(state.nickname);
-      if (!nick) {
-        alert(state.lang === "ru" ? "Сначала введи ник" : "Enter nickname first");
-        return;
-      }
-
-      const amount = Number(state.betAmount);
-      if (!amount || amount <= 0) {
-        alert(state.lang === "ru" ? "Ставка должна быть больше 0" : "Bet must be greater than 0");
-        return;
-      }
-
-      const key = nickKey(nick);
-      const playerRef = db.ref(`rooms/${state.roomId}/players/${key}`);
-      const existingSnap = await playerRef.once("value");
-      const existing = existingSnap.val();
-
-      const payload = {
-        id: key,
-        nickname: nick,
-        nicknameKey: key,
-        amount,
-        color: existing?.color || seededColor(key + state.roomId),
-        avatar: existing?.avatar || randomAvatar(key),
-        joinedAt: existing?.joinedAt || Date.now(),
-        updatedAt: Date.now(),
-        lastSeen: Date.now(),
-        mode: state.mode,
-        sessionId
+    function mulberry32(seed) {
+      return function() {
+        let t = seed += 0x6D2B79F5;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
       };
-
-      await playerRef.set(payload);
-      await updateSessionTouch({ nickname: nick, status: "joined" });
-
-      const sref = db.ref(`stats/${key}`);
-      await sref.transaction(cur => {
-        const d = cur || { betsCount: 0, wins: 0, totalBet: 0, refs: 0 };
-        d.betsCount = Number(d.betsCount || 0) + 1;
-        d.totalBet = +(Number(d.totalBet || 0) + amount).toFixed(2);
-        d.lastBetAt = Date.now();
-        return d;
-      });
-
-      const roomSnap = await db.ref(`rooms/${state.roomId}`).once("value");
-      const roomData = roomSnap.val() || {};
-      const count = Object.keys(roomData.players || {}).length + (existing ? 0 : 1);
-
-      if ((roomData.status || "waiting") === "waiting" && count >= 2) {
-        await db.ref(`rooms/${state.roomId}`).update({
-          status: "betting",
-          timer: ROUND_SECONDS,
-          phaseText: "betting",
-          host: roomData.host || key,
-          timerOwner: sessionId
-        });
-      } else if ((roomData.status || "waiting") === "betting" && !roomData.timerOwner) {
-        await db.ref(`rooms/${state.roomId}/timerOwner`).set(sessionId);
-      }
-
-      state.notice = state.lang === "ru" ? "Ставка добавлена" : "Bet updated";
-      render();
     }
 
-    async function startRound() {
-      const nick = safeNick(state.nickname);
-      if (!nick) {
-        alert(state.lang === "ru" ? "Сначала введи ник" : "Enter nickname first");
-        return;
+    function seededShuffle(arr, seedText) {
+      const rng = mulberry32(hashString(seedText));
+      const out = arr.slice();
+      for (let i = out.length - 1; i > 0; i--) {
+        const j = Math.floor(rng() * (i + 1));
+        [out[i], out[j]] = [out[j], out[i]];
       }
-
-      const arr = playersArr();
-      if (arr.length < 2) {
-        alert(state.lang === "ru" ? "Нужно минимум 2 игрока" : "Need at least 2 players");
-        return;
-      }
-
-      const key = nickKey(nick);
-      await db.ref(`rooms/${state.roomId}`).update({
-        status: "betting",
-        timer: ROUND_SECONDS,
-        host: key,
-        winner: null,
-        phaseText: "betting",
-        startedAt: Date.now(),
-        timerOwner: sessionId
-      });
-
-      state.notice = state.lang === "ru" ? "Раунд запущен" : "Round started";
-      render();
+      return out;
     }
 
-    async function resetRoom() {
-      const key = nickKey(state.nickname || "host");
-      await db.ref(`rooms/${state.roomId}`).set({
+    function sumAmount(list) {
+      return list.reduce((s, p) => s + Number(p.amount || 0), 0);
+    }
+
+    function resolveUniqueNickname(baseNick, players) {
+      const clean = safeNick(baseNick) || "Player";
+      const taken = new Set(players.map(p => String(p.nickname || "").toLowerCase()));
+      if (!taken.has(clean.toLowerCase())) return clean;
+      let i = 2;
+      while (taken.has((clean + i).toLowerCase())) i++;
+      return clean + i;
+    }
+
+    function computeCommission(players) {
+      const arr = players || [];
+      if (!arr.length) return 0;
+      const minBet = Math.min(...arr.map(p => Number(p.amount || 0)).filter(n => isFinite(n) && n > 0));
+      if (!isFinite(minBet) || minBet <= 0) return 0;
+      return +(minBet * FEE_RATE).toFixed(2);
+    }
+
+    function payoutAmount(players) {
+      return +(sumAmount(players) - computeCommission(players)).toFixed(2);
+    }
+
+    function computeShares(players) {
+      const total = sumAmount(players);
+      if (!players.length) return [];
+      if (total <= 0) return players.map(p => ({ ...p, share: 1 / players.length }));
+      return players.map(p => ({ ...p, share: Number(p.amount || 0) / total }));
+    }
+
+    function layoutTreemap(items, seedText, x = 0, y = 0, w = 100, hgt = 100, depth = 0) {
+      const items2 = items.filter(Boolean);
+      if (!items2.length) return [];
+      if (items2.length === 1) {
+        const item = items2[0];
+        return [{ ...item, x, y, w, h: hgt }];
+      }
+
+      const total = sumAmount(items2) || items2.length;
+      const rng = mulberry32(hashString(seedText + ":" + depth + ":" + items2.length));
+      const horizontal = (w >= hgt) ? (rng() > 0.34) : (rng() > 0.66);
+
+      let acc = 0;
+      let split = 1;
+      const target = total / 2;
+      for (let i = 0; i < items2.length - 1; i++) {
+        acc += Number(items2[i].amount || 0) || 1;
+        if (acc >= target) {
+          split = i + 1;
+          break;
+        }
+      }
+      split = Math.max(1, Math.min(items2.length - 1, split));
+
+      const a = items2.slice(0, split);
+      const b = items2.slice(split);
+
+      const aWeight = sumAmount(a) || a.length;
+      const ratio = aWeight / total;
+
+      if (horizontal) {
+        const h1 = hgt * ratio;
+        return [
+          ...layoutTreemap(a, seedText + "L", x, y, w, h1, depth + 1),
+          ...layoutTreemap(b, seedText + "R", x, y + h1, w, hgt - h1, depth + 1),
+        ];
+      } else {
+        const w1 = w * ratio;
+        return [
+          ...layoutTreemap(a, seedText + "L", x, y, w1, hgt, depth + 1),
+          ...layoutTreemap(b, seedText + "R", x + w1, y, w - w1, hgt, depth + 1),
+        ];
+      }
+    }
+
+    function pointInRect(px, py, r) {
+      return px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h;
+    }
+
+    function findBlockAt(blocks, x, y) {
+      const inside = blocks.find(b => pointInRect(x, y, b));
+      if (inside) return inside;
+      if (!blocks.length) return null;
+      let best = blocks[0];
+      let bestD = Infinity;
+      blocks.forEach(b => {
+        const cx = b.x + b.w / 2;
+        const cy = b.y + b.h / 2;
+        const d = ((cx - x) ** 2) + ((cy - y) ** 2);
+        if (d < bestD) {
+          bestD = d;
+          best = b;
+        }
+      });
+      return best;
+    }
+
+    function activeOnlineCount(presence) {
+      const now = Date.now();
+      return Object.values(presence || {}).filter(s => now - Number(s.lastSeen || 0) < ACTIVE_MS).length;
+    }
+
+    function App() {
+      const [lang, setLang] = usePersistedState("tonarena_lang", "ru");
+      const [mode, setMode] = usePersistedState("tonarena_mode", "test");
+      const [roomId, setRoomId] = usePersistedState("tonarena_room", ROOM_DEFAULT);
+      const [nickname, setNickname] = usePersistedState("tonarena_nick", "");
+      const [presets, setPresets] = usePersistedState("tonarena_presets", { one: 1, five: 5, ten: 10 });
+
+      const sessionIdRef = useRef(localStorage.getItem("tonarena_session_id") || makeId("sess"));
+      const roomRef = useRef(null);
+      const statsRef = useRef(null);
+      const presenceRef = useRef(null);
+      const heartbeatRef = useRef(null);
+      const timerRef = useRef(null);
+      const physicsRef = useRef(null);
+      const introRef = useRef(null);
+      const ballStateRef = useRef(null);
+      const blocksRef = useRef([]);
+
+      localStorage.setItem("tonarena_session_id", sessionIdRef.current);
+
+      const [tab, setTab] = useState("games");
+      const [gateOpen, setGateOpen] = useState(!nickname);
+      const [supportOpen, setSupportOpen] = useState(false);
+      const [historyOpen, setHistoryOpen] = useState(false);
+      const [editPresetsOpen, setEditPresetsOpen] = useState(false);
+      const [introOpen, setIntroOpen] = useState(true);
+      const [notice, setNotice] = useState("");
+      const [presence, setPresence] = useState({});
+      const [playersObj, setPlayersObj] = useState({});
+      const [room, setRoom] = useState({
         status: "waiting",
         timer: ROUND_SECONDS,
-        host: key,
-        timerOwner: sessionId,
+        host: "",
+        timerOwner: "",
+        phaseText: "waiting",
         winner: null,
         lastGame: null,
-        startedAt: null,
-        phaseText: "waiting",
-        arrowHistory: [],
-        players: state.playersObj || {},
-        sessions: state.sessionsObj || {}
+        arrowHistory: []
       });
-      state.notice = state.lang === "ru" ? "Комната сброшена" : "Room reset";
-      render();
-    }
+      const [stats, setStats] = useState({
+        betsCount: 0,
+        wins: 0,
+        totalBet: 0,
+        refs: 0
+      });
+      const [betAmount, setBetAmount] = useState(1);
+      const [ball, setBall] = useState({
+        active: false,
+        x: 50,
+        y: 50,
+        vx: 0,
+        vy: 0,
+        zoom: false,
+        angle: 0
+      });
 
-    async function resolveRound() {
-      const snap = await db.ref(`rooms/${state.roomId}`).once("value");
-      const data = snap.val() || {};
-      const arr = Object.values(data.players || {}).sort((a, b) => Number(a.joinedAt || 0) - Number(b.joinedAt || 0));
+      const activePlayers = useMemo(() => {
+        return Object.values(playersObj || {}).sort((a, b) => Number(a.joinedAt || 0) - Number(b.joinedAt || 0));
+      }, [playersObj]);
 
-      if (arr.length < 2) {
-        await db.ref(`rooms/${state.roomId}`).update({
-          status: "waiting",
-          timer: ROUND_SECONDS,
-          phaseText: "waiting",
-          winner: null
-        });
-        return;
-      }
+      const livePlayers = useMemo(() => activePlayers, [activePlayers]);
+      const onlineCount = useMemo(() => activeOnlineCount(presence), [presence]);
+      const totalBank = useMemo(() => sumAmount(livePlayers), [livePlayers]);
+      const commission = useMemo(() => computeCommission(livePlayers), [livePlayers]);
+      const payout = useMemo(() => payoutAmount(livePlayers), [livePlayers]);
+      const shares = useMemo(() => computeShares(livePlayers), [livePlayers]);
 
-      const shell = document.getElementById("arenaShell");
-      const board = shell ? shell.getBoundingClientRect() : { width: 320, height: 320 };
-      const size = Math.max(260, Math.min(board.width || 320, 380));
-      const margin = 18;
-      const usable = size - margin * 2;
+      const arenaBlocks = useMemo(() => {
+        const items = livePlayers.map((p, idx) => ({
+          ...p,
+          share: Number(p.amount || 0) / Math.max(1, totalBank),
+          color: p.color || seededColor(p.nicknameKey || p.nickname || idx),
+        }));
+        if (!items.length) return [];
+        const shuffled = seededShuffle(items, `${roomId}:${room.startedAt || "seed"}:${items.length}`);
+        const blocks = layoutTreemap(shuffled, `${roomId}:${room.startedAt || "seed"}`);
+        return blocks.map(b => ({
+          ...b,
+          x: Math.max(0, b.x),
+          y: Math.max(0, b.y),
+          w: Math.max(1, b.w),
+          h: Math.max(1, b.h),
+        }));
+      }, [livePlayers, roomId, room.startedAt, totalBank]);
 
-      let x = margin + Math.random() * usable;
-      let y = margin + Math.random() * usable;
-      let vx = (Math.random() * 6 + 5) * (Math.random() < 0.5 ? -1 : 1);
-      let vy = (Math.random() * 5 + 4) * (Math.random() < 0.5 ? -1 : 1);
-      let angle = Math.random() * 360;
+      const winnerPlayer = useMemo(() => {
+        if (!room.winner) return null;
+        return livePlayers.find(p => p.nicknameKey === room.winner.nicknameKey) || null;
+      }, [room.winner, livePlayers]);
 
-      state.arrow = { active: true, x, y, vx, vy, angle };
-      state.room.status = "spinning";
-      state.room.phaseText = "spinning";
-      render();
+      useEffect(() => {
+        const t = setTimeout(() => setIntroOpen(false), INTRO_MS);
+        introRef.current = t;
+        return () => clearTimeout(t);
+      }, []);
 
-      let start = performance.now();
-      const duration = 10000 + Math.random() * 1300;
-      const drag = 0.997;
-      const bounce = 0.93;
-      const gravity = 0.01;
+      useEffect(() => {
+        if (!nickname) {
+          setGateOpen(true);
+          return;
+        }
+        setGateOpen(false);
+      }, [nickname]);
 
-      if (arrowLoop) cancelAnimationFrame(arrowLoop);
+      useEffect(() => {
+        firebase.auth().signInAnonymously().catch(() => {});
+      }, []);
 
-      const step = (now) => {
-        const elapsed = now - start;
+      useEffect(() => {
+        if (roomRef.current) roomRef.current.off();
+        roomRef.current = db.ref(`rooms/${roomId}`);
+        const onValue = snap => {
+          const data = snap.val() || {};
+          const players = data.players || {};
+          const history = Array.isArray(data.arrowHistory)
+            ? data.arrowHistory
+            : data.arrowHistory && typeof data.arrowHistory === "object"
+              ? Object.values(data.arrowHistory)
+              : [];
+          setPlayersObj(players);
+          setRoom({
+            status: data.status || "waiting",
+            timer: Number(data.timer ?? ROUND_SECONDS),
+            host: data.host || "",
+            timerOwner: data.timerOwner || "",
+            phaseText: data.phaseText || "waiting",
+            winner: data.winner || null,
+            lastGame: data.lastGame || null,
+            startedAt: data.startedAt || null,
+            arrowHistory: history
+          });
+        };
+        roomRef.current.on("value", onValue);
+        return () => roomRef.current && roomRef.current.off("value", onValue);
+      }, [roomId]);
 
-        vx *= drag;
-        vy *= drag;
-        vy += gravity * 0.2;
+      useEffect(() => {
+        if (presenceRef.current) presenceRef.current.off();
+        presenceRef.current = db.ref("app_presence");
+        const onValue = snap => setPresence(snap.val() || {});
+        presenceRef.current.on("value", onValue);
+        return () => presenceRef.current && presenceRef.current.off("value", onValue);
+      }, []);
 
-        x += vx;
-        y += vy;
-        angle += 20 + Math.random() * 4;
+      useEffect(() => {
+        if (!nickname) return;
+        if (statsRef.current) statsRef.current.off();
+        statsRef.current = db.ref(`stats/${nickKey(nickname)}`);
+        const onValue = snap => {
+          setStats(snap.val() || { betsCount: 0, wins: 0, totalBet: 0, refs: 0 });
+        };
+        statsRef.current.on("value", onValue);
+        return () => statsRef.current && statsRef.current.off("value", onValue);
+      }, [nickname]);
 
-        const min = margin;
-        const max = margin + usable;
+      useEffect(() => {
+        if (!nickname) return;
 
-        if (x <= min) { x = min; vx = Math.abs(vx) * bounce; }
-        if (x >= max) { x = max; vx = -Math.abs(vx) * bounce; }
-        if (y <= min) { y = min; vy = Math.abs(vy) * bounce; }
-        if (y >= max) { y = max; vy = -Math.abs(vy) * bounce; }
+        const writePresence = () => {
+          db.ref(`app_presence/${sessionIdRef.current}`).set({
+            sessionId: sessionIdRef.current,
+            nickname,
+            roomId,
+            mode,
+            lastSeen: Date.now(),
+            updatedAt: Date.now()
+          }).catch(() => {});
+        };
 
-        const speed = Math.sqrt(vx * vx + vy * vy);
-        state.arrow = { active: true, x, y, vx, vy, angle };
-        render();
+        writePresence();
+        if (heartbeatRef.current) clearInterval(heartbeatRef.current);
+        heartbeatRef.current = setInterval(writePresence, 3000);
 
-        if (elapsed < duration && speed > 0.28) {
-          arrowLoop = requestAnimationFrame(step);
+        return () => {
+          if (heartbeatRef.current) clearInterval(heartbeatRef.current);
+        };
+      }, [nickname, roomId, mode]);
+
+      useEffect(() => {
+        if (room.status !== "betting") {
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
           return;
         }
 
-        const xNorm = Math.max(0, Math.min(1, (x - min) / usable));
-        const winner = findWinnerByX(xNorm) || arr[Math.floor(Math.random() * arr.length)];
-        state.arrow.active = false;
-        render();
+        if (room.timerOwner !== sessionIdRef.current) return;
 
-        setTimeout(async () => {
-          const latestSnap = await db.ref(`rooms/${state.roomId}`).once("value");
-          const latest = latestSnap.val() || {};
-          const latestPlayers = Object.values(latest.players || {});
-          const bank = latestPlayers.reduce((s, p) => s + Number(p.amount || 0), 0);
-          const fee = commissionAmount();
-          const payout = +(bank - fee).toFixed(2);
+        if (timerRef.current) clearInterval(timerRef.current);
 
-          await db.ref(`rooms/${state.roomId}`).update({
-            status: "finished",
-            timer: 0,
-            phaseText: "finished",
-            winner: {
-              nickname: winner.nickname,
-              nicknameKey: winner.nicknameKey,
-              amount: winner.amount
-            },
-            lastGame: {
-              at: Date.now(),
-              roomId: state.roomId,
-              bank,
-              payout,
-              fee,
-              winnerName: winner.nickname,
-              winnerKey: winner.nicknameKey,
-              winnerAmount: winner.amount
+        timerRef.current = setInterval(() => {
+          db.ref(`rooms/${roomId}/timer`).transaction(cur => {
+            const next = Math.max(0, Number(cur || ROUND_SECONDS) - 1);
+            return next;
+          }, async (err, committed, snap) => {
+            if (err || !committed || !snap) return;
+            const value = Number(snap.val() || 0);
+            if (value <= 0) {
+              if (timerRef.current) {
+                clearInterval(timerRef.current);
+                timerRef.current = null;
+              }
+              resolveRound();
             }
           });
+        }, 1000);
 
-          await db.ref(`stats/${winner.nicknameKey}`).transaction(cur => {
+        return () => {
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
+        };
+      }, [room.status, room.timerOwner, roomId]);
+
+      useEffect(() => {
+        blocksRef.current = arenaBlocks;
+      }, [arenaBlocks]);
+
+      function openGate() {
+        setGateOpen(true);
+        setTimeout(() => {
+          const el = document.getElementById("gateNick");
+          if (el) el.focus();
+        }, 30);
+      }
+
+      async function saveNickname() {
+        const input = document.getElementById("gateNick");
+        const clean = safeNick((input && input.value) || nickname);
+        if (clean.length < 2) {
+          alert(t(lang, "enterNick"));
+          return;
+        }
+        setNickname(clean);
+        localStorage.setItem("tonarena_nick", clean);
+        setGateOpen(false);
+        setNotice(t(lang, "note"));
+        try {
+          await db.ref(`app_presence/${sessionIdRef.current}`).set({
+            sessionId: sessionIdRef.current,
+            nickname: clean,
+            roomId,
+            mode,
+            lastSeen: Date.now(),
+            updatedAt: Date.now()
+          });
+        } catch {}
+      }
+
+      async function joinOrUpdateBet() {
+        const baseNick = safeNick(nickname);
+        if (!baseNick) {
+          openGate();
+          return;
+        }
+
+        const amount = Number(betAmount);
+        if (!amount || amount <= 0) {
+          alert("Ставка должна быть больше 0");
+          return;
+        }
+
+        const playerSnap = await db.ref(`rooms/${roomId}/players`).once("value");
+        const currentPlayers = Object.values(playerSnap.val() || {});
+        const owned = currentPlayers.find(p => p.ownerSessionId === sessionIdRef.current && p.baseNick === baseNick);
+
+        const displayNick = owned ? owned.nickname : resolveUniqueNickname(baseNick, currentPlayers);
+        const playerId = owned ? owned.id : makeId("player");
+
+        const payload = {
+          id: playerId,
+          baseNick,
+          nickname: displayNick,
+          nicknameKey: nickKey(displayNick),
+          amount,
+          avatar: owned?.avatar || randomAvatar(displayNick),
+          color: owned?.color || seededColor(displayNick + roomId),
+          joinedAt: owned?.joinedAt || Date.now(),
+          updatedAt: Date.now(),
+          lastSeen: Date.now(),
+          ownerSessionId: sessionIdRef.current,
+          mode
+        };
+
+        await db.ref(`rooms/${roomId}/players/${playerId}`).set(payload);
+
+        await db.ref(`stats/${nickKey(baseNick)}`).transaction(cur => {
+          const d = cur || { betsCount: 0, wins: 0, totalBet: 0, refs: 0 };
+          d.betsCount = Number(d.betsCount || 0) + 1;
+          d.totalBet = +(Number(d.totalBet || 0) + amount).toFixed(2);
+          d.lastBetAt = Date.now();
+          return d;
+        });
+
+        const roomSnap = await db.ref(`rooms/${roomId}`).once("value");
+        const data = roomSnap.val() || {};
+        const count = Object.keys(data.players || {}).length + (owned ? 0 : 1);
+
+        if ((data.status || "waiting") === "waiting" && count >= 2) {
+          await db.ref(`rooms/${roomId}`).update({
+            status: "betting",
+            timer: ROUND_SECONDS,
+            phaseText: "betting",
+            startedAt: data.startedAt || Date.now(),
+            host: data.host || payload.nicknameKey,
+            timerOwner: sessionIdRef.current
+          });
+          setNotice(t(lang, "wait2"));
+        } else if ((data.status || "waiting") === "betting" && !data.timerOwner) {
+          await db.ref(`rooms/${roomId}/timerOwner`).set(sessionIdRef.current);
+        }
+
+        try {
+          await db.ref(`app_presence/${sessionIdRef.current}`).set({
+            sessionId: sessionIdRef.current,
+            nickname: baseNick,
+            roomId,
+            mode,
+            lastSeen: Date.now(),
+            updatedAt: Date.now()
+          });
+        } catch {}
+      }
+
+      async function resetRoom() {
+        const host = nickKey(nickname || "host");
+        await db.ref(`rooms/${roomId}`).set({
+          status: "waiting",
+          timer: ROUND_SECONDS,
+          host,
+          timerOwner: sessionIdRef.current,
+          winner: null,
+          lastGame: room.lastGame || null,
+          startedAt: null,
+          phaseText: "waiting",
+          arrowHistory: [],
+          players: {},
+        });
+
+        setBall({ active: false, x: 50, y: 50, vx: 0, vy: 0, zoom: false, angle: 0 });
+        setNotice(t(lang, "finished"));
+        setTimeout(() => {
+          setNotice("");
+        }, 2500);
+      }
+
+      function startBallPhysicsAndResolve() {
+        if (physicsRef.current) cancelAnimationFrame(physicsRef.current);
+
+        const arena = document.getElementById("arenaShell");
+        const rect = arena ? arena.getBoundingClientRect() : { width: 360, height: 360 };
+        const min = 2.2;
+        const max = 97.8;
+
+        let x = 50 + (Math.random() * 20 - 10);
+        let y = 50 + (Math.random() * 20 - 10);
+        let vx = (Math.random() * 22 + 16) * (Math.random() < 0.5 ? -1 : 1);
+        let vy = (Math.random() * 22 + 16) * (Math.random() < 0.5 ? -1 : 1);
+        let angle = Math.random() * 360;
+        let last = performance.now();
+        const start = performance.now();
+        const duration = 10000;
+
+        setBall({ active: true, x, y, vx, vy, zoom: false, angle });
+
+        function frame(now) {
+          const dt = Math.min(0.033, (now - last) / 1000);
+          last = now;
+
+          x += vx * dt;
+          y += vy * dt;
+          angle += (Math.abs(vx) + Math.abs(vy)) * 0.08;
+
+          if (x <= min) {
+            x = min;
+            vx = Math.abs(vx) * 0.98;
+          }
+          if (x >= max) {
+            x = max;
+            vx = -Math.abs(vx) * 0.98;
+          }
+          if (y <= min) {
+            y = min;
+            vy = Math.abs(vy) * 0.98;
+          }
+          if (y >= max) {
+            y = max;
+            vy = -Math.abs(vy) * 0.98;
+          }
+
+          vx *= 0.9992;
+          vy *= 0.9992;
+
+          const remaining = duration - (now - start);
+          const zoom = remaining <= 2000;
+
+          setBall({ active: true, x, y, vx, vy, zoom, angle });
+
+          if ((now - start) < duration && Math.sqrt(vx * vx + vy * vy) > 2) {
+            physicsRef.current = requestAnimationFrame(frame);
+            return;
+          }
+
+          physicsRef.current = null;
+          finishRound({ x, y });
+        }
+
+        physicsRef.current = requestAnimationFrame(frame);
+      }
+
+      async function finishRound(finalPos) {
+        const blocks = blocksRef.current || [];
+        const winnerBlock = findBlockAt(blocks, finalPos.x, finalPos.y) || blocks[0] || null;
+        const playersList = Object.values((await db.ref(`rooms/${roomId}/players`).once("value")).val() || {});
+        const bank = sumAmount(playersList);
+        const fee = computeCommission(playersList);
+        const payout = +(bank - fee).toFixed(2);
+
+        await db.ref(`rooms/${roomId}`).update({
+          status: "finished",
+          timer: 0,
+          phaseText: "finished",
+          winner: winnerBlock ? {
+            id: winnerBlock.id,
+            nickname: winnerBlock.nickname,
+            nicknameKey: winnerBlock.nicknameKey,
+            amount: winnerBlock.amount
+          } : null,
+          lastGame: {
+            at: Date.now(),
+            roomId,
+            bank,
+            payout,
+            fee,
+            winnerName: winnerBlock ? winnerBlock.nickname : null,
+            winnerKey: winnerBlock ? winnerBlock.nicknameKey : null,
+            winnerAmount: winnerBlock ? winnerBlock.amount : null
+          }
+        });
+
+        if (winnerBlock) {
+          await db.ref(`stats/${winnerBlock.nicknameKey}`).transaction(cur => {
             const d = cur || { betsCount: 0, wins: 0, totalBet: 0, refs: 0 };
             d.wins = Number(d.wins || 0) + 1;
             d.lastWinAt = Date.now();
             return d;
           });
+        }
 
-          const histSnap = await db.ref(`rooms/${state.roomId}/arrowHistory`).once("value");
-          const histArr = Array.isArray(histSnap.val()) ? histSnap.val() : [];
-          const next = [...histArr, {
+        const historySnap = await db.ref(`rooms/${roomId}/arrowHistory`).once("value");
+        const historyArr = Array.isArray(historySnap.val()) ? historySnap.val() : [];
+        const next = [
+          ...historyArr,
+          {
             at: Date.now(),
-            roomId: state.roomId,
-            winnerName: winner.nickname,
-            winnerKey: winner.nicknameKey,
+            roomId,
             bank,
             fee,
-            payout
-          }].slice(-12);
+            payout,
+            winnerName: winnerBlock ? winnerBlock.nickname : null,
+            winnerKey: winnerBlock ? winnerBlock.nicknameKey : null
+          }
+        ].slice(-12);
 
-          await db.ref(`rooms/${state.roomId}/arrowHistory`).set(next);
+        await db.ref(`rooms/${roomId}/arrowHistory`).set(next);
 
-          setTimeout(async () => {
-            await db.ref(`rooms/${state.roomId}`).update({
-              status: "waiting",
-              timer: ROUND_SECONDS,
-              phaseText: "waiting",
-              winner: null,
-              timerOwner: sessionId
-            });
-          }, 7000);
-        }, 250);
-      };
+        setTimeout(async () => {
+          await resetRoom();
+        }, 5000);
+      }
 
-      arrowLoop = requestAnimationFrame(step);
-    }
+      useEffect(() => {
+        if (room.status === "spinning" && !ball.active) {
+          startBallPhysicsAndResolve();
+        }
+      }, [room.status]);
 
-    function quickDemoPlayer() {
-      const base = safeNick(state.nickname || "player");
-      const demo = `${base}_${Math.floor(Math.random() * 1000)}`;
-      state.nickname = demo;
-      state.gateOpen = false;
-      localStorage.setItem("tonarena_nick", demo);
-      render();
-      saveNickname().then(() => {
-        state.betAmount = Math.max(1, Number(state.betAmount || 1));
-        joinOrUpdateBet();
-      });
-    }
+      function openSupport() {
+        setSupportOpen(true);
+      }
 
-    function switchMode(next) {
-      state.mode = next;
-      localStorage.setItem("tonarena_mode", next);
-      updateSessionTouch({ mode: next }).catch(() => {});
-      render();
-    }
+      function closeSupport() {
+        setSupportOpen(false);
+      }
 
-    function switchLang(next) {
-      state.lang = next;
-      localStorage.setItem("tonarena_lang", next);
-      render();
-    }
+      function toggleLang(next) {
+        setLang(next);
+      }
 
-    function setTab(next) {
-      state.tab = next;
-      render();
-    }
+      function toggleMode(next) {
+        setMode(next);
+      }
 
-    async function copyReferral() {
-      const link = `${location.origin}${location.pathname}?ref=${encodeURIComponent(makeReferralCode(state.nickname || "friend"))}`;
-      try {
-        await navigator.clipboard.writeText(link);
-        state.copied = true;
-        render();
-        setTimeout(() => { state.copied = false; render(); }, 1400);
-      } catch (e) {
-        alert(link);
+      function setPresetValue(key, value) {
+        setPresets(prev => ({ ...prev, [key]: Number(value || 0) }));
       }
-    }
 
-    function supportOpen() {
-      state.supportOpen = true;
-      render();
-    }
+      function openHistory() {
+        setHistoryOpen(true);
+      }
 
-    function supportClose() {
-      state.supportOpen = false;
-      render();
-    }
+      function closeHistory() {
+        setHistoryOpen(false);
+      }
 
-    function changeNick() {
-      state.gateOpen = true;
-      render();
-      setTimeout(() => {
-        const input = document.getElementById("gateNick");
-        if (input) input.focus();
-      }, 50);
-    }
+      function openEditPresets() {
+        setEditPresetsOpen(true);
+      }
 
-    function handleClick(action) {
-      if (action === "gate-enter") {
-        saveNickname();
-        return;
+      function closeEditPresets() {
+        setEditPresetsOpen(false);
       }
-      if (action === "save-nick") {
-        saveNickname();
-        return;
-      }
-      if (action === "open-room") {
-        openRoom();
-        return;
-      }
-      if (action === "join-bet") {
-        joinOrUpdateBet();
-        return;
-      }
-      if (action === "start-round") {
-        startRound();
-        return;
-      }
-      if (action === "reset-room") {
-        resetRoom();
-        return;
-      }
-      if (action === "quick-demo") {
-        quickDemoPlayer();
-        return;
-      }
-      if (action === "toggle-mode") {
-        switchMode(state.mode === "test" ? "real" : "test");
-        return;
-      }
-      if (action === "lang-ru") {
-        switchLang("ru");
-        return;
-      }
-      if (action === "lang-en") {
-        switchLang("en");
-        return;
-      }
-      if (action === "mode-test") {
-        switchMode("test");
-        return;
-      }
-      if (action === "mode-real") {
-        switchMode("real");
-        return;
-      }
-      if (action === "copy-ref") {
-        copyReferral();
-        return;
-      }
-      if (action === "support-open") {
-        supportOpen();
-        return;
-      }
-      if (action === "support-close") {
-        supportClose();
-        return;
-      }
-      if (action === "change-nick") {
-        changeNick();
-        return;
-      }
-      if (action === "tab-games") {
-        setTab("games");
-        return;
-      }
-      if (action === "tab-refs") {
-        setTab("refs");
-        return;
-      }
-      if (action === "tab-profile") {
-        setTab("profile");
-        return;
-      }
-      if (action === "open-profile") {
-        setTab("profile");
-        return;
-      }
-    }
 
-    document.addEventListener("click", (e) => {
-      const btn = e.target.closest("[data-action]");
-      if (!btn) return;
-      handleClick(btn.dataset.action);
-    });
+      function jumpAllIn() {
+        setBetAmount(Math.max(1, totalBank || 1000));
+      }
 
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        if (state.gateOpen && !state.nickname) {
-          saveNickname();
+      function allPlayersChanceByKey(key) {
+        const p = shares.find(x => x.nicknameKey === key);
+        return p ? Math.max(1, Math.round(p.share * 100)) : 0;
+      }
+
+      const topText = room.status === "betting"
+        ? `${t(lang, "autoStart")} · ${room.timer}s`
+        : room.status === "spinning"
+          ? `${t(lang, "launch")}`
+          : room.status === "finished"
+            ? `${t(lang, "finished")}`
+            : `${t(lang, "wait2")}`;
+
+      function renderTopBar() {
+        return h("div", { className: "top-line" },
+          h("div", { className: "chip" },
+            h("span", { style: { width: 10, height: 10, borderRadius: 999, background: "#22c55e", boxShadow: "0 0 12px rgba(34,197,94,.55)" } }),
+            h("span", { style: { fontWeight: 900 } }, `${t(lang, "online")}: ${onlineCount}`)
+          ),
+          h("div", { className: "top-center" },
+            h("div", { style: { fontSize: 11, letterSpacing: ".22em", textTransform: "uppercase", fontWeight: 900 } }, "TON ARENA"),
+            h("div", { style: { marginTop: 4, fontSize: 11, color: "rgba(255,255,255,.62)" } }, topText)
+          ),
+          h("div", { style: { display: "flex", justifyContent: "flex-end", gap: 8 } },
+            h("div", { className: "chip" },
+              h("span", { style: { fontWeight: 900 } }, `${t(lang, "balance")}: ${formatTON(totalBank)} TON`)
+            ),
+            h("button", { className: "clock-btn", onClick: openHistory, title: t(lang, "history") }, "◷")
+          )
+        );
+      }
+
+      function renderArenaPanel() {
+        const winnerKey = room.winner ? room.winner.nicknameKey : null;
+
+        return h("div", { className: "arena-wrap" },
+          h("div", {
+            id: "arenaShell",
+            className: "arena-shell referenced"
+          },
+            h("button", { className: "history-trigger", onClick: openHistory, title: t(lang, "history") }, "◷"),
+            h("div", { className: "arena-inner" },
+              arenaBlocks.map((b, idx) => {
+                const isWinner = winnerKey && b.nicknameKey === winnerKey;
+                return h("div", {
+                  key: b.id || idx,
+                  className: "player-zone",
+                  style: {
+                    left: b.x + "%",
+                    top: b.y + "%",
+                    width: b.w + "%",
+                    height: b.h + "%",
+                    background: b.color || seededColor(b.nicknameKey || b.nickname || idx),
+                    boxShadow: isWinner ? "inset 0 0 0 2px rgba(255,255,255,.22), inset 0 0 30px rgba(255,255,255,.10)" : "none"
+                  }
+                },
+                  h("div", { className: "zone-label" },
+                    h("div", { className: "avatar-ring" },
+                      h("div", { className: "avatar" },
+                        h("img", {
+                          src: b.avatar || randomAvatar(b.nicknameKey || b.nickname || idx),
+                          alt: ""
+                        })
+                      )
+                    )
+                  )
+                );
+              }),
+
+              h("div", { className: "pointer-line" }, `${t(lang, "feeNote")}`),
+
+              ball.active && h("div", {
+                className: "ball" + (ball.zoom ? " zoom" : ""),
+                style: {
+                  left: ball.x + "%",
+                  top: ball.y + "%",
+                  transform: `translate(-50%, -50%) scale(${ball.zoom ? 1.08 : 1}) rotate(${ball.angle || 0}deg)`
+                }
+              }, h("div", { className: "ball-arrow" })),
+
+              h("div", { className: "center-core" },
+                h("div", { className: "title" }, t(lang, "round")),
+                h("div", { className: "value" }, livePlayers.length),
+                h("div", { className: "sub" },
+                  livePlayers.length === 1 ? t(lang, "wait2") : `${livePlayers.length} ${t(lang, "players")}`,
+                  h("br"),
+                  room.phaseText || room.status
+                )
+              )
+            )
+          ),
+          h("div", { style: { marginTop: 12 }, className: "row" },
+            h("div", { className: "mini-stat" },
+              h("div", { className: "mini-label" }, t(lang, "balance")),
+              h("div", { className: "mini-value" }, `${formatTON(totalBank)} TON`),
+              h("div", { className: "mini-hint" }, `${t(lang, "payout")}: ${formatTON(payout)} TON`)
+            ),
+            h("div", { className: "mini-stat" },
+              h("div", { className: "mini-label" }, "Status"),
+              h("div", { className: "mini-value" }, room.status),
+              h("div", { className: "mini-hint" }, room.phaseText || t(lang, "roomInfo"))
+            ),
+            h("div", { className: "mini-stat" },
+              h("div", { className: "mini-label" }, t(lang, "winner")),
+              h("div", { className: "mini-value" }, room.winner ? shortNick(room.winner.nickname) : "—"),
+              h("div", { className: "mini-hint" }, room.winner ? `${formatTON(room.winner.amount)} TON` : t(lang, "noLast"))
+            )
+          )
+        );
+      }
+
+      function renderBetPanel() {
+        return h("div", { className: "glass", style: { borderRadius: 28, padding: 12, marginTop: 12 } },
+          h("div", { className: "space-between" },
+            h("div", null,
+              h("div", { className: "section-title" }, t(lang, "bet")),
+              h("div", { style: { marginTop: 6, fontSize: 18, fontWeight: 900 } }, `${t(lang, "autoStart")}`)
+            ),
+            h("button", { className: "btn-dark", style: { borderRadius: 16, padding: "10px 12px", fontWeight: 900 }, onClick: openEditPresets }, "✎")
+          ),
+
+          h("div", { style: { marginTop: 12 }, className: "preset-row" },
+            h("button", {
+              className: "preset-chip" + (Number(betAmount) === Number(presets.one) ? " active" : ""),
+              onClick: () => setBetAmount(Number(presets.one) || 1)
+            }, `${formatTON(presets.one)} TON`),
+
+            h("button", {
+              className: "preset-chip" + (Number(betAmount) === Number(presets.five) ? " active" : ""),
+              onClick: () => setBetAmount(Number(presets.five) || 5)
+            }, `${formatTON(presets.five)} TON`),
+
+            h("button", {
+              className: "preset-chip" + (Number(betAmount) === Number(presets.ten) ? " active" : ""),
+              onClick: () => setBetAmount(Number(presets.ten) || 10)
+            }, `${formatTON(presets.ten)} TON`),
+
+            h("button", { className: "preset-chip", onClick: jumpAllIn }, t(lang, "allIn")),
+
+            h("button", { className: "btn-dark", style: { borderRadius: 16, padding: "0 12px", fontWeight: 900 }, onClick: openEditPresets }, "✎")
+          ),
+
+          h("div", { style: { marginTop: 12 }, className: "row" },
+            h("input", {
+              className: "input",
+              type: "number",
+              min: 1,
+              step: "0.1",
+              value: betAmount,
+              onChange: e => setBetAmount(Number(e.target.value) || 0),
+              placeholder: t(lang, "bet")
+            }),
+            h("button", {
+              className: "btn-green",
+              style: { borderRadius: 18, padding: "14px 16px", fontWeight: 900, whiteSpace: "nowrap" },
+              onClick: joinOrUpdateBet
+            }, t(lang, "join"))
+          ),
+
+          h("div", { style: { marginTop: 10, fontSize: 11, lineHeight: 1.7, color: "rgba(255,255,255,.60)" } },
+            t(lang, "autoStart"), " · ",
+            t(lang, "autoSuffix")
+          )
+        );
+      }
+
+      function renderPlayersPanel() {
+        return h("div", { className: "glass", style: { borderRadius: 28, padding: 12, marginTop: 12 } },
+          h("div", { className: "space-between" },
+            h("div", null,
+              h("div", { className: "section-title" }, t(lang, "players")),
+              h("div", { style: { marginTop: 6, fontSize: 18, fontWeight: 900 } }, livePlayers.length)
+            ),
+            h("div", { className: "chip" },
+              h("span", { className: "muted", style: { fontSize: 11 } }, t(lang, "online")),
+              h("span", { style: { fontWeight: 900 } }, onlineCount)
+            )
+          ),
+
+          h("div", { style: { marginTop: 12, maxHeight: 260, overflow: "auto", paddingRight: 4 }, className: "thin-scroll" },
+            livePlayers.length ? livePlayers.map((p, idx) => {
+              const chance = allPlayersChanceByKey(p.nicknameKey);
+              const isWinner = room.winner && room.winner.nicknameKey === p.nicknameKey;
+              return h("div", { key: p.id || idx, className: "list-item" },
+                h("div", { className: "row", style: { minWidth: 0, flex: 1 } },
+                  h("div", {
+                    className: "small-icon",
+                    style: { background: p.color || seededColor(p.nicknameKey || p.nickname || idx) }
+                  },
+                    h("img", { src: p.avatar || randomAvatar(p.nicknameKey || p.nickname || idx), alt: "" })
+                  ),
+                  h("div", { style: { minWidth: 0 } },
+                    h("div", { style: { fontWeight: 900, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } },
+                      p.nickname,
+                      isWinner ? h("span", { style: { marginLeft: 6, fontSize: 10, color: "#34d399", textTransform: "uppercase", letterSpacing: ".18em", fontWeight: 900 } }, "winner") : null
+                    ),
+                    h("div", { style: { fontSize: 11, color: "rgba(255,255,255,.58)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } },
+                      `${chance}% · ${formatTON(p.amount)} TON`
+                    )
+                  )
+                ),
+                h("div", { style: { textAlign: "right", flex: "0 0 auto" } },
+                  h("div", { style: { fontWeight: 900, color: "#93c5fd" } }, `${formatTON(p.amount)} TON`),
+                  h("div", { style: { fontSize: 10, color: "rgba(255,255,255,.55)" } },
+                    p.joinedAt ? new Date(p.joinedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""
+                  )
+                )
+              );
+            }) : h("div", { className: "empty-box" }, t(lang, "noPlayers"))
+          )
+        );
+      }
+
+      function renderLastGame() {
+        const g = room.lastGame;
+        return h("div", { className: "glass", style: { borderRadius: 28, padding: 12, marginTop: 12 } },
+          h("div", { className: "space-between" },
+            h("div", null,
+              h("div", { className: "section-title" }, t(lang, "history")),
+              h("div", { style: { marginTop: 6, fontSize: 18, fontWeight: 900 } }, t(lang, "smallHistory"))
+            ),
+            h("button", { className: "btn-dark", style: { borderRadius: 16, padding: "10px 12px", fontWeight: 900 }, onClick: openHistory }, "◷")
+          ),
+
+          h("div", { style: { marginTop: 12, borderRadius: 20, padding: 14, background: "rgba(0,0,0,.24)", border: "1px solid rgba(255,255,255,.10)" } },
+            g ? h(F, null,
+              h("div", { className: "space-between" },
+                h("div", { style: { minWidth: 0 } },
+                  h("div", { style: { fontWeight: 900, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, g.winnerName || "—"),
+                  h("div", { style: { fontSize: 11, color: "rgba(255,255,255,.58)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, g.winnerKey || "")
+                ),
+                h("div", { style: { fontWeight: 900, color: "#93c5fd", flex: "0 0 auto" } }, `${formatTON(g.payout || 0)} TON`)
+              ),
+              h("div", { style: { marginTop: 8, fontSize: 11, color: "rgba(255,255,255,.58)" } },
+                `Room: ${g.roomId || roomId} · ${g.at ? new Date(g.at).toLocaleString() : ""}`
+              ),
+              h("div", { style: { marginTop: 6, fontSize: 11, color: "rgba(255,255,255,.58)" } },
+                `${t(lang, "feeNote")}: ${formatTON(g.fee || 0)} TON`
+              )
+            ) : h("div", { style: { fontSize: 13, color: "rgba(255,255,255,.60)" } }, t(lang, "noLast"))
+          ),
+
+          h("div", { style: { marginTop: 12 } },
+            h("div", { className: "section-title" }, t(lang, "history")),
+            h("div", { style: { marginTop: 10, maxHeight: 160, overflow: "auto", paddingRight: 4 }, className: "thin-scroll" },
+              (room.arrowHistory || []).slice().reverse().map((item, idx) =>
+                h("div", { key: idx, className: "list-item", style: { padding: "10px 0" } },
+                  h("div", { style: { minWidth: 0 } },
+                    h("div", { style: { fontWeight: 900, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, item.winnerName || "—"),
+                    h("div", { style: { fontSize: 11, color: "rgba(255,255,255,.58)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, item.roomId || roomId)
+                  ),
+                  h("div", { style: { textAlign: "right", flex: "0 0 auto" } },
+                    h("div", { style: { fontWeight: 900, color: "#93c5fd" } }, `${formatTON(item.payout || 0)} TON`),
+                    h("div", { style: { fontSize: 10, color: "rgba(255,255,255,.55)" } }, item.at ? new Date(item.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "")
+                  )
+                )
+              )
+            )
+          )
+        );
+      }
+
+      function renderGamesTab() {
+        return h(F, null,
+          renderTopBar(),
+          renderArenaPanel(),
+          renderBetPanel(),
+          renderPlayersPanel(),
+          renderLastGame()
+        );
+      }
+
+      function copyReferralLink() {
+        const link = `${location.origin}${location.pathname}?ref=${encodeURIComponent(`${nickKey(nickname || "guest")}-tonarena`)}`;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(link).then(() => {
+            setNotice(t(lang, "copied"));
+            setTimeout(() => setNotice(""), 1400);
+          }).catch(() => {
+            alert(link);
+          });
+        } else {
+          alert(link);
         }
       }
-    });
 
-    async function bootstrap() {
-      startHeartbeat();
-      attachRoom(state.roomId);
+      function renderReferralTab() {
+        const link = `${location.origin}${location.pathname}?ref=${encodeURIComponent(`${nickKey(nickname || "guest")}-tonarena`)}`;
+        return h("div", { className: "glass", style: { borderRadius: 28, padding: 16, marginTop: 12 } },
+          h("div", { className: "space-between" },
+            h("div", null,
+              h("div", { className: "badge blue" }, "Referrals"),
+              h("div", { style: { marginTop: 12, fontSize: 26, fontWeight: 900 } }, t(lang, "referralTitle"))
+            ),
+            h("div", { style: { width: 52, height: 52, borderRadius: 18, background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.10)", display: "flex", alignItems: "center", justifyContent: "center" } }, h("span", { style: { fontSize: 20 } }, "↗"))
+          ),
 
-      const url = new URL(location.href);
-      const ref = url.searchParams.get("ref");
-      if (ref && !localStorage.getItem("tonarena_ref")) {
-        localStorage.setItem("tonarena_ref", ref);
+          h("div", { style: { marginTop: 14, fontSize: 13, lineHeight: 1.7, color: "rgba(255,255,255,.72)" } }, t(lang, "referralDesc")),
+
+          h("div", { style: { marginTop: 14 }, className: "stack" },
+            h("div", { className: "glass", style: { borderRadius: 20, padding: 14 } },
+              h("div", { className: "card-title" }, t(lang, "referralLink")),
+              h("div", { style: { marginTop: 8, wordBreak: "break-all", fontSize: 13, fontWeight: 900 } }, link),
+              h("button", {
+                className: "btn-main",
+                style: { marginTop: 12, width: "100%", borderRadius: 18, padding: "14px 16px", fontWeight: 900 },
+                onClick: copyReferralLink
+              }, t(lang, "copy"))
+            ),
+            h("div", { className: "glass", style: { borderRadius: 20, padding: 14 } },
+              h("div", { className: "card-title" }, t(lang, "howItWorks")),
+              h("div", { style: { marginTop: 8, fontSize: 13, lineHeight: 1.7, color: "rgba(255,255,255,.72)" } },
+                "1) Игрок переходит по ссылке.",
+                h("br"), "2) Вводит ник и входит в комнату.",
+                h("br"), "3) Делает ставку.",
+                h("br"), "4) Ты получаешь реферальный бонус по правилам системы."
+              )
+            ),
+            h("div", { className: "glass", style: { borderRadius: 20, padding: 14 } },
+              h("div", { className: "card-title" }, t(lang, "feeNote")),
+              h("div", { style: { marginTop: 8, fontSize: 13, lineHeight: 1.7, color: "rgba(255,255,255,.72)" } }, "Платформа удерживает 10% от минимальной ставки в комнате. Так победитель не уходит в минус из-за комиссии.")
+            )
+          )
+        );
       }
 
-      if (state.nickname) {
-        state.gateOpen = false;
-        state.tab = "games";
-        render();
+      function renderProfileTab() {
+        return h("div", { className: "glass", style: { borderRadius: 28, padding: 16, marginTop: 12 } },
+          h("div", { className: "space-between" },
+            h("div", null,
+              h("div", { className: "badge blue" }, t(lang, "profileInfo")),
+              h("div", { style: { marginTop: 12, fontSize: 26, fontWeight: 900 } }, nickname || "Guest"),
+              h("div", { style: { marginTop: 4, fontSize: 13, color: "rgba(255,255,255,.64)" } }, t(lang, "note"))
+            ),
+            h("div", { className: "small-icon", style: { width: 56, height: 56, borderRadius: 20, background: seededColor(nickKey(nickname || "guest")) } },
+              h("img", { src: randomAvatar(nickKey(nickname || "guest")), alt: "" })
+            )
+          ),
+
+          h("div", { style: { marginTop: 14 }, className: "toggle" },
+            h("button", { className: mode === "test" ? "active" : "", onClick: () => setMode("test") }, t(lang, "modeTest")),
+            h("button", { className: mode === "real" ? "active" : "", onClick: () => setMode("real") }, t(lang, "modeReal"))
+          ),
+
+          h("div", { style: { marginTop: 14 }, className: "toggle" },
+            h("button", { className: lang === "ru" ? "active" : "", onClick: () => toggleLang("ru") }, "Русский"),
+            h("button", { className: lang === "en" ? "active" : "", onClick: () => toggleLang("en") }, "English")
+          ),
+
+          h("div", { style: { marginTop: 14, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 } },
+            h("div", { className: "mini-stat" },
+              h("div", { className: "mini-label" }, t(lang, "betsCount")),
+              h("div", { className: "mini-value" }, Number(stats.betsCount || 0)),
+              h("div", { className: "mini-hint" }, t(lang, "stats"))
+            ),
+            h("div", { className: "mini-stat" },
+              h("div", { className: "mini-label" }, t(lang, "wins")),
+              h("div", { className: "mini-value" }, Number(stats.wins || 0)),
+              h("div", { className: "mini-hint" }, t(lang, "stats"))
+            ),
+            h("div", { className: "mini-stat" },
+              h("div", { className: "mini-label" }, t(lang, "totalBet")),
+              h("div", { className: "mini-value" }, `${formatTON(stats.totalBet || 0)} TON`),
+              h("div", { className: "mini-hint" }, t(lang, "stats"))
+            ),
+            h("div", { className: "mini-stat" },
+              h("div", { className: "mini-label" }, t(lang, "rooms")),
+              h("div", { className: "mini-value" }, 1),
+              h("div", { className: "mini-hint" }, roomId)
+            )
+          ),
+
+          h("div", { style: { marginTop: 14 }, className: "stack" },
+            h("button", { className: "btn-dark", style: { borderRadius: 18, padding: "14px 16px", fontWeight: 900 }, onClick: openSupport }, t(lang, "support")),
+            h("button", { className: "btn-dark", style: { borderRadius: 18, padding: "14px 16px", fontWeight: 900 }, onClick: openGate }, t(lang, "changeNick"))
+          ),
+
+          h("div", { style: { marginTop: 14, fontSize: 11, color: "rgba(255,255,255,.60)", lineHeight: 1.7 } },
+            `Nickname: ${nickname || "—"}`, h("br"),
+            `${t(lang, "roomId")}: ${roomId}`, h("br"),
+            `Session: ${shortId(sessionIdRef.current)}`
+          )
+        );
       }
 
-      if (introTimer) clearTimeout(introTimer);
-      introTimer = setTimeout(() => {
-        state.intro = false;
-        render();
-      }, INTRO_MS);
+      function renderBottomNav() {
+        const nav = h("div", { className: "nav-inner" },
+          h("button", { className: `nav-btn ${tab === "games" ? "active" : ""}`, onClick: () => setTab("games") },
+            h("span", { className: "nav-ic" }),
+            h("span", null, t(lang, "games"))
+          ),
+          h("button", { className: `nav-btn ${tab === "referral" ? "active" : ""}`, onClick: () => setTab("referral") },
+            h("span", { className: "nav-ic" }),
+            h("span", null, t(lang, "referral"))
+          ),
+          h("button", { className: `nav-btn ${tab === "profile" ? "active" : ""}`, onClick: () => setTab("profile") },
+            h("span", { className: "nav-ic" }),
+            h("span", null, t(lang, "profile"))
+          )
+        );
+        ReactDOM.createRoot(document.getElementById("nav-anchor")).render(nav);
+      }
+
+      function renderIntroOverlay() {
+        return introOpen ? h("div", { className: "intro-mask" },
+          h("div", { className: "portal-sizes" },
+            h("div", { className: "portal-wrap" },
+              h("div", { className: "portal-ring" }),
+              h("div", { className: "portal-core" })
+            ),
+            h("div", { style: { marginTop: 14, textAlign: "center" } },
+              h("div", { style: { fontSize: 13, letterSpacing: ".22em", textTransform: "uppercase", fontWeight: 900, color: "rgba(255,255,255,.68)" } }, "TON Arena"),
+              h("div", { style: { marginTop: 8, fontSize: 14, color: "rgba(255,255,255,.80)" } }, "Launching arena...")
+            )
+          )
+        ) : null;
+      }
+
+      function renderGateModal() {
+        if (!gateOpen) return null;
+        return h("div", { className: "overlay" },
+          h("div", { className: "modal" },
+            h("div", { className: "space-between" },
+              h("div", null,
+                h("div", { className: "badge blue" }, mode === "test" ? t(lang, "testMode") : t(lang, "realMode")),
+                h("div", { style: { marginTop: 14, fontSize: 28, fontWeight: 900, lineHeight: 1.05 } }, t(lang, "enterNick")),
+                h("div", { style: { marginTop: 8, fontSize: 13, color: "rgba(255,255,255,.70)" } }, t(lang, "autoSuffix"))
+              ),
+              h("div", { className: "top-pill", style: { width: 52, height: 52, justifyContent: "center", padding: 0, borderRadius: 18, display: "flex" } },
+                h("span", { style: { fontSize: 22 } }, "⚡")
+              )
+            ),
+
+            h("div", { style: { marginTop: 18 }, className: "stack" },
+              h("input", {
+                id: "gateNick",
+                className: "input",
+                defaultValue: nickname,
+                placeholder: t(lang, "nickHint"),
+                maxLength: 18,
+                onKeyDown: e => {
+                  if (e.key === "Enter") saveNickname();
+                }
+              }),
+              h("input", {
+                id: "gateRoom",
+                className: "input",
+                defaultValue: roomId,
+                placeholder: t(lang, "roomHint"),
+                maxLength: 20
+              }),
+
+              h("div", { className: "row" },
+                h("button", {
+                  className: "btn-main",
+                  style: { flex: 1, borderRadius: 18, padding: "14px 16px", fontWeight: 900 },
+                  onClick: saveNickname
+                }, t(lang, "continue")),
+                h("button", {
+                  className: "btn-dark",
+                  style: { borderRadius: 18, padding: "14px 16px", fontWeight: 900 },
+                  onClick: () => setMode(mode === "test" ? "real" : "test")
+                }, mode === "test" ? t(lang, "modeTest") : t(lang, "modeReal"))
+              ),
+
+              h("div", { style: { fontSize: 11, lineHeight: 1.7, color: "rgba(255,255,255,.62)" } },
+                t(lang, "howItWorks"),
+                h("br"),
+                t(lang, "howText")
+              )
+            )
+          )
+        ) : null;
+      }
+
+      function renderSupportSheet() {
+        if (!supportOpen) return null;
+        return h("div", { className: "support-mask" },
+          h("div", { className: "support-sheet" },
+            h("div", { className: "space-between" },
+              h("div", null,
+                h("div", { className: "badge warn" }, t(lang, "support")),
+                h("div", { style: { marginTop: 12, fontSize: 28, fontWeight: 900 } }, t(lang, "supportSoon"))
+              ),
+              h("button", {
+                className: "btn-dark",
+                style: { borderRadius: 14, padding: "10px 12px", fontWeight: 900 },
+                onClick: closeSupport
+              }, t(lang, "back"))
+            ),
+            h("div", { className: "glass", style: { marginTop: 14, borderRadius: 20, padding: 14 } },
+              h("div", { className: "support-note" }, t(lang, "supportText"))
+            ),
+            h("div", { className: "glass", style: { marginTop: 12, borderRadius: 20, padding: 14 } },
+              h("div", { className: "card-title" }, "Note"),
+              h("div", { className: "support-note", style: { marginTop: 8 } }, "Здесь позже появится чат поддержки, FAQ и кнопка связи.")
+            )
+          )
+        );
+      }
+
+      function renderHistorySheet() {
+        if (!historyOpen) return null;
+        return h("div", { className: "support-mask" },
+          h("div", { className: "support-sheet" },
+            h("div", { className: "space-between" },
+              h("div", null,
+                h("div", { className: "badge blue" }, t(lang, "history")),
+                h("div", { style: { marginTop: 12, fontSize: 28, fontWeight: 900 } }, t(lang, "smallHistory"))
+              ),
+              h("button", {
+                className: "btn-dark",
+                style: { borderRadius: 14, padding: "10px 12px", fontWeight: 900 },
+                onClick: closeHistory
+              }, t(lang, "back"))
+            ),
+            h("div", { style: { marginTop: 14, maxHeight: "60vh", overflow: "auto", paddingRight: 4 }, className: "thin-scroll" },
+              (room.arrowHistory || []).slice().reverse().length
+                ? (room.arrowHistory || []).slice().reverse().map((item, idx) =>
+                    h("div", { key: idx, className: "list-item" },
+                      h("div", { style: { minWidth: 0 } },
+                        h("div", { style: { fontWeight: 900, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, item.winnerName || "—"),
+                        h("div", { style: { fontSize: 11, color: "rgba(255,255,255,.58)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, item.roomId || roomId)
+                      ),
+                      h("div", { style: { textAlign: "right", flex: "0 0 auto" } },
+                        h("div", { style: { fontWeight: 900, color: "#93c5fd" } }, `${formatTON(item.payout || 0)} TON`),
+                        h("div", { style: { fontSize: 10, color: "rgba(255,255,255,.55)" } }, item.at ? new Date(item.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "")
+                      )
+                    )
+                  )
+                : h("div", { className: "empty-box" }, t(lang, "noLast"))
+            )
+          )
+        );
+      }
+
+      function renderEditPresets() {
+        if (!editPresetsOpen) return null;
+        return h("div", { className: "overlay" },
+          h("div", { className: "modal" },
+            h("div", { className: "space-between" },
+              h("div", null,
+                h("div", { className: "badge blue" }, t(lang, "editPresets")),
+                h("div", { style: { marginTop: 12, fontSize: 28, fontWeight: 900 } }, t(lang, "bet"))
+              ),
+              h("button", {
+                className: "btn-dark",
+                style: { borderRadius: 14, padding: "10px 12px", fontWeight: 900 },
+                onClick: closeEditPresets
+              }, t(lang, "back"))
+            ),
+
+            h("div", { style: { marginTop: 14 }, className: "stack" },
+              h("input", {
+                className: "input",
+                type: "number",
+                min: 1,
+                step: "0.1",
+                defaultValue: presets.one,
+                id: "presetOne"
+              }),
+              h("input", {
+                className: "input",
+                type: "number",
+                min: 1,
+                step: "0.1",
+                defaultValue: presets.five,
+                id: "presetFive"
+              }),
+              h("input", {
+                className: "input",
+                type: "number",
+                min: 1,
+                step: "0.1",
+                defaultValue: presets.ten,
+                id: "presetTen"
+              }),
+
+              h("div", { className: "row" },
+                h("button", {
+                  className: "btn-main",
+                  style: { flex: 1, borderRadius: 18, padding: "14px 16px", fontWeight: 900 },
+                  onClick: () => {
+                    const one = Number(document.getElementById("presetOne").value || 1);
+                    const five = Number(document.getElementById("presetFive").value || 5);
+                    const ten = Number(document.getElementById("presetTen").value || 10);
+                    setPresets({ one, five, ten });
+                    closeEditPresets();
+                  }
+                }, t(lang, "continue")),
+                h("button", {
+                  className: "btn-dark",
+                  style: { borderRadius: 18, padding: "14px 16px", fontWeight: 900 },
+                  onClick: () => {
+                    setBetAmount(Math.max(1, totalBank || 1000));
+                    closeEditPresets();
+                  }
+                }, t(lang, "allIn"))
+              ),
+
+              h("div", { style: { fontSize: 11, lineHeight: 1.7, color: "rgba(255,255,255,.62)" } },
+                "Фиксированные ставки можно изменить. ALL IN берёт текущий баланс комнаты, если он есть."
+              )
+            )
+          )
+        );
+      }
+
+      function renderGames() {
+        return h(F, null,
+          renderTopBar(),
+          h("div", { className: "arena-hero glass", style: { marginTop: 8 } },
+            h("div", { className: "space-between", style: { marginBottom: 10 } },
+              h("div", null,
+                h("div", { className: "title-big" }, "Arena"),
+                h("div", { style: { marginTop: 4, fontSize: 12, color: "rgba(255,255,255,.66)" } }, t(lang, "note"))
+              ),
+              h("button", { className: "open-history", onClick: openHistory }, "◷")
+            ),
+            renderArenaPanel()
+          ),
+          renderBetPanel(),
+          renderPlayersPanel(),
+          renderLastGame()
+        );
+      }
+
+      function renderReferral() {
+        return renderReferralTab();
+      }
+
+      function renderProfile() {
+        return renderProfileTab();
+      }
+
+      function mainContent() {
+        if (tab === "referral") return renderReferral();
+        if (tab === "profile") return renderProfile();
+        return renderGames();
+      }
+
+      function renderApp() {
+        ReactDOM.createRoot(document.getElementById("root")).render(
+          h(F, null,
+            renderIntroOverlay(),
+            renderGateModal(),
+            renderSupportSheet(),
+            renderHistorySheet(),
+            renderEditPresets(),
+            h("div", { className: "app" }, mainContent(), notice ? h("div", { style: { marginTop: 14, textAlign: "center", fontSize: 11, color: "rgba(255,255,255,.60)" } }, notice) : null),
+            h("div", { className: "nav-bar" },
+              h("div", { className: "nav-inner" },
+                h("button", { className: `nav-btn ${tab === "games" ? "active" : ""}`, onClick: () => setTab("games") },
+                  h("span", { className: "nav-ic" }),
+                  h("span", null, t(lang, "games"))
+                ),
+                h("button", { className: `nav-btn ${tab === "referral" ? "active" : ""}`, onClick: () => setTab("referral") },
+                  h("span", { className: "nav-ic" }),
+                  h("span", null, t(lang, "referral"))
+                ),
+                h("button", { className: `nav-btn ${tab === "profile" ? "active" : ""}`, onClick: () => setTab("profile") },
+                  h("span", { className: "nav-ic" }),
+                  h("span", null, t(lang, "profile"))
+                )
+              )
+            )
+          )
+        );
+      }
+
+      useEffect(() => {
+        renderApp();
+      });
+
+      return null;
     }
 
-    bootstrap();
-    render();
+    ReactDOM.createRoot(document.getElementById("root")).render(h(App));
   </script>
 </body>
 </html>
