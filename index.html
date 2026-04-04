@@ -6,553 +6,795 @@
   <title>TON Arena</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 
   <style>
-    :root{
-      --bg:#05060a;
-      --panel:rgba(255,255,255,.055);
-      --panel2:rgba(255,255,255,.075);
-      --line:rgba(255,255,255,.09);
-      --text:#eef3ff;
-      --muted:rgba(255,255,255,.58);
-      --accent:#5b8cff;
-      --accent2:#8b5cf6;
-      --good:#22c55e;
-      --warn:#f59e0b;
-      --danger:#ef4444;
-      --shadow:0 18px 50px rgba(0,0,0,.42);
+    :root {
+      --bg0: #05060a;
+      --bg1: #090b12;
+      --panel: rgba(255,255,255,0.06);
+      --panel2: rgba(255,255,255,0.08);
+      --line: rgba(255,255,255,0.10);
+      --text: #eef3ff;
+      --muted: rgba(255,255,255,0.58);
+      --accent: #5b8cff;
+      --accent2: #8b5cf6;
+      --good: #22c55e;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+      --shadow: 0 18px 50px rgba(0,0,0,.42);
+      --radius: 28px;
     }
 
-    *{box-sizing:border-box}
-    html,body{
-      margin:0;
-      min-height:100%;
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background:
-        radial-gradient(circle at top, rgba(91,140,255,.18), transparent 26%),
-        radial-gradient(circle at 20% 18%, rgba(139,92,246,.12), transparent 24%),
-        radial-gradient(circle at 90% 4%, rgba(34,197,94,.08), transparent 20%),
-        linear-gradient(180deg,#0b0d14 0%, #05060a 56%, #000 100%);
-      color:var(--text);
-      font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      overflow-x:hidden;
+        radial-gradient(circle at top, rgba(91,140,255,.18), transparent 28%),
+        radial-gradient(circle at 18% 18%, rgba(139,92,246,.12), transparent 24%),
+        radial-gradient(circle at 88% 5%, rgba(34,197,94,.08), transparent 18%),
+        linear-gradient(180deg, #0c0f17 0%, #05060a 55%, #000 100%);
+      overflow-x: hidden;
     }
 
-    body::before{
-      content:"";
-      position:fixed;
-      inset:0;
-      pointer-events:none;
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
       background:
-        linear-gradient(rgba(255,255,255,.023) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.023) 1px, transparent 1px);
-      background-size:34px 34px;
-      mask-image:radial-gradient(circle at center, black 42%, transparent 100%);
-      opacity:.28;
+        linear-gradient(rgba(255,255,255,.022) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.022) 1px, transparent 1px);
+      background-size: 36px 36px;
+      opacity: .28;
+      mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
     }
 
-    .app{
-      max-width:460px;
-      margin:0 auto;
-      padding:14px 14px 88px;
-      position:relative;
+    button, input {
+      font: inherit;
     }
 
-    .glass{
-      background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.035));
-      border:1px solid rgba(255,255,255,.08);
-      box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.05);
-      backdrop-filter:blur(18px);
-      -webkit-backdrop-filter:blur(18px);
+    .app {
+      max-width: 470px;
+      margin: 0 auto;
+      padding: 14px 14px 108px;
+      position: relative;
+      z-index: 1;
     }
 
-    .glass-strong{
-      background:linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.045));
-      border:1px solid rgba(255,255,255,.10);
-      box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.08);
-      backdrop-filter:blur(18px);
-      -webkit-backdrop-filter:blur(18px);
+    .glass {
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+      border: 1px solid rgba(255,255,255,.08);
+      box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,.05);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
     }
 
-    .muted{color:var(--muted)}
-    .soft-line{border:1px solid rgba(255,255,255,.08)}
-    .chip{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:9px 14px;
-      border-radius:999px;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.09);
-    }
-    .btn-main{
-      background:linear-gradient(180deg, rgba(91,140,255,1), rgba(70,119,250,1));
-      box-shadow:0 10px 28px rgba(91,140,255,.24), inset 0 1px 0 rgba(255,255,255,.18);
-    }
-    .btn-green{
-      background:linear-gradient(180deg, rgba(34,197,94,1), rgba(22,163,74,1));
-      box-shadow:0 10px 28px rgba(34,197,94,.20), inset 0 1px 0 rgba(255,255,255,.18);
-    }
-    .btn-dark{
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.08);
-    }
-    .btn-danger{
-      background:rgba(239,68,68,.12);
-      border:1px solid rgba(239,68,68,.16);
-    }
-    .btn-tab{
-      background:transparent;
-      border:none;
-      color:rgba(255,255,255,.70);
-    }
-    .btn-tab.active{
-      color:#fff;
-      background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
-    }
-    .scanline{
-      position:absolute;
-      inset:0;
-      pointer-events:none;
-      background:linear-gradient(to bottom, transparent, rgba(255,255,255,.06), transparent);
-      transform:translateY(-100%);
-      animation:scan 5.2s linear infinite;
-      opacity:.42;
-    }
-    @keyframes scan{0%{transform:translateY(-100%)}100%{transform:translateY(100%)}}
-    @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-    @keyframes pulse{0%,100%{transform:scale(1);opacity:.92}50%{transform:scale(1.03);opacity:1}}
-    .floaty{animation:floaty 4s ease-in-out infinite}
-    .pulse{animation:pulse 2.4s ease-in-out infinite}
-
-    .section{
-      border-radius:28px;
-      overflow:hidden;
-      position:relative;
+    .glass-strong {
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.05));
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,.06);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
     }
 
-    .hero{
-      padding:16px;
-      border-radius:28px;
+    .muted { color: var(--muted); }
+    .soft-line { border: 1px solid rgba(255,255,255,.08); }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.09);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .04em;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.08);
+    }
+    .badge.good { background: rgba(34,197,94,.12); border-color: rgba(34,197,94,.18); }
+    .badge.warn { background: rgba(245,158,11,.12); border-color: rgba(245,158,11,.18); }
+    .badge.blue { background: rgba(91,140,255,.12); border-color: rgba(91,140,255,.18); }
+
+    .btn-main {
+      background: linear-gradient(180deg, rgba(91,140,255,1), rgba(70,119,250,1));
+      box-shadow: 0 10px 28px rgba(91,140,255,.24), inset 0 1px 0 rgba(255,255,255,.18);
+      color: #fff;
+      border: none;
+    }
+    .btn-green {
+      background: linear-gradient(180deg, rgba(34,197,94,1), rgba(22,163,74,1));
+      box-shadow: 0 10px 28px rgba(34,197,94,.20), inset 0 1px 0 rgba(255,255,255,.18);
+      color: #fff;
+      border: none;
+    }
+    .btn-dark {
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.08);
+      color: #fff;
+    }
+    .btn-danger {
+      background: rgba(239,68,68,.10);
+      border: 1px solid rgba(239,68,68,.16);
+      color: #fff;
+    }
+
+    .btn-tab {
+      border: none;
+      color: rgba(255,255,255,.70);
+      background: transparent;
+      border-radius: 18px;
+      padding: 12px 8px;
+      font-weight: 800;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .btn-tab.active {
+      color: #fff;
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+      border: 1px solid rgba(255,255,255,.07);
+    }
+
+    .nav-ic {
+      width: 17px;
+      height: 17px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.16);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+    }
+    .btn-tab.active .nav-ic {
+      background: linear-gradient(180deg, rgba(91,140,255,1), rgba(139,92,246,1));
+    }
+
+    .input {
+      width: 100%;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.25);
+      color: #fff;
+      padding: 14px 14px;
+      outline: none;
+      font-size: 15px;
+    }
+    .input:focus {
+      border-color: rgba(91,140,255,.40);
+      box-shadow: 0 0 0 3px rgba(91,140,255,.10);
+    }
+
+    .scanline {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(to bottom, transparent, rgba(255,255,255,.06), transparent);
+      transform: translateY(-100%);
+      animation: scan 5.2s linear infinite;
+      opacity: .40;
+    }
+    @keyframes scan {
+      0% { transform: translateY(-100%); }
+      100% { transform: translateY(100%); }
+    }
+
+    @keyframes floaty {
+      0%,100% { transform: translateY(0px); }
+      50% { transform: translateY(-6px); }
+    }
+    .floaty { animation: floaty 4s ease-in-out infinite; }
+
+    @keyframes pulse {
+      0%,100% { transform: scale(1); opacity: .92; }
+      50% { transform: scale(1.03); opacity: 1; }
+    }
+    .pulse { animation: pulse 2.4s ease-in-out infinite; }
+
+    @keyframes portal {
+      0%   { transform: rotate(0deg) scale(.88); opacity:.40; }
+      50%  { transform: rotate(180deg) scale(1.02); opacity:1; }
+      100% { transform: rotate(360deg) scale(.90); opacity:.45; }
+    }
+
+    @keyframes glowPulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(91,140,255,.0), 0 0 0 0 rgba(139,92,246,.0); }
+      50% { box-shadow: 0 0 0 18px rgba(91,140,255,.08), 0 0 0 36px rgba(139,92,246,.05); }
+    }
+
+    .portal-wrap {
+      width: 138px;
+      height: 138px;
+      border-radius: 999px;
+      position: relative;
+      margin: 0 auto;
+      animation: portal 1.6s linear infinite;
+    }
+    .portal-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 999px;
       background:
-        radial-gradient(circle at 18% 18%, rgba(255,255,255,.14), transparent 18%),
-        radial-gradient(circle at 82% 18%, rgba(139,92,246,.20), transparent 20%),
-        linear-gradient(135deg, rgba(16,185,129,.85) 0%, rgba(59,130,246,.88) 22%, rgba(236,72,153,.90) 50%, rgba(245,158,11,.84) 74%, rgba(34,197,94,.84) 100%);
-      box-shadow:0 20px 70px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.08);
-      position:relative;
-      overflow:hidden;
+        radial-gradient(circle at center, rgba(255,255,255,.20) 0 14%, transparent 14.5% 20%, rgba(255,255,255,.15) 20.5% 24%, transparent 24.5% 31%, rgba(91,140,255,.40) 31.5% 35%, transparent 35.5% 44%, rgba(139,92,246,.34) 44.5% 49%, transparent 49.5% 100%);
+      filter: drop-shadow(0 0 20px rgba(91,140,255,.35));
+      animation: glowPulse 1.6s ease-in-out infinite;
+    }
+    .portal-core {
+      position: absolute;
+      inset: 28px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.9), rgba(255,255,255,.16) 20%, rgba(91,140,255,.08) 44%, rgba(0,0,0,.75) 100%);
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.12);
     }
 
-    .hero::before{
-      content:"";
-      position:absolute;
-      inset:0;
+    .shell {
+      position: relative;
+      border-radius: var(--radius);
+      overflow: hidden;
       background:
-        linear-gradient(155deg, rgba(0,0,0,.20) 0 34%, transparent 34% 55%, rgba(0,0,0,.10) 55% 100%),
+        radial-gradient(circle at 18% 12%, rgba(255,255,255,.12), transparent 17%),
+        radial-gradient(circle at 82% 18%, rgba(139,92,246,.22), transparent 18%),
+        linear-gradient(135deg, rgba(16,185,129,.82) 0%, rgba(59,130,246,.86) 22%, rgba(236,72,153,.90) 48%, rgba(245,158,11,.82) 72%, rgba(34,197,94,.86) 100%);
+      box-shadow: 0 20px 70px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.08);
+    }
+
+    .shell::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(155deg, rgba(0,0,0,.20) 0 32%, transparent 32% 56%, rgba(0,0,0,.10) 56% 100%),
         radial-gradient(circle at center, transparent 0 26%, rgba(255,255,255,.06) 26.5% 27.5%, transparent 28%);
-      mix-blend-mode:screen;
-      pointer-events:none;
+      mix-blend-mode: screen;
+      pointer-events: none;
     }
 
-    .hero::after{
-      content:"";
-      position:absolute;
-      inset:0;
-      background:radial-gradient(circle at center, transparent 44%, rgba(0,0,0,.22) 100%);
-      pointer-events:none;
+    .shell::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, transparent 42%, rgba(0,0,0,.22) 100%);
+      pointer-events: none;
     }
 
-    .grid-card{
-      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:18px;
-      padding:12px 14px;
-    }
-
-    .arena-shell{
-      position:relative;
-      aspect-ratio:1 / 1;
-      border-radius:26px;
-      overflow:hidden;
-      border:1px solid rgba(255,255,255,.10);
+    .arena-shell {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 26px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.10);
       background:
-        radial-gradient(circle at 50% 50%, rgba(255,255,255,.08) 0 2%, transparent 3%),
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,.07) 0 2%, transparent 3%),
         radial-gradient(circle at 50% 50%, transparent 0 38%, rgba(255,255,255,.05) 38.5% 39.5%, transparent 40%),
         linear-gradient(180deg, rgba(7,9,16,.96), rgba(12,14,24,.96));
-      box-shadow:0 20px 70px rgba(0,0,0,.40), inset 0 1px 0 rgba(255,255,255,.04);
+      box-shadow: 0 20px 70px rgba(0,0,0,.40), inset 0 1px 0 rgba(255,255,255,.04);
     }
 
-    .arena-shell::before{
-      content:"";
-      position:absolute;
-      inset:0;
+    .arena-shell::before {
+      content: "";
+      position: absolute;
+      inset: 0;
       background:
         linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px),
         linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px);
-      background-size:42px 42px;
-      opacity:.25;
-      pointer-events:none;
-      mask-image:radial-gradient(circle at center, black 45%, transparent 100%);
+      background-size: 42px 42px;
+      opacity: .25;
+      pointer-events: none;
+      mask-image: radial-gradient(circle at center, black 45%, transparent 100%);
     }
 
-    .arena-shell::after{
-      content:"";
-      position:absolute;
-      inset:0;
+    .arena-shell::after {
+      content: "";
+      position: absolute;
+      inset: 0;
       background:
         radial-gradient(circle at 50% 50%, transparent 0 58%, rgba(0,0,0,.10) 59% 100%);
-      pointer-events:none;
+      pointer-events: none;
     }
 
-    .arena-inner{
-      position:absolute;
-      inset:16px;
-      border-radius:20px;
-      overflow:hidden;
-      border:1px solid rgba(255,255,255,.08);
-      background:
-        radial-gradient(circle at center, rgba(255,255,255,.08), transparent 44%);
+    .arena-inner {
+      position: absolute;
+      inset: 16px;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.08);
+      background: radial-gradient(circle at center, rgba(255,255,255,.08), transparent 44%);
     }
 
-    .player-zone{
-      position:absolute;
-      top:0;
-      height:100%;
-      border-right:1px solid rgba(255,255,255,.10);
-      box-shadow:inset 0 0 50px rgba(255,255,255,.06);
-      overflow:hidden;
+    .player-zone {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      overflow: hidden;
+      border-right: 1px solid rgba(255,255,255,.10);
+      box-shadow: inset 0 0 50px rgba(255,255,255,.06);
     }
 
-    .player-zone::before{
-      content:"";
-      position:absolute;
-      inset:0;
+    .player-zone::before {
+      content: "";
+      position: absolute;
+      inset: 0;
       background:
         radial-gradient(circle at 50% 30%, rgba(255,255,255,.18), transparent 18%),
         linear-gradient(180deg, rgba(255,255,255,.08), transparent 32%);
-      pointer-events:none;
-      mix-blend-mode:screen;
-      opacity:.9;
+      pointer-events: none;
+      mix-blend-mode: screen;
+      opacity: .9;
     }
 
-    .zone-label{
-      position:absolute;
-      left:50%;
-      top:50%;
-      transform:translate(-50%, -50%);
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap:8px;
-      text-align:center;
-      width:100%;
-      padding:0 8px;
-      pointer-events:none;
+    .zone-label {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      text-align: center;
+      width: 100%;
+      padding: 0 8px;
+      pointer-events: none;
     }
 
-    .avatar-ring{
-      width:54px;
-      height:54px;
-      border-radius:999px;
-      padding:3px;
-      background:linear-gradient(135deg, rgba(255,255,255,.26), rgba(255,255,255,.08));
-      box-shadow:0 0 22px rgba(255,255,255,.14), 0 0 50px rgba(0,0,0,.18);
+    .avatar-ring {
+      width: 54px;
+      height: 54px;
+      border-radius: 999px;
+      padding: 3px;
+      background: linear-gradient(135deg, rgba(255,255,255,.26), rgba(255,255,255,.08));
+      box-shadow: 0 0 22px rgba(255,255,255,.14), 0 0 50px rgba(0,0,0,.18);
     }
 
-    .avatar{
-      width:100%;
-      height:100%;
-      border-radius:999px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      overflow:hidden;
-      background:rgba(0,0,0,.18);
-      border:1px solid rgba(255,255,255,.12);
+    .avatar {
+      width: 100%;
+      height: 100%;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background: rgba(0,0,0,.18);
+      border: 1px solid rgba(255,255,255,.12);
     }
 
-    .avatar img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
     }
 
-    .avatar-fallback{
-      font-size:12px;
-      font-weight:900;
-      letter-spacing:.05em;
-      text-shadow:0 1px 8px rgba(0,0,0,.45);
+    .avatar-fallback {
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .05em;
+      text-shadow: 0 1px 8px rgba(0,0,0,.45);
     }
 
-    .zone-title{
-      font-size:12px;
-      font-weight:900;
-      letter-spacing:.06em;
-      text-transform:uppercase;
-      text-shadow:0 1px 8px rgba(0,0,0,.36);
-    }
-    .zone-sub{
-      font-size:11px;
-      color:rgba(255,255,255,.80);
-      text-shadow:0 1px 8px rgba(0,0,0,.36);
+    .zone-title {
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      text-shadow: 0 1px 8px rgba(0,0,0,.36);
     }
 
-    .arrow-wrap{
-      position:absolute;
-      left:0;
-      top:0;
-      width:100%;
-      height:100%;
-      pointer-events:none;
-      z-index:12;
-    }
-    .arrow-core{
-      position:absolute;
-      width:20px;
-      height:20px;
-      border-radius:999px;
-      background:radial-gradient(circle at 30% 30%, #fff, #f5f5f5 20%, #cbd5e1 100%);
-      box-shadow:0 0 18px rgba(255,255,255,.42), 0 0 30px rgba(91,140,255,.28);
-      transform:translate(-50%, -50%);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
-    .arrow-head{
-      width:0;
-      height:0;
-      border-left:7px solid transparent;
-      border-right:7px solid transparent;
-      border-top:16px solid rgba(255,255,255,.96);
-      filter:drop-shadow(0 0 8px rgba(255,255,255,.45));
-      transform:translateY(14px);
+    .zone-sub {
+      font-size: 11px;
+      color: rgba(255,255,255,.80);
+      text-shadow: 0 1px 8px rgba(0,0,0,.36);
     }
 
-    .pointer-line{
-      position:absolute;
-      top:10px;
-      right:10px;
-      z-index:20;
-      padding:8px 10px;
-      border-radius:999px;
-      background:rgba(0,0,0,.28);
-      border:1px solid rgba(255,255,255,.10);
-      font-size:11px;
-      color:rgba(255,255,255,.85);
-    }
-
-    .indicator{
-      width:10px;
-      height:10px;
-      border-radius:999px;
-      background:var(--good);
-      box-shadow:0 0 12px rgba(34,197,94,.55);
-    }
-
-    .nav-bar{
-      position:fixed;
-      left:50%;
-      transform:translateX(-50%);
-      bottom:0;
-      width:min(460px,100%);
-      padding:10px 14px calc(10px + env(safe-area-inset-bottom));
-      z-index:40;
-      background:linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,.46) 14%, rgba(0,0,0,.72));
-      backdrop-filter:blur(16px);
-      -webkit-backdrop-filter:blur(16px);
-    }
-
-    .nav-inner{
-      display:grid;
-      grid-template-columns:1fr 1fr 1fr;
-      gap:10px;
-      padding:10px;
-      border-radius:22px;
-      background:rgba(10,12,18,.76);
-      border:1px solid rgba(255,255,255,.08);
-      box-shadow:0 14px 40px rgba(0,0,0,.35);
-    }
-
-    .nav-btn{
-      border:none;
-      border-radius:18px;
-      padding:12px 8px;
-      color:rgba(255,255,255,.70);
-      font-weight:800;
-      letter-spacing:.02em;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap:4px;
-      background:transparent;
-    }
-    .nav-btn.active{
-      color:#fff;
-      background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
-      border:1px solid rgba(255,255,255,.07);
-    }
-    .nav-ic{
-      width:16px;
-      height:16px;
-      border-radius:999px;
-      background:rgba(255,255,255,.16);
-      box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
-    }
-    .nav-btn.active .nav-ic{background:linear-gradient(180deg, rgba(91,140,255,1), rgba(139,92,246,1))}
-    .thin-scroll::-webkit-scrollbar{height:6px;width:6px}
-    .thin-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:999px}
-    .thin-scroll::-webkit-scrollbar-track{background:transparent}
-
-    .modal-backdrop{
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,.62);
-      backdrop-filter:blur(10px);
-      -webkit-backdrop-filter:blur(10px);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      z-index:100;
-      padding:16px;
-    }
-
-    .modal{
-      width:min(430px,100%);
-      border-radius:28px;
-      padding:16px;
-      background:linear-gradient(180deg, rgba(20,23,34,.98), rgba(9,10,16,.98));
-      border:1px solid rgba(255,255,255,.10);
-      box-shadow:0 24px 80px rgba(0,0,0,.48);
-      position:relative;
-      overflow:hidden;
-    }
-    .modal::before{
-      content:"";
-      position:absolute;
-      inset:0;
+    .center-core {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 158px;
+      height: 158px;
+      transform: translate(-50%, -50%);
+      border-radius: 999px;
       background:
-        radial-gradient(circle at 20% 20%, rgba(91,140,255,.12), transparent 18%),
-        radial-gradient(circle at 80% 10%, rgba(139,92,246,.12), transparent 18%);
-      pointer-events:none;
+        radial-gradient(circle at 35% 28%, rgba(255,255,255,.35), transparent 18%),
+        radial-gradient(circle at center, rgba(9,13,24,.82) 0 48%, rgba(10,20,40,.92) 60%, rgba(0,0,0,.96) 100%);
+      border: 1px solid rgba(255,255,255,.16);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.18),
+        0 0 0 10px rgba(255,255,255,.03),
+        0 0 55px rgba(0,0,0,.30);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      z-index: 8;
     }
 
-    .input{
-      width:100%;
-      border-radius:18px;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(0,0,0,.26);
-      color:#fff;
-      padding:14px 14px;
-      outline:none;
-      font-size:15px;
-    }
-    .input:focus{
-      border-color:rgba(91,140,255,.34);
-      box-shadow:0 0 0 3px rgba(91,140,255,.12);
+    .center-core .title {
+      font-weight: 900;
+      letter-spacing: .10em;
+      font-size: 10px;
+      color: rgba(255,255,255,.78);
+      text-transform: uppercase;
     }
 
-    .support-mask{
-      position:fixed;
-      inset:0;
-      z-index:110;
-      background:rgba(0,0,0,.70);
-      display:flex;
-      align-items:flex-end;
-      justify-content:center;
-      padding:16px;
-      backdrop-filter:blur(10px);
-      -webkit-backdrop-filter:blur(10px);
-    }
-    .support-sheet{
-      width:min(430px,100%);
-      border-radius:24px;
-      background:linear-gradient(180deg, rgba(18,20,28,.98), rgba(8,9,14,.98));
-      border:1px solid rgba(255,255,255,.10);
-      box-shadow:0 24px 70px rgba(0,0,0,.50);
-      padding:16px;
-      position:relative;
+    .center-core .value {
+      margin-top: 6px;
+      font-size: 34px;
+      font-weight: 900;
+      line-height: 1;
     }
 
-    .badge{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      padding:6px 10px;
-      border-radius:999px;
-      font-size:11px;
-      font-weight:800;
-      letter-spacing:.04em;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.08);
-    }
-    .badge.good{background:rgba(34,197,94,.10); border-color:rgba(34,197,94,.16)}
-    .badge.warn{background:rgba(245,158,11,.10); border-color:rgba(245,158,11,.18)}
-    .badge.blue{background:rgba(91,140,255,.10); border-color:rgba(91,140,255,.18)}
-
-    .mini-stat{
-      display:flex;
-      flex-direction:column;
-      gap:3px;
-      padding:12px 14px;
-      border-radius:18px;
-      background:rgba(255,255,255,.05);
-      border:1px solid rgba(255,255,255,.08);
-      min-width:0;
-    }
-    .mini-label{
-      font-size:11px;
-      text-transform:uppercase;
-      letter-spacing:.18em;
-      font-weight:900;
-      color:rgba(255,255,255,.56);
-    }
-    .mini-value{
-      font-size:18px;
-      font-weight:900;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-    .mini-hint{
-      font-size:11px;
-      color:rgba(255,255,255,.58);
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
+    .center-core .sub {
+      margin-top: 8px;
+      font-size: 11px;
+      color: rgba(255,255,255,.62);
+      line-height: 1.25;
     }
 
-    .section-title{
-      font-size:12px;
-      font-weight:900;
-      letter-spacing:.18em;
-      text-transform:uppercase;
-      color:rgba(255,255,255,.55);
+    .pointer-line {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 18;
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: rgba(0,0,0,.28);
+      border: 1px solid rgba(255,255,255,.10);
+      font-size: 11px;
+      color: rgba(255,255,255,.88);
     }
 
-    .row-divider{
-      height:1px;
-      background:rgba(255,255,255,.08);
-      margin:10px 0;
+    .arrow-wrap {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 20;
+    }
+
+    .arrow-core {
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 30%, #fff, #f5f5f5 20%, #cbd5e1 100%);
+      box-shadow: 0 0 18px rgba(255,255,255,.42), 0 0 30px rgba(91,140,255,.28);
+      transform: translate(-50%, -50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .arrow-head {
+      width: 0;
+      height: 0;
+      border-left: 7px solid transparent;
+      border-right: 7px solid transparent;
+      border-top: 16px solid rgba(255,255,255,.96);
+      filter: drop-shadow(0 0 8px rgba(255,255,255,.45));
+      transform: translateY(14px);
+    }
+
+    .top-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.10);
+    }
+
+    .mini-stat {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      padding: 12px 14px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.08);
+      min-width: 0;
+    }
+    .mini-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .18em;
+      font-weight: 900;
+      color: rgba(255,255,255,.55);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .mini-value {
+      font-size: 18px;
+      font-weight: 900;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .mini-hint {
+      font-size: 11px;
+      color: rgba(255,255,255,.58);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.55);
+    }
+
+    .row-divider {
+      height: 1px;
+      background: rgba(255,255,255,.08);
+      margin: 10px 0;
+    }
+
+    .thin-scroll::-webkit-scrollbar { height: 6px; width: 6px; }
+    .thin-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,.14); border-radius: 999px; }
+    .thin-scroll::-webkit-scrollbar-track { background: transparent; }
+
+    .nav-bar {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 0;
+      width: min(470px, 100%);
+      padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+      z-index: 40;
+      background: linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,.48) 14%, rgba(0,0,0,.74));
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    .nav-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      padding: 10px;
+      border-radius: 22px;
+      background: rgba(10,12,18,.78);
+      border: 1px solid rgba(255,255,255,.08);
+      box-shadow: 0 14px 40px rgba(0,0,0,.35);
+    }
+
+    .nav-btn {
+      border: none;
+      border-radius: 18px;
+      padding: 12px 8px;
+      color: rgba(255,255,255,.70);
+      font-weight: 800;
+      letter-spacing: .02em;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      background: transparent;
+    }
+
+    .nav-btn.active {
+      color: #fff;
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+      border: 1px solid rgba(255,255,255,.07);
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.68);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 120;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .modal {
+      width: min(460px, 100%);
+      border-radius: 28px;
+      padding: 16px;
+      background: linear-gradient(180deg, rgba(18,20,28,.98), rgba(9,10,16,.98));
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow: 0 24px 80px rgba(0,0,0,.48);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .modal::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 18% 16%, rgba(91,140,255,.14), transparent 16%),
+        radial-gradient(circle at 82% 12%, rgba(139,92,246,.14), transparent 16%);
+      pointer-events: none;
+    }
+
+    .support-mask {
+      position: fixed;
+      inset: 0;
+      z-index: 130;
+      background: rgba(0,0,0,.70);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 16px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .support-sheet {
+      width: min(460px, 100%);
+      border-radius: 24px;
+      background: linear-gradient(180deg, rgba(18,20,28,.98), rgba(8,9,14,.98));
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow: 0 24px 70px rgba(0,0,0,.50);
+      padding: 16px;
+      position: relative;
+    }
+
+    .intro-mask {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background:
+        radial-gradient(circle at center, rgba(91,140,255,.20), transparent 18%),
+        radial-gradient(circle at center, rgba(139,92,246,.14), transparent 32%),
+        linear-gradient(180deg, #05060a 0%, #000 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIntro 1.2s ease forwards;
+    }
+
+    @keyframes fadeIntro {
+      0%   { opacity: 1; }
+      80%  { opacity: 1; }
+      100% { opacity: 0; visibility: hidden; }
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .space-between {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .card-title {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .18em;
+      font-weight: 900;
+      color: rgba(255,255,255,.54);
+    }
+
+    .empty-box {
+      padding: 20px;
+      border-radius: 20px;
+      border: 1px dashed rgba(255,255,255,.12);
+      color: rgba(255,255,255,.64);
+      text-align: center;
+      background: rgba(255,255,255,.03);
+    }
+
+    .list-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+
+    .list-item:last-child {
+      border-bottom: 0;
+    }
+
+    .small-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.10);
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,.06);
+    }
+
+    .small-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.05);
+    }
+
+    .toggle button {
+      border: none;
+      border-radius: 999px;
+      padding: 10px 14px;
+      color: rgba(255,255,255,.72);
+      background: transparent;
+      font-weight: 900;
+    }
+
+    .toggle button.active {
+      background: linear-gradient(180deg, rgba(91,140,255,1), rgba(70,119,250,1));
+      color: #fff;
+    }
+
+    .portal-sizes {
+      display: grid;
+      place-items: center;
+      min-height: 220px;
+    }
+
+    .support-note {
+      font-size: 13px;
+      color: rgba(255,255,255,.70);
+      line-height: 1.65;
+    }
+
+    .dim {
+      opacity: .74;
     }
   </style>
 </head>
 <body>
   <div id="root"></div>
+
   <div class="nav-bar">
     <div id="nav-anchor"></div>
   </div>
 
-  <script type="text/babel">
-    const { useEffect, useMemo, useRef, useState } = React;
-
+  <script>
     const firebaseConfig = {
       apiKey: "AIzaSyCsgo_VhjPWLyUtZCE0jCzqCmQa-du0qwI",
       authDomain: "portals-c5000.firebaseapp.com",
@@ -569,7 +811,8 @@
     const ROUND_SECONDS = 20;
     const FEE_RATE = 0.10;
     const ROOM_DEFAULT = "room_1";
-    const BASE_URL = "https://zyvelo427-bot.github.io/portals_games_bot";
+    const ACTIVE_SESSION_MS = 15000;
+    const INTRO_MS = 1200;
 
     const LANGS = {
       ru: {
@@ -621,11 +864,22 @@
         playerZone: "Зона",
         payout: "Выплата",
         feeNote: "10% комиссия удерживается из банка",
-        languageShort: "RU",
         profileInfo: "Профиль и настройки",
         supportTitle: "Поддержка",
-        testFlow: "Тестовый сценарий",
-        testFlowText: "Меняй ник, ставь сумму и добавляй следующего игрока с того же телефона. Ник должен быть уникальным в комнате.",
+        testFlowText: "Можно создавать много игроков с одного телефона. Ник должен быть уникальным в комнате.",
+        modeTest: "TEST MODE",
+        modeReal: "REAL MODE",
+        changeNick: "Сменить ник",
+        demoPlayer: "Demo +",
+        roomStatusReady: "RTDB ready",
+        roomStatusConnecting: "Connecting",
+        roomStatusLive: "Live",
+        roomStatusFinished: "Finished",
+        onlineHint: "Активные сессии в комнате",
+        winnerByArrow: "Победитель по стрелке",
+        arenaTitle: "Arena",
+        lastGame: "Последняя игра",
+        history: "История",
       },
       en: {
         appTitle: "TON Arena",
@@ -676,1305 +930,1381 @@
         playerZone: "Zone",
         payout: "Payout",
         feeNote: "10% fee is deducted from the bank",
-        languageShort: "EN",
         profileInfo: "Profile and settings",
         supportTitle: "Support",
-        testFlow: "Test flow",
-        testFlowText: "Change the nickname, place the amount and add another player from the same phone. The nickname must be unique inside the room.",
+        testFlowText: "You can create many players from one phone. The nickname must be unique inside the room.",
+        modeTest: "TEST MODE",
+        modeReal: "REAL MODE",
+        changeNick: "Change nickname",
+        demoPlayer: "Demo +",
+        roomStatusReady: "RTDB ready",
+        roomStatusConnecting: "Connecting",
+        roomStatusLive: "Live",
+        roomStatusFinished: "Finished",
+        onlineHint: "Active sessions in the room",
+        winnerByArrow: "Winner by arrow",
+        arenaTitle: "Arena",
+        lastGame: "Last game",
+        history: "History",
       }
     };
 
-    function t(lang, key){
-      return LANGS[lang]?.[key] ?? LANGS.ru[key] ?? key;
+    const state = {
+      lang: localStorage.getItem("tonarena_lang") || "ru",
+      mode: localStorage.getItem("tonarena_mode") || "test", // test | real
+      nickname: localStorage.getItem("tonarena_nick") || "",
+      roomId: localStorage.getItem("tonarena_room") || ROOM_DEFAULT,
+      betAmount: 1,
+      tab: "games",
+      supportOpen: false,
+      gateOpen: !localStorage.getItem("tonarena_nick"),
+      intro: true,
+      copied: false,
+      notice: "",
+      playersObj: {},
+      sessionsObj: {},
+      room: {
+        status: "waiting",
+        timer: ROUND_SECONDS,
+        host: "",
+        timerOwner: "",
+        phaseText: "waiting",
+        winner: null,
+        lastGame: null,
+        arrowHistory: []
+      },
+      stats: {
+        betsCount: 0,
+        wins: 0,
+        totalBet: 0,
+        refs: 0
+      },
+      arrow: {
+        active: false,
+        x: 0,
+        y: 0,
+        vx: 0,
+        vy: 0,
+        angle: 0
+      }
+    };
+
+    const root = document.getElementById("root");
+    const navAnchor = document.getElementById("nav-anchor");
+
+    const sessionIdKey = "tonarena_session_id";
+    const sessionId = localStorage.getItem(sessionIdKey) || makeId("sess");
+    localStorage.setItem(sessionIdKey, sessionId);
+
+    let roomRef = null;
+    let statsRef = null;
+    let sessionTouchTimer = null;
+    let timerOwnerLoop = null;
+    let arrowLoop = null;
+    let introTimer = null;
+
+    function makeId(prefix = "id") {
+      return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
     }
 
-    function safeNick(nick){
+    function safeNick(nick) {
       return String(nick || "").trim().replace(/\s+/g, " ").slice(0, 18);
     }
 
-    function nickKey(nick){
-      return safeNick(nick).toLowerCase().replace(/[^a-zа-я0-9_ -]/gi, "_").replace(/\s/g, "_");
+    function nickKey(nick) {
+      return safeNick(nick)
+        .toLowerCase()
+        .replace(/[^a-zа-я0-9_ -]/gi, "_")
+        .replace(/\s/g, "_")
+        .replace(/_+/g, "_");
     }
 
-    function shortNick(s){
-      if(!s) return "—";
+    function shortNick(s) {
+      if (!s) return "—";
       return s.length > 12 ? s.slice(0, 12) + "…" : s;
     }
 
-    function formatTON(v){
-      const n = Number(v || 0);
-      if(!isFinite(n)) return "0";
-      return Number.isInteger(n) ? String(n) : n.toFixed(2).replace(/\.?0+$/,'');
+    function shortId(s) {
+      if (!s) return "—";
+      return s.length > 14 ? s.slice(0, 6) + "…" + s.slice(-4) : s;
     }
 
-    function seededColor(seed){
+    function formatTON(v) {
+      const n = Number(v || 0);
+      if (!isFinite(n)) return "0";
+      return Number.isInteger(n) ? String(n) : n.toFixed(2).replace(/\.?0+$/, "");
+    }
+
+    function seededColor(seed) {
       let h = 0;
-      for(let i=0;i<seed.length;i++) h = ((h * 31) + seed.charCodeAt(i)) >>> 0;
+      const s = String(seed || "seed");
+      for (let i = 0; i < s.length; i++) h = ((h * 31) + s.charCodeAt(i)) >>> 0;
       const colors = [
-        ["#3b82f6","#1d4ed8"],
-        ["#8b5cf6","#6d28d9"],
-        ["#ec4899","#db2777"],
-        ["#f59e0b","#d97706"],
-        ["#10b981","#059669"],
-        ["#14b8a6","#0f766e"],
-        ["#ef4444","#b91c1c"],
-        ["#06b6d4","#0284c7"],
-        ["#f97316","#ea580c"],
-        ["#22c55e","#16a34a"]
+        ["#3b82f6", "#1d4ed8"],
+        ["#8b5cf6", "#6d28d9"],
+        ["#ec4899", "#db2777"],
+        ["#f59e0b", "#d97706"],
+        ["#10b981", "#059669"],
+        ["#14b8a6", "#0f766e"],
+        ["#ef4444", "#b91c1c"],
+        ["#06b6d4", "#0284c7"],
+        ["#f97316", "#ea580c"],
+        ["#22c55e", "#16a34a"]
       ];
       const c = colors[h % colors.length];
       return `linear-gradient(135deg, ${c[0]}, ${c[1]})`;
     }
 
-    function makeReferralCode(nick){
+    function makeReferralCode(nick) {
       const base = nickKey(nick) || "guest";
       return `${base}-tonarena`;
     }
 
-    function randomAvatar(seed){
+    function randomAvatar(seed) {
       return `https://api.dicebear.com/9.x/identicon/svg?seed=${encodeURIComponent(seed || "guest")}`;
     }
 
-    function useLocal(key, fallback){
-      const [value, setValue] = useState(() => {
-        try{
-          const raw = localStorage.getItem(key);
-          return raw != null ? JSON.parse(raw) : fallback;
-        }catch{
-          return fallback;
-        }
-      });
-      useEffect(() => {
-        try{
-          localStorage.setItem(key, JSON.stringify(value));
-        }catch{}
-      }, [key, value]);
-      return [value, setValue];
+    function t(key) {
+      return LANGS[state.lang]?.[key] ?? LANGS.ru[key] ?? key;
     }
 
-    function getCommission(bank){
-      return +(Number(bank || 0) * FEE_RATE).toFixed(2);
+    function setState(patch) {
+      Object.assign(state, patch);
+      localStorage.setItem("tonarena_lang", state.lang);
+      localStorage.setItem("tonarena_mode", state.mode);
+      localStorage.setItem("tonarena_room", state.roomId);
+      if (state.nickname) localStorage.setItem("tonarena_nick", state.nickname);
+      render();
     }
 
-    function getPayout(bank){
-      return +(Number(bank || 0) - getCommission(bank)).toFixed(2);
+    function activeOnlineCount() {
+      const now = Date.now();
+      return Object.values(state.sessionsObj || {})
+        .filter(s => now - Number(s.lastSeen || 0) < ACTIVE_SESSION_MS)
+        .length;
     }
 
-    function weightedPick(players){
-      const arr = players
-        .map(p => ({...p, amount:Number(p.amount || 0)}))
-        .filter(p => p.amount > 0);
+    function playersArr() {
+      const arr = Object.values(state.playersObj || {});
+      arr.sort((a, b) => Number(a.joinedAt || 0) - Number(b.joinedAt || 0));
+      return arr;
+    }
 
-      const total = arr.reduce((s,p)=>s+p.amount,0);
-      if(total <= 0) return arr[0] || null;
+    function totalBank() {
+      return playersArr().reduce((sum, p) => sum + Number(p.amount || 0), 0);
+    }
 
-      const r = Math.random() * total;
-      let a = 0;
-      for(const p of arr){
-        a += p.amount;
-        if(r <= a) return p;
+    function feeBase() {
+      const arr = playersArr();
+      if (!arr.length) return 0;
+      return Math.min(...arr.map(p => Number(p.amount || 0)));
+    }
+
+    function commissionAmount() {
+      return +(Math.min(totalBank(), feeBase() * FEE_RATE)).toFixed(2);
+    }
+
+    function payoutAmount() {
+      return +(totalBank() - commissionAmount()).toFixed(2);
+    }
+
+    function shares() {
+      const arr = playersArr();
+      const total = arr.reduce((s, p) => s + Number(p.amount || 0), 0);
+      if (!arr.length) return [];
+      if (total <= 0) return arr.map(p => ({ ...p, share: 1 / arr.length }));
+      return arr.map(p => ({ ...p, share: Number(p.amount || 0) / total }));
+    }
+
+    function findWinnerByX(xNorm) {
+      const arr = shares();
+      if (!arr.length) return null;
+      let acc = 0;
+      for (const p of arr) {
+        const next = acc + p.share;
+        if (xNorm >= acc && xNorm <= next) return p;
+        acc = next;
       }
       return arr[arr.length - 1] || null;
     }
 
-    function computeShares(players){
-      const total = players.reduce((s,p)=>s + Number(p.amount || 0), 0);
-      if(total <= 0 && players.length){
-        return players.map(p => ({...p, share: 1 / players.length}));
-      }
-      if(total <= 0) return [];
-      return players.map(p => ({...p, share: Number(p.amount || 0) / total}));
+    function computeArenaStats() {
+      const arr = playersArr();
+      const total = arr.reduce((s, p) => s + Number(p.amount || 0), 0);
+      const max = arr.reduce((m, p) => Math.max(m, Number(p.amount || 0)), 0);
+      const top = arr.reduce((best, p) => Number(p.amount || 0) > Number(best?.amount || 0) ? p : best, null);
+      return { total, max, top };
     }
 
-    function App(){
-      const [lang, setLang] = useLocal("tonarena_lang", "ru");
-      const [nickname, setNickname] = useLocal("tonarena_nick", "");
-      const [roomId, setRoomId] = useLocal("tonarena_room", ROOM_DEFAULT);
-      const [clientId] = useLocal("tonarena_client_id", `client_${Math.random().toString(36).slice(2,10)}`);
-
-      const [tab, setTab] = useState("games");
-      const [nickInput, setNickInput] = useState(nickname || "");
-      const [roomInput, setRoomInput] = useState(roomId || ROOM_DEFAULT);
-      const [betAmount, setBetAmount] = useState(1);
-      const [supportOpen, setSupportOpen] = useState(false);
-      const [players, setPlayers] = useState([]);
-      const [room, setRoom] = useState({
-        status:"waiting",
-        timer: ROUND_SECONDS,
-        host:"",
-        winner:null,
-        lastGame:null,
-        startedAt:null,
-        phaseText:"waiting",
-        timerOwner:"",
-        arrowHistory:[]
+    function updateSessionTouch(extra = {}) {
+      const sessionRef = db.ref(`rooms/${state.roomId}/sessions/${sessionId}`);
+      return sessionRef.update({
+        sessionId,
+        roomId: state.roomId,
+        nickname: state.nickname || "",
+        mode: state.mode,
+        lastSeen: Date.now(),
+        updatedAt: Date.now(),
+        ...extra
       });
-      const [arrow, setArrow] = useState({
-        active:false,
-        x:0,
-        y:0,
-        vx:0,
-        vy:0,
-        angle:0
-      });
-      const [history, setHistory] = useState([]);
-      const [myStats, setMyStats] = useState({
-        betsCount:0,
-        wins:0,
-        totalBet:0,
-        refs:0
-      });
-      const [notice, setNotice] = useState("");
-      const [copied, setCopied] = useState(false);
-      const [roomReady, setRoomReady] = useState(false);
-      const [gateOpen, setGateOpen] = useState(!nickname);
-      const [draftNick, setDraftNick] = useState(nickname || "");
+    }
 
-      const arenaRef = useRef(null);
-      const timerRef = useRef(null);
-      const physRef = useRef(null);
-      const resolveLockRef = useRef(false);
+    function attachRoom(roomId) {
+      if (roomRef) roomRef.off();
+      if (statsRef) statsRef.off();
 
-      const selectedRoom = roomId || ROOM_DEFAULT;
-      const roomPath = useMemo(() => `rooms/${selectedRoom}`, [selectedRoom]);
+      roomRef = db.ref(`rooms/${roomId}`);
+      statsRef = state.nickname ? db.ref(`stats/${nickKey(state.nickname)}`) : null;
 
-      const roomPlayers = useMemo(() => {
-        return [...players].sort((a,b)=>(a.joinedAt || 0) - (b.joinedAt || 0));
-      }, [players]);
+      roomRef.on("value", snap => {
+        const data = snap.val() || {};
+        const players = data.players || {};
+        const sessions = data.sessions || {};
+        const history = Array.isArray(data.arrowHistory)
+          ? data.arrowHistory
+          : data.arrowHistory && typeof data.arrowHistory === "object"
+            ? Object.values(data.arrowHistory)
+            : [];
 
-      const totalBank = useMemo(() => {
-        return roomPlayers.reduce((s,p)=>s + Number(p.amount || 0), 0);
-      }, [roomPlayers]);
-
-      const fee = useMemo(() => getCommission(totalBank), [totalBank]);
-      const payout = useMemo(() => getPayout(totalBank), [totalBank]);
-      const shares = useMemo(() => computeShares(roomPlayers), [roomPlayers]);
-
-      const currentPlayer = useMemo(() => {
-        if(!nickname) return null;
-        return roomPlayers.find(p => p.nicknameKey === nickKey(nickname)) || null;
-      }, [roomPlayers, nickname]);
-
-      const topPlayer = useMemo(() => {
-        if(!roomPlayers.length) return null;
-        return roomPlayers.reduce((best, cur) => Number(cur.amount || 0) > Number(best?.amount || 0) ? cur : best, null);
-      }, [roomPlayers]);
-
-      const winnerPlayer = useMemo(() => {
-        if(!room.winner) return null;
-        return roomPlayers.find(p => p.nicknameKey === room.winner.nicknameKey) || null;
-      }, [room.winner, roomPlayers]);
-
-      const roomLink = useMemo(() => {
-        const ref = makeReferralCode(nickname || "friend");
-        return `${BASE_URL}/?ref=${encodeURIComponent(ref)}`;
-      }, [nickname]);
-
-      const langText = (k) => t(lang, k);
-      const cleanNick = safeNick(draftNick || nickname);
-      const canUseNick = cleanNick.length >= 2;
-
-      useEffect(() => {
-        firebase.auth().signInAnonymously().catch(()=>{});
-        setRoomReady(true);
-      }, []);
-
-      useEffect(() => {
-        setDraftNick(nickname || "");
-      }, [nickname]);
-
-      useEffect(() => {
-        const url = new URL(window.location.href);
-        const ref = url.searchParams.get("ref");
-        if(ref && !localStorage.getItem("tonarena_ref")){
-          localStorage.setItem("tonarena_ref", ref);
-        }
-      }, []);
-
-      useEffect(() => {
-        if(!nickname) {
-          setGateOpen(true);
-          return;
-        }
-        setGateOpen(false);
-      }, [nickname]);
-
-      useEffect(() => {
-        const roomRef = db.ref(roomPath);
-
-        const onValue = (snap) => {
-          const data = snap.val() || {};
-          const pl = data.players ? Object.values(data.players) : [];
-          const hist = Array.isArray(data.arrowHistory)
-            ? data.arrowHistory
-            : data.arrowHistory && typeof data.arrowHistory === "object"
-              ? Object.values(data.arrowHistory)
-              : [];
-
-          setPlayers(pl);
-          setRoom({
-            status: data.status || "waiting",
-            timer: Number(data.timer ?? ROUND_SECONDS),
-            host: data.host || "",
-            winner: data.winner || null,
-            lastGame: data.lastGame || null,
-            startedAt: data.startedAt || null,
-            phaseText: data.phaseText || "waiting",
-            timerOwner: data.timerOwner || "",
-            arrowHistory: hist
-          });
-          setHistory(hist);
+        state.playersObj = players;
+        state.sessionsObj = sessions;
+        state.room = {
+          status: data.status || "waiting",
+          timer: Number(data.timer ?? ROUND_SECONDS),
+          host: data.host || "",
+          timerOwner: data.timerOwner || "",
+          phaseText: data.phaseText || "waiting",
+          winner: data.winner || null,
+          lastGame: data.lastGame || null,
+          arrowHistory: history
         };
 
-        roomRef.on("value", onValue);
-        return () => roomRef.off("value", onValue);
-      }, [roomPath]);
+        render();
+      });
 
-      useEffect(() => {
-        if(!nickname) return;
-        const ref = db.ref(`stats/${nickKey(nickname)}`);
-        const onValue = (snap) => {
-          const data = snap.val() || {};
-          setMyStats({
-            betsCount: Number(data.betsCount || 0),
-            wins: Number(data.wins || 0),
-            totalBet: Number(data.totalBet || 0),
-            refs: Number(data.refs || 0)
-          });
-        };
-        ref.on("value", onValue);
-        return () => ref.off("value", onValue);
-      }, [nickname]);
+      roomRef.child("sessions").on("value", snap => {
+        state.sessionsObj = snap.val() || {};
+        render();
+      });
 
-      useEffect(() => {
-        if(room.status !== "betting") {
-          if(timerRef.current){
-            clearInterval(timerRef.current);
-            timerRef.current = null;
-          }
-          return;
-        }
+      if (state.nickname) {
+        statsRef = db.ref(`stats/${nickKey(state.nickname)}`);
+        statsRef.on("value", snap => {
+          state.stats = snap.val() || { betsCount: 0, wins: 0, totalBet: 0, refs: 0 };
+          render();
+        });
+      }
 
-        if(room.timerOwner !== clientId) return;
+      startHeartbeat();
+      render();
+    }
 
-        if(timerRef.current){
-          clearInterval(timerRef.current);
-          timerRef.current = null;
-        }
+    function startHeartbeat() {
+      if (sessionTouchTimer) clearInterval(sessionTouchTimer);
+      updateSessionTouch({ status: "active" }).catch(() => {});
+      sessionTouchTimer = setInterval(() => {
+        updateSessionTouch({ status: "active" }).catch(() => {});
+      }, 3000);
+    }
 
-        timerRef.current = setInterval(() => {
-          db.ref(`${roomPath}/timer`).transaction((cur) => {
-            const next = Math.max(0, Number(cur || ROUND_SECONDS) - 1);
+    function stopTimerLoop() {
+      if (timerOwnerLoop) {
+        clearInterval(timerOwnerLoop);
+        timerOwnerLoop = null;
+      }
+    }
+
+    function maybeStartTimerLoop() {
+      stopTimerLoop();
+
+      if (state.room.status !== "betting") return;
+      if (state.room.timerOwner !== sessionId) return;
+
+      timerOwnerLoop = setInterval(async () => {
+        try {
+          const timerRef = db.ref(`rooms/${state.roomId}/timer`);
+          await timerRef.transaction(current => {
+            const next = Math.max(0, Number(current || ROUND_SECONDS) - 1);
             return next;
           }, async (err, committed, snap) => {
-            if(err || !committed || !snap) return;
+            if (err || !committed || !snap) return;
             const current = Number(snap.val() || 0);
-            if(current <= 0 && !resolveLockRef.current){
-              resolveLockRef.current = true;
-              clearInterval(timerRef.current);
-              timerRef.current = null;
+            if (current <= 0) {
+              stopTimerLoop();
               await resolveRound();
             }
           });
-        }, 1000);
-
-        return () => {
-          if(timerRef.current){
-            clearInterval(timerRef.current);
-            timerRef.current = null;
-          }
-        };
-      }, [room.status, room.timerOwner, clientId, roomPath]);
-
-      async function useNicknameNow(){
-        const clean = safeNick(draftNick);
-        if(clean.length < 2){
-          alert(lang === "ru" ? "Ник слишком короткий" : "Nickname is too short");
-          return false;
+        } catch (e) {
+          console.error(e);
         }
-
-        setNickname(clean);
-        setDraftNick(clean);
-        setGateOpen(false);
-
-        const key = nickKey(clean);
-        const statsRef = db.ref(`stats/${key}`);
-        const statsSnap = await statsRef.once("value");
-
-        if(!statsSnap.exists()){
-          await statsRef.set({
-            betsCount: 0,
-            wins: 0,
-            totalBet: 0,
-            refs: 0,
-            createdAt: Date.now()
-          });
-        }
-
-        return true;
-      }
-
-      async function openRoom(){
-        const next = String(roomInput || ROOM_DEFAULT).trim() || ROOM_DEFAULT;
-        setRoomId(next);
-        setNotice(`${lang === "ru" ? "Комната открыта" : "Room opened"}: ${next}`);
-        resolveLockRef.current = false;
-      }
-
-      async function joinOrUpdateBet(){
-        const nick = safeNick(draftNick || nickname);
-        if(!nick){
-          alert(lang === "ru" ? "Сначала введи ник" : "Enter nickname first");
-          return;
-        }
-
-        setNickname(nick);
-        setDraftNick(nick);
-        setGateOpen(false);
-
-        const amount = Number(betAmount);
-        if(!amount || amount <= 0){
-          alert(lang === "ru" ? "Ставка должна быть больше 0" : "Bet must be greater than 0");
-          return;
-        }
-
-        const key = nickKey(nick);
-        const playerRef = db.ref(`${roomPath}/players/${key}`);
-        const currentSnap = await playerRef.once("value");
-        const existing = currentSnap.val();
-
-        const payload = {
-          nickname: nick,
-          nicknameKey: key,
-          amount,
-          color: existing?.color || seededColor(key + selectedRoom),
-          avatar: existing?.avatar || randomAvatar(key),
-          joinedAt: existing?.joinedAt || Date.now(),
-          updatedAt: Date.now(),
-          referralCode: makeReferralCode(nick),
-          refSource: localStorage.getItem("tonarena_ref") || null
-        };
-
-        await playerRef.set(payload);
-
-        const statsRef = db.ref(`stats/${key}`);
-        await statsRef.transaction((cur) => {
-          const d = cur || { betsCount:0, wins:0, totalBet:0, refs:0 };
-          d.betsCount = Number(d.betsCount || 0) + 1;
-          d.totalBet = +(Number(d.totalBet || 0) + amount).toFixed(2);
-          d.lastBetAt = Date.now();
-          return d;
-        });
-
-        const roomSnap = await db.ref(roomPath).once("value");
-        const data = roomSnap.val() || {};
-        const count = Object.keys(data.players || {}).length + (existing ? 0 : 1);
-
-        if((data.status || "waiting") === "waiting" && count >= 2){
-          await db.ref(roomPath).update({
-            status:"betting",
-            timer: ROUND_SECONDS,
-            phaseText:"betting",
-            startedAt: data.startedAt || Date.now(),
-            host: data.host || key,
-            timerOwner: clientId
-          });
-        }else if((data.status || "waiting") === "betting" && !data.timerOwner){
-          await db.ref(`${roomPath}/timerOwner`).set(clientId);
-        }
-
-        setNotice(lang === "ru" ? "Ставка добавлена" : "Bet updated");
-      }
-
-      async function startRound(){
-        const nick = safeNick(draftNick || nickname);
-        if(!nick){
-          alert(lang === "ru" ? "Сначала введи ник" : "Enter nickname first");
-          return;
-        }
-
-        if(roomPlayers.length < 2){
-          alert(lang === "ru" ? "Нужно минимум 2 игрока" : "Need at least 2 players");
-          return;
-        }
-
-        const key = nickKey(nick);
-        await db.ref(roomPath).update({
-          status:"betting",
-          timer: ROUND_SECONDS,
-          host:key,
-          winner:null,
-          phaseText:"betting",
-          startedAt: Date.now(),
-          timerOwner: clientId
-        });
-
-        resolveLockRef.current = false;
-        setNotice(lang === "ru" ? "Раунд запущен" : "Round started");
-      }
-
-      async function resetRoom(){
-        const nick = safeNick(draftNick || nickname);
-        if(!nick) return;
-        const key = nickKey(nick);
-
-        await db.ref(roomPath).set({
-          status:"waiting",
-          timer: ROUND_SECONDS,
-          host:key,
-          winner:null,
-          lastGame: room.lastGame || null,
-          startedAt:null,
-          phaseText:"waiting",
-          timerOwner: clientId,
-          arrowHistory: [],
-          players:{}
-        });
-
-        resolveLockRef.current = false;
-        setArrow(a => ({...a, active:false}));
-        setNotice(lang === "ru" ? "Комната сброшена" : "Room reset");
-      }
-
-      function computeWinnerByX(finalX){
-        if(!shares.length) return null;
-        let acc = 0;
-        for(const p of shares){
-          const next = acc + p.share;
-          if(finalX >= acc && finalX <= next){
-            return p;
-          }
-          acc = next;
-        }
-        return shares[shares.length - 1] || null;
-      }
-
-      async function pushHistoryEntry(entry){
-        const snap = await db.ref(`${roomPath}/arrowHistory`).once("value");
-        const arr = Array.isArray(snap.val())
-          ? snap.val()
-          : snap.val() && typeof snap.val() === "object"
-            ? Object.values(snap.val())
-            : [];
-        const next = [...arr, entry].slice(-12);
-        await db.ref(`${roomPath}/arrowHistory`).set(next);
-      }
-
-      async function resolveRound(){
-        const snap = await db.ref(roomPath).once("value");
-        const data = snap.val() || {};
-        const pl = data.players ? Object.values(data.players) : [];
-
-        if(pl.length < 2){
-          await db.ref(roomPath).update({
-            status:"waiting",
-            timer: ROUND_SECONDS,
-            phaseText:"waiting",
-            winner:null
-          });
-          resolveLockRef.current = false;
-          return;
-        }
-
-        const board = arenaRef.current?.getBoundingClientRect();
-        const arenaSize = Math.max(260, Math.min(board?.width || 320, 380));
-        const margin = 18;
-        const usable = arenaSize - margin * 2;
-
-        let x = margin + Math.random() * usable;
-        let y = margin + Math.random() * usable;
-        let vx = (Math.random() * 6 + 5) * (Math.random() < 0.5 ? -1 : 1);
-        let vy = (Math.random() * 5 + 4) * (Math.random() < 0.5 ? -1 : 1);
-        let angle = Math.random() * 360;
-
-        setArrow({
-          active:true,
-          x,y,vx,vy,angle
-        });
-
-        await db.ref(roomPath).update({
-          status:"spinning",
-          phaseText:"spinning"
-        });
-
-        let started = performance.now();
-        let duration = 10000 + Math.random() * 1300;
-        const drag = 0.997;
-        const bounce = 0.93;
-        const gravity = 0.01;
-
-        if(physRef.current) cancelAnimationFrame(physRef.current);
-
-        const step = (now) => {
-          const elapsed = now - started;
-
-          vx *= drag;
-          vy *= drag;
-          vy += gravity * 0.2;
-
-          x += vx;
-          y += vy;
-          angle += 20 + Math.random() * 4;
-
-          const min = margin;
-          const max = margin + usable;
-
-          if(x <= min){
-            x = min;
-            vx = Math.abs(vx) * bounce;
-          }
-          if(x >= max){
-            x = max;
-            vx = -Math.abs(vx) * bounce;
-          }
-          if(y <= min){
-            y = min;
-            vy = Math.abs(vy) * bounce;
-          }
-          if(y >= max){
-            y = max;
-            vy = -Math.abs(vy) * bounce;
-          }
-
-          const speed = Math.sqrt(vx*vx + vy*vy);
-          setArrow({active:true, x, y, vx, vy, angle});
-
-          if(elapsed < duration && speed > 0.28){
-            physRef.current = requestAnimationFrame(step);
-          }else{
-            const normalizedX = Math.max(0, Math.min(1, (x - min) / usable));
-            const winner = computeWinnerByX(normalizedX) || weightedPick(pl);
-            setArrow(a => ({...a, active:false}));
-
-            setTimeout(async () => {
-              const latestSnap = await db.ref(roomPath).once("value");
-              const latest = latestSnap.val() || {};
-              const latestPlayers = latest.players ? Object.values(latest.players) : pl;
-              const latestBank = latestPlayers.reduce((s,p)=>s + Number(p.amount || 0), 0);
-              const latestFee = getCommission(latestBank);
-              const latestPayout = getPayout(latestBank);
-
-              const finalWinner = winner || null;
-
-              await db.ref(roomPath).update({
-                status:"finished",
-                timer:0,
-                phaseText:"finished",
-                winner: finalWinner ? {
-                  nickname: finalWinner.nickname,
-                  nicknameKey: finalWinner.nicknameKey,
-                  amount: finalWinner.amount
-                } : null,
-                lastGame:{
-                  at: Date.now(),
-                  roomId: selectedRoom,
-                  bank: latestBank,
-                  payout: latestPayout,
-                  fee: latestFee,
-                  winnerName: finalWinner ? finalWinner.nickname : null,
-                  winnerKey: finalWinner ? finalWinner.nicknameKey : null,
-                  winnerAmount: finalWinner ? finalWinner.amount : null
-                }
-              });
-
-              if(finalWinner){
-                const winnerStatsRef = db.ref(`stats/${finalWinner.nicknameKey}`);
-                await winnerStatsRef.transaction((cur) => {
-                  const d = cur || { betsCount:0, wins:0, totalBet:0, refs:0 };
-                  d.wins = Number(d.wins || 0) + 1;
-                  d.lastWinAt = Date.now();
-                  return d;
-                });
-              }
-
-              await pushHistoryEntry({
-                at: Date.now(),
-                roomId: selectedRoom,
-                winnerName: finalWinner ? finalWinner.nickname : null,
-                winnerKey: finalWinner ? finalWinner.nicknameKey : null,
-                bank: latestBank,
-                fee: latestFee,
-                payout: latestPayout
-              });
-
-              resolveLockRef.current = false;
-
-              setTimeout(async () => {
-                const cleanPlayers = {};
-                await db.ref(roomPath).update({
-                  status:"waiting",
-                  timer: ROUND_SECONDS,
-                  phaseText:"waiting",
-                  winner:null,
-                  timerOwner: clientId,
-                  players: cleanPlayers
-                });
-              }, 8000);
-            }, 220);
-          }
-        };
-
-        physRef.current = requestAnimationFrame(step);
-      }
-
-      async function addQuickDemoPlayer(){
-        const nick = safeNick(draftNick || nickname);
-        if(!nick){
-          alert(lang === "ru" ? "Сначала введи ник" : "Enter nickname first");
-          return;
-        }
-        const quick = nick + "_" + Math.floor(Math.random() * 1000);
-        setDraftNick(quick);
-        setNickname(quick);
-        await joinOrUpdateBet();
-      }
-
-      function renderGate(){
-        if(!gateOpen) return null;
-
-        return (
-          <div className="modal-backdrop">
-            <div className="modal">
-              <div className="scanline"></div>
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <div className="badge blue">{langText("testMode")}</div>
-                  <div className="mt-3 text-2xl font-black">{langText("enterNick")}</div>
-                  <div className="mt-2 text-sm muted">{langText("testMode")}</div>
-                </div>
-                <div className="w-14 h-14 rounded-2xl bg-white/6 border border-white/10 flex items-center justify-center">
-                  <span className="text-xl">⚡</span>
-                </div>
-              </div>
-
-              <div className="mt-5 space-y-3">
-                <input
-                  className="input"
-                  value={draftNick}
-                  onChange={(e)=>setDraftNick(e.target.value)}
-                  placeholder={langText("nickHint")}
-                  maxLength={18}
-                />
-
-                <div className="grid grid-cols-2 gap-2">
-                  <input
-                    className="input"
-                    type="text"
-                    value={roomInput}
-                    onChange={(e)=>setRoomInput(e.target.value)}
-                    placeholder={langText("room")}
-                    maxLength={20}
-                  />
-                  <button className="btn-main rounded-[18px] font-extrabold px-4" onClick={openRoom}>
-                    {langText("openRoom")}
-                  </button>
-                </div>
-
-                <button
-                  className={`w-full rounded-[18px] px-4 py-3 font-extrabold ${canUseNick ? "btn-green" : "btn-dark"}`}
-                  onClick={async () => {
-                    const ok = await useNicknameNow();
-                    if(ok) setGateOpen(false);
-                  }}
-                  disabled={!canUseNick}
-                >
-                  {langText("continue")}
-                </button>
-
-                <div className="text-[11px] muted leading-5">
-                  {langText("howItWorks")}
-                  <br />
-                  {langText("howText")}
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      }
-
-      function renderTopBar(){
-        return (
-          <div className="flex items-center justify-between gap-3 mb-4">
-            <div className="chip">
-              <span className="indicator"></span>
-              <span className="text-sm font-bold">{langText("online")}: {roomPlayers.length}</span>
-            </div>
-
-            <div className="text-center">
-              <div className="text-xs muted uppercase tracking-[0.22em] font-bold">TON ARENA</div>
-              <div className="mt-1 text-[11px] muted">nickname test build</div>
-            </div>
-
-            <button className="chip" onClick={() => setGateOpen(true)} title={langText("profileInfo")}>
-              <span className="text-sm font-bold">{shortNick(nickname || "guest")}</span>
-            </button>
-          </div>
-        );
-      }
-
-      function renderHero(){
-        return (
-          <div className="hero mb-4">
-            <div className="relative z-10">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="badge blue">{langText("testMode")}</div>
-                  <div className="mt-3 text-3xl font-black leading-none">{langText("appTitle")}</div>
-                  <div className="mt-2 text-[13px] opacity-90">{langText("subtitle")}</div>
-                </div>
-                <div className="w-16 h-16 rounded-[22px] bg-black/18 border border-white/12 flex items-center justify-center">
-                  <div className="w-8 h-8 rounded-full bg-white/12 pulse"></div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2 mt-4">
-                <div className="mini-stat">
-                  <div className="mini-label">{langText("bank")}</div>
-                  <div className="mini-value">{formatTON(totalBank)} TON</div>
-                  <div className="mini-hint">{langText("feeNote")}</div>
-                </div>
-                <div className="mini-stat">
-                  <div className="mini-label">{langText("timer")}</div>
-                  <div className="mini-value">{room.timer}s</div>
-                  <div className="mini-hint">{room.phaseText || room.status}</div>
-                </div>
-                <div className="mini-stat">
-                  <div className="mini-label">{langText("players")}</div>
-                  <div className="mini-value">{roomPlayers.length}</div>
-                  <div className="mini-hint">{langText("liveArena")}</div>
-                </div>
-              </div>
-
-              <div className="mt-4 flex items-center gap-2">
-                <input
-                  className="input"
-                  value={roomInput}
-                  onChange={(e)=>setRoomInput(e.target.value)}
-                  placeholder={`${langText("room")} / room_1`}
-                  maxLength={20}
-                />
-                <button className="btn-main rounded-[18px] px-4 py-3 font-extrabold" onClick={openRoom}>
-                  {langText("openRoom")}
-                </button>
-              </div>
-
-              <div className="mt-3 flex items-center justify-between gap-2">
-                <div className="text-[11px] muted leading-5">
-                  {langText("testMode")}<br />
-                  {langText("roomId")}: {selectedRoom}
-                </div>
-                <div className="badge good">{roomReady ? "RTDB ready" : "Connecting"}</div>
-              </div>
-            </div>
-          </div>
-        );
-      }
-
-      function renderIdentityCard(){
-        return (
-          <div className="glass rounded-[28px] p-4 mb-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="section-title">{langText("profileInfo")}</div>
-                <div className="mt-1 text-xl font-black">{nickname || "Guest"}</div>
-              </div>
-              <div className="badge blue">
-                {shortNick(nickname || "guest")}
-              </div>
-            </div>
-
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              <input
-                className="input"
-                value={draftNick}
-                onChange={(e)=>setDraftNick(e.target.value)}
-                placeholder={langText("nickHint")}
-                maxLength={18}
-              />
-              <button className="btn-main rounded-[18px] px-4 py-3 font-extrabold" onClick={async () => {
-                const ok = await useNicknameNow();
-                if(ok) setNotice(lang === "ru" ? "Ник обновлён" : "Nickname updated");
-              }}>
-                {langText("continue")}
-              </button>
-            </div>
-
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <div className="grid-card">
-                <div className="text-[11px] uppercase tracking-[0.18em] muted font-extrabold">{langText("roomId")}</div>
-                <div className="mt-1 font-black">{selectedRoom}</div>
-              </div>
-              <div className="grid-card">
-                <div className="text-[11px] uppercase tracking-[0.18em] muted font-extrabold">Test</div>
-                <div className="mt-1 font-black">Same phone</div>
-              </div>
-            </div>
-
-            <div className="mt-3 text-[11px] muted leading-5">
-              {langText("testFlowText")}
-            </div>
-          </div>
-        );
-      }
-
-      function renderGameControls(){
-        return (
-          <div className="glass rounded-[28px] p-4 mb-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <div className="text-[11px] uppercase tracking-[0.18em] muted font-extrabold">{langText("bet")}</div>
-                <input
-                  className="input mt-2"
-                  type="number"
-                  min="0.1"
-                  step="0.1"
-                  value={betAmount}
-                  onChange={(e)=>setBetAmount(Number(e.target.value))}
-                />
-              </div>
-
-              <div className="flex flex-col justify-end gap-2">
-                <button className="btn-main rounded-[18px] px-4 py-3 font-extrabold" onClick={joinOrUpdateBet}>
-                  {langText("join")}
-                </button>
-                <div className="text-[11px] muted leading-5">
-                  One nickname = one player slot.
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-3 grid grid-cols-3 gap-2">
-              <button className="btn-green rounded-[18px] px-4 py-3 font-extrabold" onClick={startRound}>
-                {langText("start")}
-              </button>
-              <button className="btn-dark rounded-[18px] px-4 py-3 font-extrabold" onClick={resetRoom}>
-                {langText("reset")}
-              </button>
-              <button className="btn-dark rounded-[18px] px-4 py-3 font-extrabold" onClick={addQuickDemoPlayer}>
-                Demo +
-              </button>
-            </div>
-          </div>
-        );
-      }
-
-      function renderArena(){
-        return (
-          <div className="glass rounded-[28px] p-4 mb-4">
-            <div className="flex items-center justify-between gap-3 mb-3">
-              <div>
-                <div className="text-[11px] uppercase tracking-[0.18em] muted font-extrabold">{langText("room")}</div>
-                <div className="text-lg font-black">{selectedRoom}</div>
-              </div>
-              <div className={`badge ${room.status === "spinning" ? "warn" : room.status === "finished" ? "good" : "blue"}`}>
-                {room.status}
-              </div>
-            </div>
-
-            <div className="arena-shell" ref={arenaRef}>
-              <div className="arena-inner">
-                {shares.map((p, idx) => {
-                  const left = shares.slice(0, idx).reduce((s, x) => s + x.share * 100, 0);
-                  const width = Math.max(0.05, p.share) * 100;
-                  const highlight = winnerPlayer && winnerPlayer.nicknameKey === p.nicknameKey;
-                  return (
-                    <div
-                      key={`${p.nicknameKey}-${idx}`}
-                      className="player-zone"
-                      style={{
-                        left: `${left}%`,
-                        width: `${width}%`,
-                        background: p.color || seededColor(p.nicknameKey || p.nickname || String(idx)),
-                        boxShadow: highlight ? "inset 0 0 0 2px rgba(255,255,255,.20), inset 0 0 30px rgba(255,255,255,.08)" : "none"
-                      }}
-                    >
-                      <div className="zone-label">
-                        <div className="avatar-ring">
-                          <div className="avatar">
-                            <img src={p.avatar || randomAvatar(p.nicknameKey || p.nickname || String(idx))} alt="" />
-                          </div>
-                        </div>
-                        <div className="zone-title">{shortNick(p.nickname || p.nicknameKey || "player")}</div>
-                        <div className="zone-sub">
-                          {formatTON(p.amount)} TON · {Math.max(1, Math.round((Number(p.share || 0) * 100)))}%
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-
-                {roomPlayers.length === 0 ? (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="text-lg font-black">{langText("noPlayers")}</div>
-                      <div className="text-sm muted mt-2">{langText("room")}: {selectedRoom}</div>
-                    </div>
-                  </div>
-                ) : null}
-
-                <div className="pointer-line">
-                  {langText("commission")}: 10%
-                </div>
-
-                <div className="arrow-wrap">
-                  {arrow.active ? (
-                    <div
-                      style={{
-                        position:"absolute",
-                        left: `${arrow.x}px`,
-                        top: `${arrow.y}px`,
-                        transform: `translate(-50%, -50%) rotate(${arrow.angle}deg)`,
-                        transition:"none"
-                      }}
-                    >
-                      <div className="arrow-core">
-                        <div className="arrow-head"></div>
-                      </div>
-                    </div>
-                  ) : null}
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-3 grid grid-cols-3 gap-2">
-              <div className="mini-stat">
-                <div className="mini-label">{langText("bank")}</div>
-                <div className="mini-value">{formatTON(totalBank)} TON</div>
-                <div className="mini-hint">{langText("payout")}: {formatTON(payout)} TON</div>
-              </div>
-              <div className="mini-stat">
-                <div className="mini-label">{langText("timer")}</div>
-                <div className="mini-value">{room.timer}s</div>
-                <div className="mini-hint">{room.status === "finished" ? langText("roundFinished") : room.phaseText || room.status}</div>
-              </div>
-              <div className="mini-stat">
-                <div className="mini-label">{langText("winner")}</div>
-                <div className="mini-value">{winnerPlayer ? shortNick(winnerPlayer.nickname) : "—"}</div>
-                <div className="mini-hint">{room.winner ? `${formatTON(room.winner.amount)} TON` : langText("noLast")}</div>
-              </div>
-            </div>
-          </div>
-        );
-      }
-
-      function renderPlayers(){
-        return (
-          <div className="glass rounded-[28px] p-4 mb-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="section-title">{langText("players")}</div>
-                <div className="text-lg font-black">{roomPlayers.length}</div>
-              </div>
-              <div className="chip">
-                <span className="text-[11px] muted">{langText("bank")}</span>
-                <span className="font-black">{formatTON(totalBank)} TON</span>
-              </div>
-            </div>
-
-            <div className="mt-4 max-h-[250px] overflow-auto thin-scroll pr-1">
-              {roomPlayers.length ? roomPlayers.map((p, idx) => (
-                <div key={`${p.nicknameKey}-${idx}`} className="flex items-center justify-between gap-3 py-3 border-b border-white/8 last:border-b-0">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-11 h-11 rounded-full overflow-hidden border border-white/10" style={{background:p.color || seededColor(p.nicknameKey || p.nickname || String(idx))}}>
-                      <img src={p.avatar || randomAvatar(p.nicknameKey || p.nickname || String(idx))} alt="" className="w-full h-full object-cover" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="font-extrabold truncate">
-                        {p.nickname}
-                        {winnerPlayer && winnerPlayer.nicknameKey === p.nicknameKey ? <span className="ml-2 text-[10px] text-emerald-400 uppercase tracking-[0.18em]">winner</span> : null}
-                      </div>
-                      <div className="text-[11px] muted truncate">
-                        {langText("playerZone")} · {Math.max(1, Math.round(Number(p.share || 0) * 100))}%
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <div className="font-black text-blue-300">{formatTON(p.amount)} TON</div>
-                    <div className="text-[10px] muted">{p.joinedAt ? new Date(p.joinedAt).toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"}) : ""}</div>
-                  </div>
-                </div>
-              )) : (
-                <div className="py-10 text-center muted">{langText("noPlayers")}</div>
-              )}
-            </div>
-          </div>
-        );
-      }
-
-      function renderLastGame(){
-        const g = room.lastGame;
-        return (
-          <div className="glass rounded-[28px] p-4 mb-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="section-title">Last game</div>
-                <div className="text-lg font-black">History</div>
-              </div>
-              <div className="text-[11px] muted">Firebase RTDB</div>
-            </div>
-
-            <div className="mt-4 rounded-[20px] border border-white/10 bg-black/25 p-4">
-              {g ? (
-                <>
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="font-black truncate">{g.winnerName || "—"}</div>
-                      <div className="text-[11px] muted truncate">{g.winnerKey || ""}</div>
-                    </div>
-                    <div className="font-black text-blue-300 shrink-0">{formatTON(g.payout || 0)} TON</div>
-                  </div>
-                  <div className="mt-2 text-[11px] muted">
-                    Room: {g.roomId || selectedRoom} · {g.at ? new Date(g.at).toLocaleString() : ""}
-                  </div>
-                  <div className="mt-2 text-[11px] muted">
-                    {langText("feeNote")}: {formatTON(g.fee || 0)} TON
-                  </div>
-                </>
-              ) : (
-                <div className="text-sm muted">{langText("noLast")}</div>
-              )}
-            </div>
-
-            <div className="mt-4">
-              <div className="section-title">Arrow history</div>
-              <div className="mt-3 max-h-[160px] overflow-auto thin-scroll pr-1">
-                {history.length ? history.slice().reverse().map((h, i) => (
-                  <div key={i} className="flex items-center justify-between gap-3 py-2 border-b border-white/8 last:border-b-0">
-                    <div className="min-w-0">
-                      <div className="font-bold truncate">{h.winnerName || "—"}</div>
-                      <div className="text-[11px] muted truncate">{h.roomId || selectedRoom}</div>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <div className="font-black text-blue-300">{formatTON(h.payout || 0)} TON</div>
-                      <div className="text-[10px] muted">{h.at ? new Date(h.at).toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"}) : ""}</div>
-                    </div>
-                  </div>
-                )) : (
-                  <div className="text-sm muted">{langText("noLast")}</div>
-                )}
-              </div>
-            </div>
-
-            <div className="mt-4 text-[11px] muted leading-6">
-              Сейчас это тестовая версия. Потом сюда можно вернуть TonConnect, реальные транзакции и депозитный escrow.
-            </div>
-          </div>
-        );
-      }
-
-      function renderGamesTab(){
-        return (
-          <>
-            {renderHero()}
-            {renderIdentityCard()}
-            {renderGameControls()}
-            {renderArena()}
-            {renderPlayers()}
-            {renderLastGame()}
-          </>
-        );
-      }
-
-      function renderRefsTab(){
-        return (
-          <div className="glass rounded-[28px] p-4 mb-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="badge blue">Referrals</div>
-                <div className="mt-3 text-2xl font-black">{langText("referralTitle")}</div>
-              </div>
-              <div className="w-12 h-12 rounded-2xl bg-white/7 border border-white/10 flex items-center justify-center">
-                <span>↗</span>
-              </div>
-            </div>
-
-            <div className="mt-4 text-[13px] leading-6 muted">
-              {langText("referralDesc")}
-            </div>
-
-            <div className="mt-4 grid gap-3">
-              <div className="grid-card">
-                <div className="text-[11px] uppercase tracking-[0.18em] muted font-extrabold">{langText("referralLink")}</div>
-                <div className="mt-2 break-all text-[13px] font-bold">{roomLink}</div>
-                <button className="mt-3 btn-main rounded-[18px] px-4 py-3 font-extrabold" onClick={async () => {
-                  try{
-                    await navigator.clipboard.writeText(roomLink);
-                    setCopied(true);
-                    setTimeout(() => setCopied(false), 1400);
-                  }catch{
-                    alert(roomLink);
-                  }
-                }}>
-                  {copied ? langText("copied") : langText("copy")}
-                </button>
-              </div>
-
-              <div className="grid-card">
-                <div className="text-[11px] uppercase tracking-[0.18em] muted font-extrabold">{langText("howItWorks")}</div>
-                <div className="mt-2 text-[13px] leading-6 muted">
-                  1) Игрок переходит по ссылке.<br/>
-                  2) Вводит ник и входит в комнату.<br/>
-                  3) Делает ставку.<br/>
-                  4) Ты получаешь реферальный бонус по правилам системы.
-                </div>
-              </div>
-
-              <div className="grid-card">
-                <div className="text-[11px] uppercase tracking-[0.18em] muted font-extrabold">{langText("commission")}</div>
-                <div className="mt-2 text-[13px] leading-6 muted">
-                  Платформа удерживает 10% от банка. Это отдельная комиссия матча.
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      }
-
-      function renderProfileTab(){
-        return (
-          <div className="glass rounded-[28px] p-4 mb-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="badge blue">{langText("profileInfo")}</div>
-                <div className="mt-3 text-2xl font-black">{nickname || "Guest"}</div>
-                <div className="mt-1 text-sm muted">{langText("testMode")}</div>
-              </div>
-              <div className="w-14 h-14 rounded-[20px] overflow-hidden border border-white/10">
-                <img src={randomAvatar(nickKey(nickname || "guest"))} alt="" className="w-full h-full object-cover" />
-              </div>
-            </div>
-
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              <button
-                className={`rounded-[18px] px-4 py-3 font-extrabold ${lang === "ru" ? "btn-main" : "btn-dark"}`}
-                onClick={() => setLang("ru")}
-              >
-                Русский
-              </button>
-              <button
-                className={`rounded-[18px] px-4 py-3 font-extrabold ${lang === "en" ? "btn-main" : "btn-dark"}`}
-                onClick={() => setLang("en")}
-              >
-                English
-              </button>
-            </div>
-
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              <div className="mini-stat">
-                <div className="mini-label">{langText("betsCount")}</div>
-                <div className="mini-value">{myStats.betsCount}</div>
-                <div className="mini-hint">{langText("stats")}</div>
-              </div>
-              <div className="mini-stat">
-                <div className="mini-label">{langText("wins")}</div>
-                <div className="mini-value">{myStats.wins}</div>
-                <div className="mini-hint">{langText("stats")}</div>
-              </div>
-              <div className="mini-stat">
-                <div className="mini-label">{langText("totalBet")}</div>
-                <div className="mini-value">{formatTON(myStats.totalBet)} TON</div>
-                <div className="mini-hint">{langText("stats")}</div>
-              </div>
-              <div className="mini-stat">
-                <div className="mini-label">{langText("rooms")}</div>
-                <div className="mini-value">1</div>
-                <div className="mini-hint">{selectedRoom}</div>
-              </div>
-            </div>
-
-            <div className="mt-4 grid gap-2">
-              <button className="btn-dark rounded-[18px] px-4 py-3 font-extrabold" onClick={() => setSupportOpen(true)}>
-                {langText("support")}
-              </button>
-              <button className="btn-dark rounded-[18px] px-4 py-3 font-extrabold" onClick={() => setGateOpen(true)}>
-                Change nickname
-              </button>
-            </div>
-
-            <div className="mt-4 text-[11px] muted leading-6">
-              Nickname: {nickname || "—"}<br/>
-              Room: {selectedRoom}<br/>
-              Referral code: {makeReferralCode(nickname || "guest")}
-            </div>
-          </div>
-        );
-      }
-
-      function renderBottomNav(){
-        return (
-          <div className="nav-inner">
-            <button className={`nav-btn ${tab==="games" ? "active" : ""}`} onClick={()=>setTab("games")}>
-              <span className="nav-ic"></span>
-              <span>{langText("games")}</span>
-            </button>
-            <button className={`nav-btn ${tab==="refs" ? "active" : ""}`} onClick={()=>setTab("refs")}>
-              <span className="nav-ic"></span>
-              <span>{langText("refs")}</span>
-            </button>
-            <button className={`nav-btn ${tab==="profile" ? "active" : ""}`} onClick={()=>setTab("profile")}>
-              <span className="nav-ic"></span>
-              <span>{langText("profile")}</span>
-            </button>
-          </div>
-        );
-      }
-
-      function renderSupportSheet(){
-        if(!supportOpen) return null;
-        return (
-          <div className="support-mask">
-            <div className="support-sheet">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <div className="badge warn">{langText("supportTitle")}</div>
-                  <div className="mt-3 text-2xl font-black">{langText("supportSoon")}</div>
-                </div>
-                <button className="btn-dark rounded-[14px] px-3 py-2 font-bold" onClick={() => setSupportOpen(false)}>
-                  {langText("back")}
-                </button>
-              </div>
-
-              <div className="mt-4 grid-card">
-                <div className="text-[13px] leading-6 muted">
-                  {langText("supportText")}
-                </div>
-              </div>
-
-              <div className="mt-3 grid-card">
-                <div className="text-[11px] uppercase tracking-[0.18em] muted font-extrabold">Note</div>
-                <div className="mt-2 text-[13px] leading-6 muted">
-                  Здесь позже появится чат поддержки, FAQ и кнопка связи.
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      }
-
-      return (
-        <>
-          {renderGate()}
-          {renderSupportSheet()}
-
-          <div className="app">
-            {renderTopBar()}
-            {tab === "games" ? renderGamesTab() : null}
-            {tab === "refs" ? renderRefsTab() : null}
-            {tab === "profile" ? renderProfileTab() : null}
-
-            {notice ? (
-              <div className="mb-4 text-center text-[11px] muted">{notice}</div>
-            ) : null}
-          </div>
-
-          <div className="nav-bar">
-            <div id="nav-anchor">{renderBottomNav()}</div>
-          </div>
-        </>
-      );
+      }, 1000);
     }
 
-    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    function renderIntro() {
+      return `
+        <div class="intro-mask">
+          <div class="portal-sizes">
+            <div class="portal-wrap">
+              <div class="portal-ring"></div>
+              <div class="portal-core"></div>
+            </div>
+            <div style="margin-top:14px;text-align:center;">
+              <div style="font-size:13px;letter-spacing:.22em;text-transform:uppercase;font-weight:900;color:rgba(255,255,255,.68)">TON Arena</div>
+              <div style="margin-top:8px;font-size:14px;color:rgba(255,255,255,.80)">Launching arena...</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderGate() {
+      if (!state.gateOpen) return "";
+      return `
+        <div class="overlay">
+          <div class="modal">
+            <div class="space-between">
+              <div>
+                <div class="badge blue">${t("mode" + (state.mode === "test" ? "Test" : "Real"))}</div>
+                <div style="margin-top:14px;font-size:28px;font-weight:900;line-height:1.05">${t("enterNick")}</div>
+                <div style="margin-top:8px;font-size:13px;color:rgba(255,255,255,.70)">${t("testMode")}</div>
+              </div>
+              <div class="top-pill" style="width:52px;height:52px;justify-content:center;padding:0;border-radius:18px">
+                <span style="font-size:22px">⚡</span>
+              </div>
+            </div>
+
+            <div style="margin-top:18px" class="stack">
+              <input id="gateNick" class="input" value="${escapeHtml(state.nickname || "")}" placeholder="${t("nickHint")}" maxlength="18" />
+              <div class="row">
+                <input id="gateRoom" class="input" value="${escapeHtml(state.roomId)}" placeholder="${t("room")}" maxlength="20" />
+                <button data-action="open-room" class="btn-main" style="border-radius:18px;padding:14px 16px;font-weight:900;white-space:nowrap">${t("openRoom")}</button>
+              </div>
+
+              <div class="row">
+                <button data-action="gate-enter" class="btn-green" style="flex:1;border-radius:18px;padding:14px 16px;font-weight:900">${t("continue")}</button>
+                <button data-action="toggle-mode" class="btn-dark" style="border-radius:18px;padding:14px 16px;font-weight:900">
+                  ${state.mode === "test" ? t("modeTest") : t("modeReal")}
+                </button>
+              </div>
+
+              <div style="font-size:11px;line-height:1.7;color:rgba(255,255,255,.62)">
+                ${t("howItWorks")}<br>
+                ${t("testFlowText")}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSupport() {
+      if (!state.supportOpen) return "";
+      return `
+        <div class="support-mask">
+          <div class="support-sheet">
+            <div class="space-between">
+              <div>
+                <div class="badge warn">${t("supportTitle")}</div>
+                <div style="margin-top:14px;font-size:28px;font-weight:900">${t("supportSoon")}</div>
+              </div>
+              <button data-action="support-close" class="btn-dark" style="border-radius:14px;padding:10px 12px;font-weight:900">${t("back")}</button>
+            </div>
+            <div class="glass" style="margin-top:14px;border-radius:20px;padding:14px">
+              <div class="support-note">${t("supportText")}</div>
+            </div>
+            <div class="glass" style="margin-top:12px;border-radius:20px;padding:14px">
+              <div class="card-title">Note</div>
+              <div class="support-note" style="margin-top:8px">Здесь позже появится чат поддержки, FAQ и кнопка связи.</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderTopBar() {
+      const online = activeOnlineCount();
+      const nick = state.nickname || "guest";
+      return `
+        <div class="space-between" style="margin-bottom:14px">
+          <div class="chip">
+            <span style="width:10px;height:10px;border-radius:999px;background:#22c55e;box-shadow:0 0 12px rgba(34,197,94,.55)"></span>
+            <span style="font-weight:900">${t("online")}: ${online}</span>
+          </div>
+
+          <div style="text-align:center">
+            <div style="font-size:11px;letter-spacing:.22em;text-transform:uppercase;font-weight:900">TON ARENA</div>
+            <div style="margin-top:4px;font-size:11px;color:rgba(255,255,255,.62)">nickname test build</div>
+          </div>
+
+          <button class="chip" data-action="open-profile" title="${t("profileInfo")}">
+            <span style="font-weight:900">${shortNick(nick)}</span>
+          </button>
+        </div>
+      `;
+    }
+
+    function renderHero() {
+      const s = computeArenaStats();
+      return `
+        <div class="shell" style="padding:16px">
+          <div class="space-between" style="align-items:flex-start;gap:12px">
+            <div>
+              <div class="badge blue">${state.mode === "test" ? t("modeTest") : t("modeReal")}</div>
+              <div style="margin-top:14px;font-size:34px;line-height:1;font-weight:900">${t("appTitle")}</div>
+              <div style="margin-top:8px;font-size:13px;color:rgba(255,255,255,.90);max-width:260px">${t("subtitle")}</div>
+            </div>
+            <div style="width:66px;height:66px;border-radius:22px;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center">
+              <div style="width:32px;height:32px;border-radius:999px;background:rgba(255,255,255,.12)"></div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:16px">
+            <div class="mini-stat">
+              <div class="mini-label">${t("bank")}</div>
+              <div class="mini-value">${formatTON(s.total)} TON</div>
+              <div class="mini-hint">${t("feeNote")}</div>
+            </div>
+            <div class="mini-stat">
+              <div class="mini-label">${t("timer")}</div>
+              <div class="mini-value">${state.room.timer}s</div>
+              <div class="mini-hint">${state.room.phaseText || state.room.status}</div>
+            </div>
+            <div class="mini-stat">
+              <div class="mini-label">${t("players")}</div>
+              <div class="mini-value">${playersArr().length}</div>
+              <div class="mini-hint">${t("liveArena")}</div>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:14px">
+            <input id="roomInputTop" class="input" value="${escapeHtml(state.roomId)}" placeholder="${t("room")} / room_1" maxlength="20" />
+            <button data-action="open-room" class="btn-main" style="border-radius:18px;padding:14px 16px;font-weight:900;white-space:nowrap">${t("openRoom")}</button>
+          </div>
+
+          <div class="space-between" style="margin-top:12px">
+            <div style="font-size:11px;color:rgba(255,255,255,.62);line-height:1.6">
+              ${t("testMode")}<br>
+              ${t("roomId")}: ${escapeHtml(state.roomId)}
+            </div>
+            <div class="badge good">${state.room.status === "waiting" ? t("roomStatusReady") : state.room.status === "finished" ? t("roomStatusFinished") : t("roomStatusLive")}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderIdentityCard() {
+      return `
+        <div class="glass" style="border-radius:28px;padding:16px;margin-top:14px">
+          <div class="space-between">
+            <div>
+              <div class="section-title">${t("profileInfo")}</div>
+              <div style="margin-top:6px;font-size:22px;font-weight:900">${escapeHtml(state.nickname || "Guest")}</div>
+            </div>
+            <div class="badge blue">${shortNick(state.nickname || "guest")}</div>
+          </div>
+
+          <div style="margin-top:14px" class="row">
+            <input id="nickInputCard" class="input" value="${escapeHtml(state.nickname || "")}" placeholder="${t("nickHint")}" maxlength="18" />
+            <button data-action="save-nick" class="btn-main" style="border-radius:18px;padding:14px 16px;font-weight:900;white-space:nowrap">${t("continue")}</button>
+          </div>
+
+          <div style="margin-top:12px" class="row">
+            <input id="betInputCard" class="input" type="number" min="0.1" step="0.1" value="${escapeHtml(String(state.betAmount || 1))}" />
+            <button data-action="join-bet" class="btn-green" style="border-radius:18px;padding:14px 16px;font-weight:900;white-space:nowrap">${t("join")}</button>
+          </div>
+
+          <div class="row" style="margin-top:12px">
+            <div class="glass" style="flex:1;border-radius:18px;padding:12px 14px">
+              <div class="card-title">${t("roomId")}</div>
+              <div style="margin-top:6px;font-size:18px;font-weight:900">${escapeHtml(state.roomId)}</div>
+            </div>
+            <div class="glass" style="flex:1;border-radius:18px;padding:12px 14px">
+              <div class="card-title">TEST</div>
+              <div style="margin-top:6px;font-size:18px;font-weight:900">Same phone</div>
+            </div>
+          </div>
+
+          <div style="margin-top:12px" class="row">
+            <button data-action="quick-demo" class="btn-dark" style="flex:1;border-radius:18px;padding:14px 16px;font-weight:900">${t("demoPlayer")}</button>
+            <button data-action="toggle-mode" class="btn-dark" style="border-radius:18px;padding:14px 16px;font-weight:900">${state.mode === "test" ? t("modeTest") : t("modeReal")}</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderGameControls() {
+      return `
+        <div class="glass" style="border-radius:28px;padding:16px;margin-top:14px">
+          <div class="space-between">
+            <div>
+              <div class="section-title">${t("arenaTitle")}</div>
+              <div style="margin-top:6px;font-size:18px;font-weight:900">${t("room")} ${escapeHtml(state.roomId)}</div>
+            </div>
+            <div class="badge ${state.room.status === 'spinning' ? 'warn' : state.room.status === 'finished' ? 'good' : 'blue'}">
+              ${state.room.status}
+            </div>
+          </div>
+
+          <div style="margin-top:14px" class="row">
+            <button data-action="start-round" class="btn-green" style="flex:1;border-radius:18px;padding:14px 16px;font-weight:900">${t("start")}</button>
+            <button data-action="reset-room" class="btn-danger" style="flex:1;border-radius:18px;padding:14px 16px;font-weight:900">${t("reset")}</button>
+          </div>
+
+          <div style="margin-top:12px;font-size:11px;color:rgba(255,255,255,.58);line-height:1.6">
+            ${t("howItWorks")}<br>
+            ${t("howText")}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderArena() {
+      const arr = playersArr();
+      const sh = shares();
+      const winner = state.room.winner;
+      const winnerPlayer = winner ? arr.find(p => p.nicknameKey === winner.nicknameKey) : null;
+      const s = computeArenaStats();
+
+      let zonesHtml = "";
+      let left = 0;
+      sh.forEach((p, idx) => {
+        const width = Math.max(0.05, p.share) * 100;
+        const highlight = winnerPlayer && winnerPlayer.nicknameKey === p.nicknameKey;
+        zonesHtml += `
+          <div class="player-zone" style="
+            left:${left}%;
+            width:${width}%;
+            background:${p.color || seededColor(p.nicknameKey || p.nickname || String(idx))};
+            box-shadow:${highlight ? "inset 0 0 0 2px rgba(255,255,255,.22), inset 0 0 30px rgba(255,255,255,.08)" : "none"};
+          ">
+            <div class="zone-label">
+              <div class="avatar-ring">
+                <div class="avatar">
+                  <img src="${p.avatar || randomAvatar(p.nicknameKey || p.nickname || String(idx))}" alt="">
+                </div>
+              </div>
+              <div class="zone-title">${escapeHtml(shortNick(p.nickname || p.nicknameKey || "player"))}</div>
+              <div class="zone-sub">
+                ${formatTON(p.amount)} TON · ${Math.max(1, Math.round((Number(p.share || 0) * 100)))}%
+              </div>
+            </div>
+          </div>
+        `;
+        left += width;
+      });
+
+      const arrowHtml = state.arrow.active ? `
+        <div class="arrow-wrap">
+          <div style="position:absolute;left:${state.arrow.x}px;top:${state.arrow.y}px;transform:translate(-50%, -50%) rotate(${state.arrow.angle}deg);transition:none;">
+            <div class="arrow-core">
+              <div class="arrow-head"></div>
+            </div>
+          </div>
+        </div>
+      ` : "";
+
+      return `
+        <div class="glass" style="border-radius:28px;padding:16px;margin-top:14px">
+          <div class="space-between" style="margin-bottom:12px">
+            <div>
+              <div class="section-title">${t("room")}</div>
+              <div style="margin-top:6px;font-size:18px;font-weight:900">${escapeHtml(state.roomId)}</div>
+            </div>
+            <div class="badge ${state.room.status === 'spinning' ? 'warn' : state.room.status === 'finished' ? 'good' : 'blue'}">
+              ${state.room.status}
+            </div>
+          </div>
+
+          <div class="arena-shell" id="arenaShell">
+            <div class="arena-inner">
+              ${zonesHtml || `
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+                  <div style="text-align:center">
+                    <div style="font-size:18px;font-weight:900">${t("noPlayers")}</div>
+                    <div style="margin-top:6px;font-size:13px;color:rgba(255,255,255,.60)">${t("room")}: ${escapeHtml(state.roomId)}</div>
+                  </div>
+                </div>
+              `}
+
+              <div class="pointer-line">${t("commission")}: 10%</div>
+
+              ${arrowHtml}
+
+              <div class="center-core">
+                <div class="title">${t("arenaTitle")}</div>
+                <div class="value">${arr.length}</div>
+                <div class="sub">${arr.length === 1 ? "player in room" : "players in room"}<br>${state.room.phaseText || state.room.status}</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:12px" class="row">
+            <div class="mini-stat">
+              <div class="mini-label">${t("bank")}</div>
+              <div class="mini-value">${formatTON(s.total)} TON</div>
+              <div class="mini-hint">${t("payout")}: ${formatTON(payoutAmount())} TON</div>
+            </div>
+            <div class="mini-stat">
+              <div class="mini-label">${t("timer")}</div>
+              <div class="mini-value">${state.room.timer}s</div>
+              <div class="mini-hint">${state.room.status === 'finished' ? t("roundFinished") : state.room.phaseText || state.room.status}</div>
+            </div>
+            <div class="mini-stat">
+              <div class="mini-label">${t("winner")}</div>
+              <div class="mini-value">${winnerPlayer ? shortNick(winnerPlayer.nickname) : "—"}</div>
+              <div class="mini-hint">${winnerPlayer ? `${formatTON(winnerPlayer.amount)} TON` : t("noLast")}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderPlayers() {
+      const arr = playersArr();
+      const winner = state.room.winner;
+      return `
+        <div class="glass" style="border-radius:28px;padding:16px;margin-top:14px">
+          <div class="space-between">
+            <div>
+              <div class="section-title">${t("players")}</div>
+              <div style="margin-top:6px;font-size:18px;font-weight:900">${arr.length}</div>
+            </div>
+            <div class="chip">
+              <span class="muted" style="font-size:11px">${t("online")}</span>
+              <span style="font-weight:900">${activeOnlineCount()}</span>
+            </div>
+          </div>
+
+          <div style="margin-top:14px;max-height:250px;overflow:auto;padding-right:4px" class="thin-scroll">
+            ${arr.length ? arr.map(p => `
+              <div class="list-item">
+                <div class="row" style="min-width:0;flex:1">
+                  <div class="small-icon" style="background:${p.color || seededColor(p.nicknameKey || p.nickname)}">
+                    <img src="${p.avatar || randomAvatar(p.nicknameKey || p.nickname)}" alt="">
+                  </div>
+                  <div style="min-width:0">
+                    <div style="font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                      ${escapeHtml(p.nickname)}
+                      ${winner && winner.nicknameKey === p.nicknameKey ? `<span style="margin-left:6px;font-size:10px;color:#34d399;text-transform:uppercase;letter-spacing:.18em;font-weight:900">winner</span>` : ""}
+                    </div>
+                    <div style="font-size:11px;color:rgba(255,255,255,.58);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                      ${t("playerZone")} · ${Math.max(1, Math.round(Number(p.share || 0) * 100))}%
+                    </div>
+                  </div>
+                </div>
+                <div style="text-align:right;flex:0 0 auto">
+                  <div style="font-weight:900;color:#93c5fd">${formatTON(p.amount)} TON</div>
+                  <div style="font-size:10px;color:rgba(255,255,255,.55)">
+                    ${p.joinedAt ? new Date(p.joinedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""}
+                  </div>
+                </div>
+              </div>
+            `).join("") : `<div class="empty-box">${t("noPlayers")}</div>`}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderLastGame() {
+      const g = state.room.lastGame;
+      return `
+        <div class="glass" style="border-radius:28px;padding:16px;margin-top:14px">
+          <div class="space-between">
+            <div>
+              <div class="section-title">${t("lastGame")}</div>
+              <div style="margin-top:6px;font-size:18px;font-weight:900">${t("history")}</div>
+            </div>
+            <div class="muted" style="font-size:11px">Firebase RTDB</div>
+          </div>
+
+          <div style="margin-top:14px" class="glass">
+            <div style="border-radius:20px;padding:14px;background:rgba(0,0,0,.24);border:1px solid rgba(255,255,255,.10)">
+              ${g ? `
+                <div class="space-between" style="gap:10px">
+                  <div style="min-width:0">
+                    <div style="font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(g.winnerName || "—")}</div>
+                    <div style="font-size:11px;color:rgba(255,255,255,.58);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(g.winnerKey || "")}</div>
+                  </div>
+                  <div style="font-weight:900;color:#93c5fd;flex:0 0 auto">${formatTON(g.payout || 0)} TON</div>
+                </div>
+                <div style="margin-top:8px;font-size:11px;color:rgba(255,255,255,.58)">
+                  Room: ${escapeHtml(g.roomId || state.roomId)} · ${g.at ? new Date(g.at).toLocaleString() : ""}
+                </div>
+                <div style="margin-top:6px;font-size:11px;color:rgba(255,255,255,.58)">
+                  ${t("feeNote")}: ${formatTON(g.fee || 0)} TON
+                </div>
+              ` : `<div style="font-size:13px;color:rgba(255,255,255,.60)">${t("noLast")}</div>`}
+            </div>
+          </div>
+
+          <div style="margin-top:12px">
+            <div class="section-title">${t("history")}</div>
+            <div style="margin-top:10px;max-height:160px;overflow:auto;padding-right:4px" class="thin-scroll">
+              ${(state.room.arrowHistory || []).slice().reverse().map((h, idx) => `
+                <div class="list-item" style="padding:10px 0" key="${idx}">
+                  <div style="min-width:0">
+                    <div style="font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(h.winnerName || "—")}</div>
+                    <div style="font-size:11px;color:rgba(255,255,255,.58);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(h.roomId || state.roomId)}</div>
+                  </div>
+                  <div style="text-align:right;flex:0 0 auto">
+                    <div style="font-weight:900;color:#93c5fd">${formatTON(h.payout || 0)} TON</div>
+                    <div style="font-size:10px;color:rgba(255,255,255,.55)">${h.at ? new Date(h.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""}</div>
+                  </div>
+                </div>
+              `).join("")}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderGamesTab() {
+      return `
+        ${renderHero()}
+        ${renderIdentityCard()}
+        ${renderGameControls()}
+        ${renderArena()}
+        ${renderPlayers()}
+        ${renderLastGame()}
+      `;
+    }
+
+    function renderRefsTab() {
+      const link = `${location.origin}${location.pathname}?ref=${encodeURIComponent(makeReferralCode(state.nickname || "friend"))}`;
+      return `
+        <div class="glass" style="border-radius:28px;padding:16px;margin-top:14px">
+          <div class="space-between">
+            <div>
+              <div class="badge blue">Referrals</div>
+              <div style="margin-top:12px;font-size:26px;font-weight:900">${t("referralTitle")}</div>
+            </div>
+            <div style="width:52px;height:52px;border-radius:18px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.10);display:flex;align-items:center;justify-content:center">
+              <span style="font-size:20px">↗</span>
+            </div>
+          </div>
+
+          <div style="margin-top:14px;font-size:13px;line-height:1.7;color:rgba(255,255,255,.72)">
+            ${t("referralDesc")}
+          </div>
+
+          <div style="margin-top:14px" class="stack">
+            <div class="glass" style="border-radius:20px;padding:14px">
+              <div class="card-title">${t("referralLink")}</div>
+              <div style="margin-top:8px;word-break:break-all;font-size:13px;font-weight:900">${escapeHtml(link)}</div>
+              <button data-action="copy-ref" class="btn-main" style="margin-top:12px;width:100%;border-radius:18px;padding:14px 16px;font-weight:900">
+                ${state.copied ? t("copied") : t("copy")}
+              </button>
+            </div>
+
+            <div class="glass" style="border-radius:20px;padding:14px">
+              <div class="card-title">${t("howItWorks")}</div>
+              <div style="margin-top:8px;font-size:13px;line-height:1.7;color:rgba(255,255,255,.72)">
+                1) Игрок переходит по ссылке.<br>
+                2) Вводит ник и входит в комнату.<br>
+                3) Делает ставку.<br>
+                4) Ты получаешь реферальный бонус по правилам системы.
+              </div>
+            </div>
+
+            <div class="glass" style="border-radius:20px;padding:14px">
+              <div class="card-title">${t("commission")}</div>
+              <div style="margin-top:8px;font-size:13px;line-height:1.7;color:rgba(255,255,255,.72)">
+                Платформа удерживает 10% от минимальной ставки в комнате. Это сделано так, чтобы победитель не уходил в минус из-за комиссии.
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderProfileTab() {
+      return `
+        <div class="glass" style="border-radius:28px;padding:16px;margin-top:14px">
+          <div class="space-between">
+            <div>
+              <div class="badge blue">${t("profileInfo")}</div>
+              <div style="margin-top:12px;font-size:26px;font-weight:900">${escapeHtml(state.nickname || "Guest")}</div>
+              <div style="margin-top:4px;font-size:13px;color:rgba(255,255,255,.64)">${t("testMode")}</div>
+            </div>
+            <div class="small-icon" style="width:56px;height:56px;border-radius:20px;background:${seededColor(nickKey(state.nickname || 'guest'))}">
+              <img src="${randomAvatar(nickKey(state.nickname || "guest"))}" alt="">
+            </div>
+          </div>
+
+          <div style="margin-top:14px" class="toggle">
+            <button data-action="lang-ru" class="${state.lang === "ru" ? "active" : ""}">Русский</button>
+            <button data-action="lang-en" class="${state.lang === "en" ? "active" : ""}">English</button>
+          </div>
+
+          <div style="margin-top:14px" class="toggle">
+            <button data-action="mode-test" class="${state.mode === "test" ? "active" : ""}">${t("modeTest")}</button>
+            <button data-action="mode-real" class="${state.mode === "real" ? "active" : ""}">${t("modeReal")}</button>
+          </div>
+
+          <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div class="mini-stat">
+              <div class="mini-label">${t("betsCount")}</div>
+              <div class="mini-value">${Number(state.stats.betsCount || 0)}</div>
+              <div class="mini-hint">${t("stats")}</div>
+            </div>
+            <div class="mini-stat">
+              <div class="mini-label">${t("wins")}</div>
+              <div class="mini-value">${Number(state.stats.wins || 0)}</div>
+              <div class="mini-hint">${t("stats")}</div>
+            </div>
+            <div class="mini-stat">
+              <div class="mini-label">${t("totalBet")}</div>
+              <div class="mini-value">${formatTON(state.stats.totalBet || 0)} TON</div>
+              <div class="mini-hint">${t("stats")}</div>
+            </div>
+            <div class="mini-stat">
+              <div class="mini-label">${t("rooms")}</div>
+              <div class="mini-value">1</div>
+              <div class="mini-hint">${escapeHtml(state.roomId)}</div>
+            </div>
+          </div>
+
+          <div style="margin-top:14px" class="stack">
+            <button data-action="support-open" class="btn-dark" style="border-radius:18px;padding:14px 16px;font-weight:900">${t("support")}</button>
+            <button data-action="change-nick" class="btn-dark" style="border-radius:18px;padding:14px 16px;font-weight:900">${t("changeNick")}</button>
+          </div>
+
+          <div style="margin-top:14px;font-size:11px;color:rgba(255,255,255,.60);line-height:1.7">
+            Nickname: ${escapeHtml(state.nickname || "—")}<br>
+            Room: ${escapeHtml(state.roomId)}<br>
+            Referral code: ${escapeHtml(makeReferralCode(state.nickname || "guest"))}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderBottomNav() {
+      navAnchor.innerHTML = `
+        <div class="nav-inner">
+          <button class="nav-btn ${state.tab === "games" ? "active" : ""}" data-action="tab-games">
+            <span class="nav-ic"></span>
+            <span>${t("games")}</span>
+          </button>
+          <button class="nav-btn ${state.tab === "refs" ? "active" : ""}" data-action="tab-refs">
+            <span class="nav-ic"></span>
+            <span>${t("refs")}</span>
+          </button>
+          <button class="nav-btn ${state.tab === "profile" ? "active" : ""}" data-action="tab-profile">
+            <span class="nav-ic"></span>
+            <span>${t("profile")}</span>
+          </button>
+        </div>
+      `;
+    }
+
+    function render() {
+      const content =
+        `
+        ${state.intro ? renderIntro() : ""}
+        ${renderGate()}
+        ${renderSupport()}
+        <div class="app">
+          ${renderTopBar()}
+
+          ${state.tab === "games" ? renderGamesTab() : ""}
+          ${state.tab === "refs" ? renderRefsTab() : ""}
+          ${state.tab === "profile" ? renderProfileTab() : ""}
+
+          ${state.notice ? `<div style="margin-top:14px;text-align:center;font-size:11px;color:rgba(255,255,255,.60)">${escapeHtml(state.notice)}</div>` : ""}
+        </div>
+      `;
+
+      root.innerHTML = content;
+      renderBottomNav();
+
+      // wire inputs
+      const gateNick = document.getElementById("gateNick");
+      if (gateNick) gateNick.addEventListener("input", e => setState({ nickname: safeNick(e.target.value) }));
+      const gateRoom = document.getElementById("gateRoom");
+      if (gateRoom) gateRoom.addEventListener("input", e => setState({ roomId: safeNick(e.target.value) || ROOM_DEFAULT }));
+      const roomInputTop = document.getElementById("roomInputTop");
+      if (roomInputTop) roomInputTop.addEventListener("input", e => setState({ roomId: safeNick(e.target.value) || ROOM_DEFAULT }));
+      const nickInputCard = document.getElementById("nickInputCard");
+      if (nickInputCard) nickInputCard.addEventListener("input", e => setState({ nickname: safeNick(e.target.value) }));
+      const betInputCard = document.getElementById("betInputCard");
+      if (betInputCard) betInputCard.addEventListener("input", e => setState({ betAmount: Number(e.target.value) || 0 }));
+
+      maybeStartTimerLoop();
+    }
+
+    function escapeHtml(s) {
+      return String(s ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    async function saveNickname() {
+      const clean = safeNick(state.nickname);
+      if (clean.length < 2) {
+        alert(state.lang === "ru" ? "Ник слишком короткий" : "Nickname is too short");
+        return;
+      }
+      state.nickname = clean;
+      localStorage.setItem("tonarena_nick", clean);
+      state.gateOpen = false;
+      state.notice = state.lang === "ru" ? "Ник сохранён" : "Nickname saved";
+      render();
+      await updateSessionTouch({ nickname: clean });
+      if (statsRef) statsRef.off();
+      statsRef = db.ref(`stats/${nickKey(clean)}`);
+      statsRef.on("value", snap => {
+        state.stats = snap.val() || { betsCount: 0, wins: 0, totalBet: 0, refs: 0 };
+        render();
+      });
+      attachRoom(state.roomId);
+    }
+
+    async function openRoom() {
+      const el = document.getElementById("gateRoom") || document.getElementById("roomInputTop");
+      const next = safeNick(el ? el.value : state.roomId) || ROOM_DEFAULT;
+      state.roomId = next;
+      localStorage.setItem("tonarena_room", next);
+      state.notice = `${t("room")}: ${next}`;
+      attachRoom(next);
+      await updateSessionTouch({ roomId: next });
+    }
+
+    async function joinOrUpdateBet() {
+      const nick = safeNick(state.nickname);
+      if (!nick) {
+        alert(state.lang === "ru" ? "Сначала введи ник" : "Enter nickname first");
+        return;
+      }
+
+      const amount = Number(state.betAmount);
+      if (!amount || amount <= 0) {
+        alert(state.lang === "ru" ? "Ставка должна быть больше 0" : "Bet must be greater than 0");
+        return;
+      }
+
+      const key = nickKey(nick);
+      const playerRef = db.ref(`rooms/${state.roomId}/players/${key}`);
+      const existingSnap = await playerRef.once("value");
+      const existing = existingSnap.val();
+
+      const payload = {
+        id: key,
+        nickname: nick,
+        nicknameKey: key,
+        amount,
+        color: existing?.color || seededColor(key + state.roomId),
+        avatar: existing?.avatar || randomAvatar(key),
+        joinedAt: existing?.joinedAt || Date.now(),
+        updatedAt: Date.now(),
+        lastSeen: Date.now(),
+        mode: state.mode,
+        sessionId
+      };
+
+      await playerRef.set(payload);
+      await updateSessionTouch({ nickname: nick, status: "joined" });
+
+      const sref = db.ref(`stats/${key}`);
+      await sref.transaction(cur => {
+        const d = cur || { betsCount: 0, wins: 0, totalBet: 0, refs: 0 };
+        d.betsCount = Number(d.betsCount || 0) + 1;
+        d.totalBet = +(Number(d.totalBet || 0) + amount).toFixed(2);
+        d.lastBetAt = Date.now();
+        return d;
+      });
+
+      const roomSnap = await db.ref(`rooms/${state.roomId}`).once("value");
+      const roomData = roomSnap.val() || {};
+      const count = Object.keys(roomData.players || {}).length + (existing ? 0 : 1);
+
+      if ((roomData.status || "waiting") === "waiting" && count >= 2) {
+        await db.ref(`rooms/${state.roomId}`).update({
+          status: "betting",
+          timer: ROUND_SECONDS,
+          phaseText: "betting",
+          host: roomData.host || key,
+          timerOwner: sessionId
+        });
+      } else if ((roomData.status || "waiting") === "betting" && !roomData.timerOwner) {
+        await db.ref(`rooms/${state.roomId}/timerOwner`).set(sessionId);
+      }
+
+      state.notice = state.lang === "ru" ? "Ставка добавлена" : "Bet updated";
+      render();
+    }
+
+    async function startRound() {
+      const nick = safeNick(state.nickname);
+      if (!nick) {
+        alert(state.lang === "ru" ? "Сначала введи ник" : "Enter nickname first");
+        return;
+      }
+
+      const arr = playersArr();
+      if (arr.length < 2) {
+        alert(state.lang === "ru" ? "Нужно минимум 2 игрока" : "Need at least 2 players");
+        return;
+      }
+
+      const key = nickKey(nick);
+      await db.ref(`rooms/${state.roomId}`).update({
+        status: "betting",
+        timer: ROUND_SECONDS,
+        host: key,
+        winner: null,
+        phaseText: "betting",
+        startedAt: Date.now(),
+        timerOwner: sessionId
+      });
+
+      state.notice = state.lang === "ru" ? "Раунд запущен" : "Round started";
+      render();
+    }
+
+    async function resetRoom() {
+      const key = nickKey(state.nickname || "host");
+      await db.ref(`rooms/${state.roomId}`).set({
+        status: "waiting",
+        timer: ROUND_SECONDS,
+        host: key,
+        timerOwner: sessionId,
+        winner: null,
+        lastGame: null,
+        startedAt: null,
+        phaseText: "waiting",
+        arrowHistory: [],
+        players: state.playersObj || {},
+        sessions: state.sessionsObj || {}
+      });
+      state.notice = state.lang === "ru" ? "Комната сброшена" : "Room reset";
+      render();
+    }
+
+    async function resolveRound() {
+      const snap = await db.ref(`rooms/${state.roomId}`).once("value");
+      const data = snap.val() || {};
+      const arr = Object.values(data.players || {}).sort((a, b) => Number(a.joinedAt || 0) - Number(b.joinedAt || 0));
+
+      if (arr.length < 2) {
+        await db.ref(`rooms/${state.roomId}`).update({
+          status: "waiting",
+          timer: ROUND_SECONDS,
+          phaseText: "waiting",
+          winner: null
+        });
+        return;
+      }
+
+      const shell = document.getElementById("arenaShell");
+      const board = shell ? shell.getBoundingClientRect() : { width: 320, height: 320 };
+      const size = Math.max(260, Math.min(board.width || 320, 380));
+      const margin = 18;
+      const usable = size - margin * 2;
+
+      let x = margin + Math.random() * usable;
+      let y = margin + Math.random() * usable;
+      let vx = (Math.random() * 6 + 5) * (Math.random() < 0.5 ? -1 : 1);
+      let vy = (Math.random() * 5 + 4) * (Math.random() < 0.5 ? -1 : 1);
+      let angle = Math.random() * 360;
+
+      state.arrow = { active: true, x, y, vx, vy, angle };
+      state.room.status = "spinning";
+      state.room.phaseText = "spinning";
+      render();
+
+      let start = performance.now();
+      const duration = 10000 + Math.random() * 1300;
+      const drag = 0.997;
+      const bounce = 0.93;
+      const gravity = 0.01;
+
+      if (arrowLoop) cancelAnimationFrame(arrowLoop);
+
+      const step = (now) => {
+        const elapsed = now - start;
+
+        vx *= drag;
+        vy *= drag;
+        vy += gravity * 0.2;
+
+        x += vx;
+        y += vy;
+        angle += 20 + Math.random() * 4;
+
+        const min = margin;
+        const max = margin + usable;
+
+        if (x <= min) { x = min; vx = Math.abs(vx) * bounce; }
+        if (x >= max) { x = max; vx = -Math.abs(vx) * bounce; }
+        if (y <= min) { y = min; vy = Math.abs(vy) * bounce; }
+        if (y >= max) { y = max; vy = -Math.abs(vy) * bounce; }
+
+        const speed = Math.sqrt(vx * vx + vy * vy);
+        state.arrow = { active: true, x, y, vx, vy, angle };
+        render();
+
+        if (elapsed < duration && speed > 0.28) {
+          arrowLoop = requestAnimationFrame(step);
+          return;
+        }
+
+        const xNorm = Math.max(0, Math.min(1, (x - min) / usable));
+        const winner = findWinnerByX(xNorm) || arr[Math.floor(Math.random() * arr.length)];
+        state.arrow.active = false;
+        render();
+
+        setTimeout(async () => {
+          const latestSnap = await db.ref(`rooms/${state.roomId}`).once("value");
+          const latest = latestSnap.val() || {};
+          const latestPlayers = Object.values(latest.players || {});
+          const bank = latestPlayers.reduce((s, p) => s + Number(p.amount || 0), 0);
+          const fee = commissionAmount();
+          const payout = +(bank - fee).toFixed(2);
+
+          await db.ref(`rooms/${state.roomId}`).update({
+            status: "finished",
+            timer: 0,
+            phaseText: "finished",
+            winner: {
+              nickname: winner.nickname,
+              nicknameKey: winner.nicknameKey,
+              amount: winner.amount
+            },
+            lastGame: {
+              at: Date.now(),
+              roomId: state.roomId,
+              bank,
+              payout,
+              fee,
+              winnerName: winner.nickname,
+              winnerKey: winner.nicknameKey,
+              winnerAmount: winner.amount
+            }
+          });
+
+          await db.ref(`stats/${winner.nicknameKey}`).transaction(cur => {
+            const d = cur || { betsCount: 0, wins: 0, totalBet: 0, refs: 0 };
+            d.wins = Number(d.wins || 0) + 1;
+            d.lastWinAt = Date.now();
+            return d;
+          });
+
+          const histSnap = await db.ref(`rooms/${state.roomId}/arrowHistory`).once("value");
+          const histArr = Array.isArray(histSnap.val()) ? histSnap.val() : [];
+          const next = [...histArr, {
+            at: Date.now(),
+            roomId: state.roomId,
+            winnerName: winner.nickname,
+            winnerKey: winner.nicknameKey,
+            bank,
+            fee,
+            payout
+          }].slice(-12);
+
+          await db.ref(`rooms/${state.roomId}/arrowHistory`).set(next);
+
+          setTimeout(async () => {
+            await db.ref(`rooms/${state.roomId}`).update({
+              status: "waiting",
+              timer: ROUND_SECONDS,
+              phaseText: "waiting",
+              winner: null,
+              timerOwner: sessionId
+            });
+          }, 7000);
+        }, 250);
+      };
+
+      arrowLoop = requestAnimationFrame(step);
+    }
+
+    function quickDemoPlayer() {
+      const base = safeNick(state.nickname || "player");
+      const demo = `${base}_${Math.floor(Math.random() * 1000)}`;
+      state.nickname = demo;
+      state.gateOpen = false;
+      localStorage.setItem("tonarena_nick", demo);
+      render();
+      saveNickname().then(() => {
+        state.betAmount = Math.max(1, Number(state.betAmount || 1));
+        joinOrUpdateBet();
+      });
+    }
+
+    function switchMode(next) {
+      state.mode = next;
+      localStorage.setItem("tonarena_mode", next);
+      updateSessionTouch({ mode: next }).catch(() => {});
+      render();
+    }
+
+    function switchLang(next) {
+      state.lang = next;
+      localStorage.setItem("tonarena_lang", next);
+      render();
+    }
+
+    function setTab(next) {
+      state.tab = next;
+      render();
+    }
+
+    async function copyReferral() {
+      const link = `${location.origin}${location.pathname}?ref=${encodeURIComponent(makeReferralCode(state.nickname || "friend"))}`;
+      try {
+        await navigator.clipboard.writeText(link);
+        state.copied = true;
+        render();
+        setTimeout(() => { state.copied = false; render(); }, 1400);
+      } catch (e) {
+        alert(link);
+      }
+    }
+
+    function supportOpen() {
+      state.supportOpen = true;
+      render();
+    }
+
+    function supportClose() {
+      state.supportOpen = false;
+      render();
+    }
+
+    function changeNick() {
+      state.gateOpen = true;
+      render();
+      setTimeout(() => {
+        const input = document.getElementById("gateNick");
+        if (input) input.focus();
+      }, 50);
+    }
+
+    function handleClick(action) {
+      if (action === "gate-enter") {
+        saveNickname();
+        return;
+      }
+      if (action === "save-nick") {
+        saveNickname();
+        return;
+      }
+      if (action === "open-room") {
+        openRoom();
+        return;
+      }
+      if (action === "join-bet") {
+        joinOrUpdateBet();
+        return;
+      }
+      if (action === "start-round") {
+        startRound();
+        return;
+      }
+      if (action === "reset-room") {
+        resetRoom();
+        return;
+      }
+      if (action === "quick-demo") {
+        quickDemoPlayer();
+        return;
+      }
+      if (action === "toggle-mode") {
+        switchMode(state.mode === "test" ? "real" : "test");
+        return;
+      }
+      if (action === "lang-ru") {
+        switchLang("ru");
+        return;
+      }
+      if (action === "lang-en") {
+        switchLang("en");
+        return;
+      }
+      if (action === "mode-test") {
+        switchMode("test");
+        return;
+      }
+      if (action === "mode-real") {
+        switchMode("real");
+        return;
+      }
+      if (action === "copy-ref") {
+        copyReferral();
+        return;
+      }
+      if (action === "support-open") {
+        supportOpen();
+        return;
+      }
+      if (action === "support-close") {
+        supportClose();
+        return;
+      }
+      if (action === "change-nick") {
+        changeNick();
+        return;
+      }
+      if (action === "tab-games") {
+        setTab("games");
+        return;
+      }
+      if (action === "tab-refs") {
+        setTab("refs");
+        return;
+      }
+      if (action === "tab-profile") {
+        setTab("profile");
+        return;
+      }
+      if (action === "open-profile") {
+        setTab("profile");
+        return;
+      }
+    }
+
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-action]");
+      if (!btn) return;
+      handleClick(btn.dataset.action);
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        if (state.gateOpen && !state.nickname) {
+          saveNickname();
+        }
+      }
+    });
+
+    async function bootstrap() {
+      startHeartbeat();
+      attachRoom(state.roomId);
+
+      const url = new URL(location.href);
+      const ref = url.searchParams.get("ref");
+      if (ref && !localStorage.getItem("tonarena_ref")) {
+        localStorage.setItem("tonarena_ref", ref);
+      }
+
+      if (state.nickname) {
+        state.gateOpen = false;
+        state.tab = "games";
+        render();
+      }
+
+      if (introTimer) clearTimeout(introTimer);
+      introTimer = setTimeout(() => {
+        state.intro = false;
+        render();
+      }, INTRO_MS);
+    }
+
+    bootstrap();
+    render();
   </script>
 </body>
 </html>
