@@ -1,2406 +1,660 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
-  <title>TON Arena</title>
-
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-
-  <style>
-    :root {
-      --bg0: #05060a;
-      --bg1: #090b12;
-      --panel: rgba(255,255,255,0.06);
-      --panel2: rgba(255,255,255,0.08);
-      --line: rgba(255,255,255,0.10);
-      --text: #eef3ff;
-      --muted: rgba(255,255,255,0.58);
-      --accent: #5b8cff;
-      --accent2: #8b5cf6;
-      --good: #22c55e;
-      --warn: #f59e0b;
-      --danger: #ef4444;
-      --shadow: 0 18px 50px rgba(0,0,0,.42);
-      --radius: 28px;
-    }
-
-    * { box-sizing: border-box; }
-    html, body {
-      margin: 0;
-      min-height: 100%;
-      color: var(--text);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background:
-        radial-gradient(circle at top, rgba(91,140,255,.18), transparent 28%),
-        radial-gradient(circle at 18% 18%, rgba(139,92,246,.12), transparent 24%),
-        radial-gradient(circle at 88% 5%, rgba(34,197,94,.08), transparent 18%),
-        linear-gradient(180deg, #0c0f17 0%, #05060a 55%, #000 100%);
-      overflow-x: hidden;
-    }
-
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      background:
-        linear-gradient(rgba(255,255,255,.022) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.022) 1px, transparent 1px);
-      background-size: 36px 36px;
-      opacity: .28;
-      mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
-    }
-
-    .app {
-      max-width: 520px;
-      margin: 0 auto;
-      padding: 10px 12px 120px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .glass {
-      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
-      border: 1px solid rgba(255,255,255,.08);
-      box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,.05);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-    }
-
-    .muted { color: var(--muted); }
-    .chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 9px 14px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.09);
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: .04em;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.08);
-    }
-    .badge.good { background: rgba(34,197,94,.12); border-color: rgba(34,197,94,.18); }
-    .badge.warn { background: rgba(245,158,11,.12); border-color: rgba(245,158,11,.18); }
-    .badge.blue { background: rgba(91,140,255,.12); border-color: rgba(91,140,255,.18); }
-
-    .btn-main {
-      background: linear-gradient(180deg, rgba(91,140,255,1), rgba(70,119,250,1));
-      box-shadow: 0 10px 28px rgba(91,140,255,.24), inset 0 1px 0 rgba(255,255,255,.18);
-      color: #fff;
-      border: none;
-    }
-    .btn-green {
-      background: linear-gradient(180deg, rgba(34,197,94,1), rgba(22,163,74,1));
-      box-shadow: 0 10px 28px rgba(34,197,94,.20), inset 0 1px 0 rgba(255,255,255,.18);
-      color: #fff;
-      border: none;
-    }
-    .btn-dark {
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.08);
-      color: #fff;
-    }
-    .btn-danger {
-      background: rgba(239,68,68,.10);
-      border: 1px solid rgba(239,68,68,.16);
-      color: #fff;
-    }
-
-    .btn-tab {
-      border: none;
-      color: rgba(255,255,255,.70);
-      background: transparent;
-      border-radius: 18px;
-      padding: 12px 8px;
-      font-weight: 800;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-    }
-    .btn-tab.active {
-      color: #fff;
-      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
-      border: 1px solid rgba(255,255,255,.07);
-    }
-    .nav-ic {
-      width: 17px;
-      height: 17px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.16);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
-    }
-    .btn-tab.active .nav-ic {
-      background: linear-gradient(180deg, rgba(91,140,255,1), rgba(139,92,246,1));
-    }
-
-    .input {
-      width: 100%;
-      border-radius: 18px;
-      border: 1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.25);
-      color: #fff;
-      padding: 14px 14px;
-      outline: none;
-      font-size: 15px;
-    }
-    .input:focus {
-      border-color: rgba(91,140,255,.40);
-      box-shadow: 0 0 0 3px rgba(91,140,255,.10);
-    }
-
-    .scanline {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      background: linear-gradient(to bottom, transparent, rgba(255,255,255,.06), transparent);
-      transform: translateY(-100%);
-      animation: scan 5.2s linear infinite;
-      opacity: .40;
-    }
-    @keyframes scan {
-      0% { transform: translateY(-100%); }
-      100% { transform: translateY(100%); }
-    }
-
-    @keyframes floaty {
-      0%,100% { transform: translateY(0px); }
-      50% { transform: translateY(-6px); }
-    }
-    .floaty { animation: floaty 4s ease-in-out infinite; }
-
-    @keyframes pulse {
-      0%,100% { transform: scale(1); opacity: .92; }
-      50% { transform: scale(1.03); opacity: 1; }
-    }
-    .pulse { animation: pulse 2.4s ease-in-out infinite; }
-
-    @keyframes portal {
-      0%   { transform: rotate(0deg) scale(.88); opacity:.40; }
-      50%  { transform: rotate(180deg) scale(1.02); opacity:1; }
-      100% { transform: rotate(360deg) scale(.90); opacity:.45; }
-    }
-
-    @keyframes glowPulse {
-      0%,100% { box-shadow: 0 0 0 0 rgba(91,140,255,.0), 0 0 0 0 rgba(139,92,246,.0); }
-      50% { box-shadow: 0 0 0 18px rgba(91,140,255,.08), 0 0 0 36px rgba(139,92,246,.05); }
-    }
-
-    .portal-wrap {
-      width: 138px;
-      height: 138px;
-      border-radius: 999px;
-      position: relative;
-      margin: 0 auto;
-      animation: portal 1.6s linear infinite;
-    }
-    .portal-ring {
-      position: absolute;
-      inset: 0;
-      border-radius: 999px;
-      background:
-        radial-gradient(circle at center, rgba(255,255,255,.20) 0 14%, transparent 14.5% 20%, rgba(255,255,255,.15) 20.5% 24%, transparent 24.5% 31%, rgba(91,140,255,.40) 31.5% 35%, transparent 35.5% 44%, rgba(139,92,246,.34) 44.5% 49%, transparent 49.5% 100%);
-      filter: drop-shadow(0 0 20px rgba(91,140,255,.35));
-      animation: glowPulse 1.6s ease-in-out infinite;
-    }
-    .portal-core {
-      position: absolute;
-      inset: 28px;
-      border-radius: 999px;
-      background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.9), rgba(255,255,255,.16) 20%, rgba(91,140,255,.08) 44%, rgba(0,0,0,.75) 100%);
-      border: 1px solid rgba(255,255,255,.10);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.12);
-    }
-
-    .arena-shell {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      border-radius: 26px;
-      overflow: hidden;
-      border: 1px solid rgba(255,255,255,.10);
-      background:
-        radial-gradient(circle at 50% 50%, rgba(255,255,255,.07) 0 2%, transparent 3%),
-        radial-gradient(circle at 50% 50%, transparent 0 38%, rgba(255,255,255,.05) 38.5% 39.5%, transparent 40%),
-        linear-gradient(180deg, rgba(7,9,16,.96), rgba(12,14,24,.96));
-      box-shadow: 0 20px 70px rgba(0,0,0,.40), inset 0 1px 0 rgba(255,255,255,.04);
-    }
-
-    .arena-shell::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background:
-        linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px),
-        linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px);
-      background-size: 42px 42px;
-      opacity: .25;
-      pointer-events: none;
-      mask-image: radial-gradient(circle at center, black 45%, transparent 100%);
-    }
-
-    .arena-shell::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background:
-        radial-gradient(circle at 50% 50%, transparent 0 58%, rgba(0,0,0,.10) 59% 100%);
-      pointer-events: none;
-    }
-
-    .arena-inner {
-      position: absolute;
-      inset: 16px;
-      border-radius: 20px;
-      overflow: hidden;
-      border: 1px solid rgba(255,255,255,.08);
-      background: radial-gradient(circle at center, rgba(255,255,255,.08), transparent 44%);
-    }
-
-    .player-zone {
-      position: absolute;
-      top: 0;
-      height: 100%;
-      overflow: hidden;
-      border-right: 1px solid rgba(255,255,255,.10);
-      box-shadow: inset 0 0 50px rgba(255,255,255,.06);
-    }
-
-    .player-zone::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background:
-        radial-gradient(circle at 50% 30%, rgba(255,255,255,.18), transparent 18%),
-        linear-gradient(180deg, rgba(255,255,255,.08), transparent 32%);
-      pointer-events: none;
-      mix-blend-mode: screen;
-      opacity: .9;
-    }
-
-    .zone-label {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      text-align: center;
-      width: 100%;
-      padding: 0 8px;
-      pointer-events: none;
-    }
-
-    .avatar-ring {
-      width: 54px;
-      height: 54px;
-      border-radius: 999px;
-      padding: 3px;
-      background: linear-gradient(135deg, rgba(255,255,255,.26), rgba(255,255,255,.08));
-      box-shadow: 0 0 22px rgba(255,255,255,.14), 0 0 50px rgba(0,0,0,.18);
-    }
-
-    .avatar {
-      width: 100%;
-      height: 100%;
-      border-radius: 999px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      background: rgba(0,0,0,.18);
-      border: 1px solid rgba(255,255,255,.12);
-    }
-
-    .avatar img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .zone-title {
-      font-size: 12px;
-      font-weight: 900;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-      text-shadow: 0 1px 8px rgba(0,0,0,.36);
-    }
-
-    .zone-sub {
-      font-size: 11px;
-      color: rgba(255,255,255,.80);
-      text-shadow: 0 1px 8px rgba(0,0,0,.36);
-    }
-
-    .center-core {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      width: 158px;
-      height: 158px;
-      transform: translate(-50%, -50%);
-      border-radius: 999px;
-      background:
-        radial-gradient(circle at 35% 28%, rgba(255,255,255,.35), transparent 18%),
-        radial-gradient(circle at center, rgba(9,13,24,.82) 0 48%, rgba(10,20,40,.92) 60%, rgba(0,0,0,.96) 100%);
-      border: 1px solid rgba(255,255,255,.16);
-      box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.18),
-        0 0 0 10px rgba(255,255,255,.03),
-        0 0 55px rgba(0,0,0,.30);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      z-index: 8;
-    }
-
-    .center-core .title {
-      font-weight: 900;
-      letter-spacing: .10em;
-      font-size: 10px;
-      color: rgba(255,255,255,.78);
-      text-transform: uppercase;
-    }
-
-    .center-core .value {
-      margin-top: 6px;
-      font-size: 34px;
-      font-weight: 900;
-      line-height: 1;
-    }
-
-    .center-core .sub {
-      margin-top: 8px;
-      font-size: 11px;
-      color: rgba(255,255,255,.62);
-      line-height: 1.25;
-    }
-
-    .pointer-line {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      z-index: 18;
-      padding: 8px 10px;
-      border-radius: 999px;
-      background: rgba(0,0,0,.28);
-      border: 1px solid rgba(255,255,255,.10);
-      font-size: 11px;
-      color: rgba(255,255,255,.88);
-    }
-
-    .history-trigger {
-      position: absolute;
-      top: 12px;
-      left: 12px;
-      z-index: 22;
-      width: 36px;
-      height: 36px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.25);
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 10px 24px rgba(0,0,0,.25);
-    }
-
-    .ball {
-      position: absolute;
-      width: 2.3%;
-      height: 2.3%;
-      border-radius: 999px;
-      transform: translate(-50%, -50%) scale(1);
-      background: radial-gradient(circle at 30% 30%, #ffffff 0%, #f8fafc 30%, #cbd5e1 100%);
-      box-shadow: 0 0 18px rgba(255,255,255,.55), 0 0 40px rgba(91,140,255,.20);
-      z-index: 25;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .ball.zoom {
-      width: 4.3%;
-      height: 4.3%;
-      box-shadow: 0 0 26px rgba(255,255,255,.72), 0 0 56px rgba(91,140,255,.32);
-    }
-
-    .ball-arrow {
-      width: 0;
-      height: 0;
-      border-left: 4px solid transparent;
-      border-right: 4px solid transparent;
-      border-top: 8px solid rgba(13,18,30,.84);
-      transform: translateY(7px);
-      opacity: .9;
-    }
-
-    .top-line {
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
-      gap: 10px;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-
-    .top-center {
-      text-align: center;
-      font-size: 11px;
-      color: rgba(255,255,255,.62);
-    }
-
-    .mini-stat {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-      padding: 12px 14px;
-      border-radius: 18px;
-      background: rgba(255,255,255,.05);
-      border: 1px solid rgba(255,255,255,.08);
-      min-width: 0;
-    }
-    .mini-label {
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: .18em;
-      font-weight: 900;
-      color: rgba(255,255,255,.55);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .mini-value {
-      font-size: 18px;
-      font-weight: 900;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .mini-hint {
-      font-size: 11px;
-      color: rgba(255,255,255,.58);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .section-title {
-      font-size: 12px;
-      font-weight: 900;
-      letter-spacing: .18em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,.55);
-    }
-
-    .thin-scroll::-webkit-scrollbar { height: 6px; width: 6px; }
-    .thin-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,.14); border-radius: 999px; }
-    .thin-scroll::-webkit-scrollbar-track { background: transparent; }
-
-    .nav-bar {
-      position: fixed;
-      left: 50%;
-      transform: translateX(-50%);
-      bottom: 0;
-      width: min(520px, 100%);
-      padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
-      z-index: 40;
-      background: linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,.48) 14%, rgba(0,0,0,.74));
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-    }
-
-    .nav-inner {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 10px;
-      padding: 10px;
-      border-radius: 22px;
-      background: rgba(10,12,18,.78);
-      border: 1px solid rgba(255,255,255,.08);
-      box-shadow: 0 14px 40px rgba(0,0,0,.35);
-    }
-
-    .nav-btn {
-      border: none;
-      border-radius: 18px;
-      padding: 12px 8px;
-      color: rgba(255,255,255,.70);
-      font-weight: 800;
-      letter-spacing: .02em;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      background: transparent;
-    }
-
-    .nav-btn.active {
-      color: #fff;
-      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
-      border: 1px solid rgba(255,255,255,.07);
-    }
-
-    .overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,.68);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-      z-index: 120;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-    }
-
-    .modal {
-      width: min(460px, 100%);
-      border-radius: 28px;
-      padding: 16px;
-      background: linear-gradient(180deg, rgba(18,20,28,.98), rgba(9,10,16,.98));
-      border: 1px solid rgba(255,255,255,.10);
-      box-shadow: 0 24px 80px rgba(0,0,0,.48);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .modal::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background:
-        radial-gradient(circle at 18% 16%, rgba(91,140,255,.14), transparent 16%),
-        radial-gradient(circle at 82% 12%, rgba(139,92,246,.14), transparent 16%);
-      pointer-events: none;
-    }
-
-    .support-mask {
-      position: fixed;
-      inset: 0;
-      z-index: 130;
-      background: rgba(0,0,0,.70);
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-      padding: 16px;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-    }
-
-    .support-sheet {
-      width: min(460px, 100%);
-      border-radius: 24px;
-      background: linear-gradient(180deg, rgba(18,20,28,.98), rgba(8,9,14,.98));
-      border: 1px solid rgba(255,255,255,.10);
-      box-shadow: 0 24px 70px rgba(0,0,0,.50);
-      padding: 16px;
-      position: relative;
-    }
-
-    .intro-mask {
-      position: fixed;
-      inset: 0;
-      z-index: 200;
-      background:
-        radial-gradient(circle at center, rgba(91,140,255,.20), transparent 18%),
-        radial-gradient(circle at center, rgba(139,92,246,.14), transparent 32%),
-        linear-gradient(180deg, #05060a 0%, #000 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      animation: fadeIntro 1.8s ease forwards;
-    }
-
-    @keyframes fadeIntro {
-      0%   { opacity: 1; }
-      80%  { opacity: 1; }
-      100% { opacity: 0; visibility: hidden; }
-    }
-
-    .portal-sizes {
-      display: grid;
-      place-items: center;
-      min-height: 220px;
-    }
-
-    .row {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .space-between {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .stack {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .card-title {
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: .18em;
-      font-weight: 900;
-      color: rgba(255,255,255,.54);
-    }
-
-    .empty-box {
-      padding: 20px;
-      border-radius: 20px;
-      border: 1px dashed rgba(255,255,255,.12);
-      color: rgba(255,255,255,.64);
-      text-align: center;
-      background: rgba(255,255,255,.03);
-    }
-
-    .list-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 12px 0;
-      border-bottom: 1px solid rgba(255,255,255,.08);
-    }
-
-    .list-item:last-child {
-      border-bottom: 0;
-    }
-
-    .small-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 999px;
-      overflow: hidden;
-      border: 1px solid rgba(255,255,255,.10);
-      flex: 0 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(255,255,255,.06);
-    }
-
-    .small-icon img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .toggle {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.08);
-      background: rgba(255,255,255,.05);
-    }
-
-    .toggle button {
-      border: none;
-      border-radius: 999px;
-      padding: 10px 14px;
-      color: rgba(255,255,255,.72);
-      background: transparent;
-      font-weight: 900;
-    }
-
-    .toggle button.active {
-      background: linear-gradient(180deg, rgba(91,140,255,1), rgba(70,119,250,1));
-      color: #fff;
-    }
-
-    .support-note {
-      font-size: 13px;
-      color: rgba(255,255,255,.70);
-      line-height: 1.65;
-    }
-
-    .dim { opacity: .74; }
-
-    .preset-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr 1fr auto;
-      gap: 8px;
-    }
-
-    .preset-chip {
-      border: 1px solid rgba(255,255,255,.08);
-      border-radius: 16px;
-      padding: 12px 10px;
-      background: rgba(255,255,255,.05);
-      color: #fff;
-      font-weight: 900;
-    }
-
-    .preset-chip.active {
-      background: linear-gradient(180deg, rgba(91,140,255,1), rgba(70,119,250,1));
-    }
-
-    .clock-btn {
-      width: 34px;
-      height: 34px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.25);
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .arena-wrap {
-      position: relative;
-      margin-top: 10px;
-    }
-
-    .arena-hero {
-      padding: 10px;
-      border-radius: 30px;
-      background: rgba(255,255,255,.04);
-      border: 1px solid rgba(255,255,255,.08);
-    }
-
-    .top-topline {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 8px;
-    }
-
-    .top-left-stack {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    .open-history {
-      width: 36px;
-      height: 36px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.24);
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .arena-title-line {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-
-    .title-big {
-      font-size: 14px;
-      letter-spacing: .18em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,.60);
-      font-weight: 900;
-    }
-
-    .arena-count {
-      font-size: 11px;
-      color: rgba(255,255,255,.58);
-    }
-
-    .arena-shell.referenced {
-      border-radius: 32px;
-    }
-
-    .player-zone .avatar img {
-      pointer-events: none;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>TON Arena</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<style>
+body {
+  margin:0;
+  background:linear-gradient(180deg,#0f172a,#020617);
+  color:white;
+  font-family:Inter;
+  overflow:hidden;
+}
+
+.app {
+  max-width:430px;
+  margin:0 auto;
+}
+
+/* ===== ARENA ===== */
+.arena-wrap {
+  height:80vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.arena {
+  width:100%;
+  aspect-ratio:1/1;
+  border-radius:24px;
+  overflow:hidden;
+  position:relative;
+  background:#111;
+  box-shadow:0 0 40px rgba(0,0,0,0.6);
+}
+
+/* zones */
+.zone {
+  position:absolute;
+  inset:0;
+  transition:0.5s;
+}
+
+/* ball */
+.ball {
+  width:22px;
+  height:22px;
+  border-radius:50%;
+  background:white;
+  position:absolute;
+  box-shadow:0 0 20px white;
+}
+
+/* avatar */
+.avatar {
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  position:absolute;
+  transform:translate(-50%,-50%);
+  border:2px solid white;
+}
+
+/* HUD */
+.hud {
+  position:absolute;
+  top:10px;
+  left:10px;
+  right:10px;
+  display:flex;
+  justify-content:space-between;
+  font-weight:bold;
+}
+
+/* bottom panel */
+.panel {
+  height:20vh;
+  overflow:auto;
+  padding:10px;
+}
+
+/* nav */
+.nav {
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  height:65px;
+  background:#020617;
+  display:flex;
+}
+
+.nav button {
+  flex:1;
+  color:white;
+  font-size:14px;
+}
+
+/* inputs */
+input {
+  background:#020617;
+  border:1px solid #334155;
+  padding:10px;
+  border-radius:12px;
+  width:100%;
+  color:white;
+}
+
+button.main {
+  background:#2563eb;
+  padding:10px;
+  border-radius:12px;
+  margin-top:6px;
+}
+</style>
 </head>
+
 <body>
-  <div id="root"></div>
-  <div class="nav-bar">
-    <div id="nav-anchor"></div>
-  </div>
-
-  <script>
-    const h = React.createElement;
-    const F = React.Fragment;
-    const { useEffect, useMemo, useRef, useState } = React;
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyCsgo_VhjPWLyUtZCE0jCzqCmQa-du0qwI",
-      authDomain: "portals-c5000.firebaseapp.com",
-      databaseURL: "https://portals-c5000-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "portals-c5000",
-      storageBucket: "portals-c5000.firebasestorage.app",
-      messagingSenderId: "24003070752",
-      appId: "1:24003070752:web:0b83600a20383640e5a545"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    const ROUND_SECONDS = 30;
-    const FEE_RATE = 0.10;
-    const ROOM_DEFAULT = "room_1";
-    const ACTIVE_MS = 15000;
-    const INTRO_MS = 1800;
-
-    const LANGS = {
-      ru: {
-        online: "Онлайн",
-        balance: "Банк",
-        players: "Игроки",
-        bet: "Ставка",
-        join: "Войти / обновить ставку",
-        referral: "Рефералы",
-        profile: "Профиль",
-        games: "Игры",
-        support: "Поддержка",
-        back: "Назад",
-        continue: "Продолжить",
-        changeNick: "Сменить ник",
-        testMode: "Тест режим",
-        realMode: "Реальный режим",
-        enterNick: "Введите уникальный ник",
-        nickHint: "Например: dragon77",
-        roomHint: "Комната",
-        howItWorks: "Как работает",
-        howText: "Игрок вводит ник, входит в комнату, ставит TON и получает долю арены. Арена квадратная, а белый круг летает с физикой и выбирает победителя по позиции.",
-        autoStart: "Автостарт при 2 игроках",
-        noPlayers: "Пока нет игроков",
-        noLast: "Пока нет завершённых раундов",
-        referralTitle: "Реферальная система",
-        referralDesc: "Когда приглашённый игрок делает ставку и участвует в матчах, ты получаешь 10% бонуса от его активности как реферальное вознаграждение.",
-        referralLink: "Твоя ссылка",
-        copy: "Копировать",
-        copied: "Скопировано",
-        profileInfo: "Профиль и настройки",
-        supportSoon: "Скоро добавим",
-        supportText: "Эта секция пока в разработке.",
-        roomId: "ID комнаты",
-        liveArena: "Живая арена",
-        feeNote: "10% комиссия удерживается из банка",
-        winner: "Победитель",
-        history: "История",
-        editPresets: "Редактировать ставки",
-        allIn: "ALL IN",
-        payout: "Выплата",
-        betsCount: "Количество ставок",
-        wins: "Победы",
-        totalBet: "Всего поставлено",
-        rooms: "Комнаты",
-        stats: "Статистика",
-        modeTest: "TEST",
-        modeReal: "REAL",
-        smallHistory: "История раундов",
-        launch: "Запуск",
-        wait2: "Ждём 2 игроков",
-        finished: "Раунд завершён",
-        round: "Раунд",
-        note: "Сейчас тестовая версия",
-        roomInfo: "Комната живёт отдельно",
-        autoSuffix: "Если ник занят, добавим цифру",
-      },
-      en: {
-        online: "Online",
-        balance: "Bank",
-        players: "Players",
-        bet: "Bet",
-        join: "Join / update bet",
-        referral: "Referrals",
-        profile: "Profile",
-        games: "Games",
-        support: "Support",
-        back: "Back",
-        continue: "Continue",
-        changeNick: "Change nickname",
-        testMode: "Test mode",
-        realMode: "Real mode",
-        enterNick: "Enter a unique nickname",
-        nickHint: "Example: dragon77",
-        roomHint: "Room",
-        howItWorks: "How it works",
-        howText: "A player enters a nickname, joins a room, places TON and gets a share of the arena. The arena is square, and the white circle flies with physics and selects the winner by position.",
-        autoStart: "Auto-start at 2 players",
-        noPlayers: "No players yet",
-        noLast: "No finished rounds yet",
-        referralTitle: "Referral system",
-        referralDesc: "When an invited player places a bet and participates in matches, you receive a 10% bonus from their activity as a referral reward.",
-        referralLink: "Your link",
-        copy: "Copy",
-        copied: "Copied",
-        profileInfo: "Profile and settings",
-        supportSoon: "Coming soon",
-        supportText: "This section is still under development.",
-        roomId: "Room ID",
-        liveArena: "Live arena",
-        feeNote: "10% fee is deducted from the bank",
-        winner: "Winner",
-        history: "History",
-        editPresets: "Edit bets",
-        allIn: "ALL IN",
-        payout: "Payout",
-        betsCount: "Bet count",
-        wins: "Wins",
-        totalBet: "Total bet",
-        rooms: "Rooms",
-        stats: "Statistics",
-        modeTest: "TEST",
-        modeReal: "REAL",
-        smallHistory: "Round history",
-        launch: "Launch",
-        wait2: "Waiting for 2 players",
-        finished: "Round finished",
-        round: "Round",
-        note: "Test version right now",
-        roomInfo: "Room lives separately",
-        autoSuffix: "If nickname is taken, digits will be added",
-      }
-    };
-
-    function t(lang, key) {
-      return (LANGS[lang] && LANGS[lang][key]) || LANGS.ru[key] || key;
-    }
-
-    function usePersistedState(key, fallback) {
-      const [value, setValue] = useState(() => {
-        try {
-          const raw = localStorage.getItem(key);
-          return raw == null ? fallback : JSON.parse(raw);
-        } catch {
-          return fallback;
-        }
-      });
-
-      useEffect(() => {
-        try {
-          localStorage.setItem(key, JSON.stringify(value));
-        } catch {}
-      }, [key, value]);
-
-      return [value, setValue];
-    }
-
-    function makeId(prefix) {
-      return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
-    }
-
-    function safeNick(nick) {
-      return String(nick || "").trim().replace(/\s+/g, " ").slice(0, 18);
-    }
-
-    function nickKey(nick) {
-      return safeNick(nick)
-        .toLowerCase()
-        .replace(/[^a-zа-я0-9_ -]/gi, "_")
-        .replace(/\s/g, "_")
-        .replace(/_+/g, "_");
-    }
-
-    function shortNick(s) {
-      if (!s) return "—";
-      return s.length > 12 ? s.slice(0, 12) + "…" : s;
-    }
-
-    function shortId(s) {
-      if (!s) return "—";
-      return s.length > 14 ? s.slice(0, 6) + "…" + s.slice(-4) : s;
-    }
-
-    function formatTON(v) {
-      const n = Number(v || 0);
-      if (!isFinite(n)) return "0";
-      return Number.isInteger(n) ? String(n) : n.toFixed(2).replace(/\.?0+$/, "");
-    }
-
-    function seededColor(seed) {
-      let h = 0;
-      const s = String(seed || "seed");
-      for (let i = 0; i < s.length; i++) h = ((h * 31) + s.charCodeAt(i)) >>> 0;
-      const colors = [
-        ["#3b82f6", "#1d4ed8"],
-        ["#8b5cf6", "#6d28d9"],
-        ["#ec4899", "#db2777"],
-        ["#f59e0b", "#d97706"],
-        ["#10b981", "#059669"],
-        ["#14b8a6", "#0f766e"],
-        ["#ef4444", "#b91c1c"],
-        ["#06b6d4", "#0284c7"],
-        ["#f97316", "#ea580c"],
-        ["#22c55e", "#16a34a"]
-      ];
-      const c = colors[h % colors.length];
-      return `linear-gradient(135deg, ${c[0]}, ${c[1]})`;
-    }
-
-    function randomAvatar(seed) {
-      return `https://api.dicebear.com/9.x/identicon/svg?seed=${encodeURIComponent(seed || "guest")}`;
-    }
-
-    function hashString(str) {
-      let h = 2166136261 >>> 0;
-      const s = String(str || "");
-      for (let i = 0; i < s.length; i++) {
-        h ^= s.charCodeAt(i);
-        h = Math.imul(h, 16777619);
-      }
-      return h >>> 0;
-    }
-
-    function mulberry32(seed) {
-      return function() {
-        let t = seed += 0x6D2B79F5;
-        t = Math.imul(t ^ (t >>> 15), t | 1);
-        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-      };
-    }
-
-    function seededShuffle(arr, seedText) {
-      const rng = mulberry32(hashString(seedText));
-      const out = arr.slice();
-      for (let i = out.length - 1; i > 0; i--) {
-        const j = Math.floor(rng() * (i + 1));
-        [out[i], out[j]] = [out[j], out[i]];
-      }
-      return out;
-    }
-
-    function sumAmount(list) {
-      return list.reduce((s, p) => s + Number(p.amount || 0), 0);
-    }
-
-    function resolveUniqueNickname(baseNick, players) {
-      const clean = safeNick(baseNick) || "Player";
-      const taken = new Set(players.map(p => String(p.nickname || "").toLowerCase()));
-      if (!taken.has(clean.toLowerCase())) return clean;
-      let i = 2;
-      while (taken.has((clean + i).toLowerCase())) i++;
-      return clean + i;
-    }
-
-    function computeCommission(players) {
-      const arr = players || [];
-      if (!arr.length) return 0;
-      const minBet = Math.min(...arr.map(p => Number(p.amount || 0)).filter(n => isFinite(n) && n > 0));
-      if (!isFinite(minBet) || minBet <= 0) return 0;
-      return +(minBet * FEE_RATE).toFixed(2);
-    }
-
-    function payoutAmount(players) {
-      return +(sumAmount(players) - computeCommission(players)).toFixed(2);
-    }
-
-    function computeShares(players) {
-      const total = sumAmount(players);
-      if (!players.length) return [];
-      if (total <= 0) return players.map(p => ({ ...p, share: 1 / players.length }));
-      return players.map(p => ({ ...p, share: Number(p.amount || 0) / total }));
-    }
-
-    function layoutTreemap(items, seedText, x = 0, y = 0, w = 100, hgt = 100, depth = 0) {
-      const items2 = items.filter(Boolean);
-      if (!items2.length) return [];
-      if (items2.length === 1) {
-        const item = items2[0];
-        return [{ ...item, x, y, w, h: hgt }];
-      }
-
-      const total = sumAmount(items2) || items2.length;
-      const rng = mulberry32(hashString(seedText + ":" + depth + ":" + items2.length));
-      const horizontal = (w >= hgt) ? (rng() > 0.34) : (rng() > 0.66);
-
-      let acc = 0;
-      let split = 1;
-      const target = total / 2;
-      for (let i = 0; i < items2.length - 1; i++) {
-        acc += Number(items2[i].amount || 0) || 1;
-        if (acc >= target) {
-          split = i + 1;
-          break;
-        }
-      }
-      split = Math.max(1, Math.min(items2.length - 1, split));
-
-      const a = items2.slice(0, split);
-      const b = items2.slice(split);
-
-      const aWeight = sumAmount(a) || a.length;
-      const ratio = aWeight / total;
-
-      if (horizontal) {
-        const h1 = hgt * ratio;
-        return [
-          ...layoutTreemap(a, seedText + "L", x, y, w, h1, depth + 1),
-          ...layoutTreemap(b, seedText + "R", x, y + h1, w, hgt - h1, depth + 1),
-        ];
-      } else {
-        const w1 = w * ratio;
-        return [
-          ...layoutTreemap(a, seedText + "L", x, y, w1, hgt, depth + 1),
-          ...layoutTreemap(b, seedText + "R", x + w1, y, w - w1, hgt, depth + 1),
-        ];
-      }
-    }
-
-    function pointInRect(px, py, r) {
-      return px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h;
-    }
-
-    function findBlockAt(blocks, x, y) {
-      const inside = blocks.find(b => pointInRect(x, y, b));
-      if (inside) return inside;
-      if (!blocks.length) return null;
-      let best = blocks[0];
-      let bestD = Infinity;
-      blocks.forEach(b => {
-        const cx = b.x + b.w / 2;
-        const cy = b.y + b.h / 2;
-        const d = ((cx - x) ** 2) + ((cy - y) ** 2);
-        if (d < bestD) {
-          bestD = d;
-          best = b;
-        }
-      });
-      return best;
-    }
-
-    function activeOnlineCount(presence) {
-      const now = Date.now();
-      return Object.values(presence || {}).filter(s => now - Number(s.lastSeen || 0) < ACTIVE_MS).length;
-    }
-
-    function App() {
-      const [lang, setLang] = usePersistedState("tonarena_lang", "ru");
-      const [mode, setMode] = usePersistedState("tonarena_mode", "test");
-      const [roomId, setRoomId] = usePersistedState("tonarena_room", ROOM_DEFAULT);
-      const [nickname, setNickname] = usePersistedState("tonarena_nick", "");
-      const [presets, setPresets] = usePersistedState("tonarena_presets", { one: 1, five: 5, ten: 10 });
-
-      const sessionIdRef = useRef(localStorage.getItem("tonarena_session_id") || makeId("sess"));
-      const roomRef = useRef(null);
-      const statsRef = useRef(null);
-      const presenceRef = useRef(null);
-      const heartbeatRef = useRef(null);
-      const timerRef = useRef(null);
-      const physicsRef = useRef(null);
-      const introRef = useRef(null);
-      const ballStateRef = useRef(null);
-      const blocksRef = useRef([]);
-
-      localStorage.setItem("tonarena_session_id", sessionIdRef.current);
-
-      const [tab, setTab] = useState("games");
-      const [gateOpen, setGateOpen] = useState(!nickname);
-      const [supportOpen, setSupportOpen] = useState(false);
-      const [historyOpen, setHistoryOpen] = useState(false);
-      const [editPresetsOpen, setEditPresetsOpen] = useState(false);
-      const [introOpen, setIntroOpen] = useState(true);
-      const [notice, setNotice] = useState("");
-      const [presence, setPresence] = useState({});
-      const [playersObj, setPlayersObj] = useState({});
-      const [room, setRoom] = useState({
-        status: "waiting",
-        timer: ROUND_SECONDS,
-        host: "",
-        timerOwner: "",
-        phaseText: "waiting",
-        winner: null,
-        lastGame: null,
-        arrowHistory: []
-      });
-      const [stats, setStats] = useState({
-        betsCount: 0,
-        wins: 0,
-        totalBet: 0,
-        refs: 0
-      });
-      const [betAmount, setBetAmount] = useState(1);
-      const [ball, setBall] = useState({
-        active: false,
-        x: 50,
-        y: 50,
-        vx: 0,
-        vy: 0,
-        zoom: false,
-        angle: 0
-      });
-
-      const activePlayers = useMemo(() => {
-        return Object.values(playersObj || {}).sort((a, b) => Number(a.joinedAt || 0) - Number(b.joinedAt || 0));
-      }, [playersObj]);
-
-      const livePlayers = useMemo(() => activePlayers, [activePlayers]);
-      const onlineCount = useMemo(() => activeOnlineCount(presence), [presence]);
-      const totalBank = useMemo(() => sumAmount(livePlayers), [livePlayers]);
-      const commission = useMemo(() => computeCommission(livePlayers), [livePlayers]);
-      const payout = useMemo(() => payoutAmount(livePlayers), [livePlayers]);
-      const shares = useMemo(() => computeShares(livePlayers), [livePlayers]);
-
-      const arenaBlocks = useMemo(() => {
-        const items = livePlayers.map((p, idx) => ({
-          ...p,
-          share: Number(p.amount || 0) / Math.max(1, totalBank),
-          color: p.color || seededColor(p.nicknameKey || p.nickname || idx),
-        }));
-        if (!items.length) return [];
-        const shuffled = seededShuffle(items, `${roomId}:${room.startedAt || "seed"}:${items.length}`);
-        const blocks = layoutTreemap(shuffled, `${roomId}:${room.startedAt || "seed"}`);
-        return blocks.map(b => ({
-          ...b,
-          x: Math.max(0, b.x),
-          y: Math.max(0, b.y),
-          w: Math.max(1, b.w),
-          h: Math.max(1, b.h),
-        }));
-      }, [livePlayers, roomId, room.startedAt, totalBank]);
-
-      const winnerPlayer = useMemo(() => {
-        if (!room.winner) return null;
-        return livePlayers.find(p => p.nicknameKey === room.winner.nicknameKey) || null;
-      }, [room.winner, livePlayers]);
-
-      useEffect(() => {
-        const t = setTimeout(() => setIntroOpen(false), INTRO_MS);
-        introRef.current = t;
-        return () => clearTimeout(t);
-      }, []);
-
-      useEffect(() => {
-        if (!nickname) {
-          setGateOpen(true);
-          return;
-        }
-        setGateOpen(false);
-      }, [nickname]);
-
-      useEffect(() => {
-        firebase.auth().signInAnonymously().catch(() => {});
-      }, []);
-
-      useEffect(() => {
-        if (roomRef.current) roomRef.current.off();
-        roomRef.current = db.ref(`rooms/${roomId}`);
-        const onValue = snap => {
-          const data = snap.val() || {};
-          const players = data.players || {};
-          const history = Array.isArray(data.arrowHistory)
-            ? data.arrowHistory
-            : data.arrowHistory && typeof data.arrowHistory === "object"
-              ? Object.values(data.arrowHistory)
-              : [];
-          setPlayersObj(players);
-          setRoom({
-            status: data.status || "waiting",
-            timer: Number(data.timer ?? ROUND_SECONDS),
-            host: data.host || "",
-            timerOwner: data.timerOwner || "",
-            phaseText: data.phaseText || "waiting",
-            winner: data.winner || null,
-            lastGame: data.lastGame || null,
-            startedAt: data.startedAt || null,
-            arrowHistory: history
-          });
-        };
-        roomRef.current.on("value", onValue);
-        return () => roomRef.current && roomRef.current.off("value", onValue);
-      }, [roomId]);
-
-      useEffect(() => {
-        if (presenceRef.current) presenceRef.current.off();
-        presenceRef.current = db.ref("app_presence");
-        const onValue = snap => setPresence(snap.val() || {});
-        presenceRef.current.on("value", onValue);
-        return () => presenceRef.current && presenceRef.current.off("value", onValue);
-      }, []);
-
-      useEffect(() => {
-        if (!nickname) return;
-        if (statsRef.current) statsRef.current.off();
-        statsRef.current = db.ref(`stats/${nickKey(nickname)}`);
-        const onValue = snap => {
-          setStats(snap.val() || { betsCount: 0, wins: 0, totalBet: 0, refs: 0 });
-        };
-        statsRef.current.on("value", onValue);
-        return () => statsRef.current && statsRef.current.off("value", onValue);
-      }, [nickname]);
-
-      useEffect(() => {
-        if (!nickname) return;
-
-        const writePresence = () => {
-          db.ref(`app_presence/${sessionIdRef.current}`).set({
-            sessionId: sessionIdRef.current,
-            nickname,
-            roomId,
-            mode,
-            lastSeen: Date.now(),
-            updatedAt: Date.now()
-          }).catch(() => {});
-        };
-
-        writePresence();
-        if (heartbeatRef.current) clearInterval(heartbeatRef.current);
-        heartbeatRef.current = setInterval(writePresence, 3000);
-
-        return () => {
-          if (heartbeatRef.current) clearInterval(heartbeatRef.current);
-        };
-      }, [nickname, roomId, mode]);
-
-      useEffect(() => {
-        if (room.status !== "betting") {
-          if (timerRef.current) {
-            clearInterval(timerRef.current);
-            timerRef.current = null;
-          }
-          return;
-        }
-
-        if (room.timerOwner !== sessionIdRef.current) return;
-
-        if (timerRef.current) clearInterval(timerRef.current);
-
-        timerRef.current = setInterval(() => {
-          db.ref(`rooms/${roomId}/timer`).transaction(cur => {
-            const next = Math.max(0, Number(cur || ROUND_SECONDS) - 1);
-            return next;
-          }, async (err, committed, snap) => {
-            if (err || !committed || !snap) return;
-            const value = Number(snap.val() || 0);
-            if (value <= 0) {
-              if (timerRef.current) {
-                clearInterval(timerRef.current);
-                timerRef.current = null;
-              }
-              resolveRound();
-            }
-          });
-        }, 1000);
-
-        return () => {
-          if (timerRef.current) {
-            clearInterval(timerRef.current);
-            timerRef.current = null;
-          }
-        };
-      }, [room.status, room.timerOwner, roomId]);
-
-      useEffect(() => {
-        blocksRef.current = arenaBlocks;
-      }, [arenaBlocks]);
-
-      function openGate() {
-        setGateOpen(true);
-        setTimeout(() => {
-          const el = document.getElementById("gateNick");
-          if (el) el.focus();
-        }, 30);
-      }
-
-      async function saveNickname() {
-        const input = document.getElementById("gateNick");
-        const clean = safeNick((input && input.value) || nickname);
-        if (clean.length < 2) {
-          alert(t(lang, "enterNick"));
-          return;
-        }
-        setNickname(clean);
-        localStorage.setItem("tonarena_nick", clean);
-        setGateOpen(false);
-        setNotice(t(lang, "note"));
-        try {
-          await db.ref(`app_presence/${sessionIdRef.current}`).set({
-            sessionId: sessionIdRef.current,
-            nickname: clean,
-            roomId,
-            mode,
-            lastSeen: Date.now(),
-            updatedAt: Date.now()
-          });
-        } catch {}
-      }
-
-      async function joinOrUpdateBet() {
-        const baseNick = safeNick(nickname);
-        if (!baseNick) {
-          openGate();
-          return;
-        }
-
-        const amount = Number(betAmount);
-        if (!amount || amount <= 0) {
-          alert("Ставка должна быть больше 0");
-          return;
-        }
-
-        const playerSnap = await db.ref(`rooms/${roomId}/players`).once("value");
-        const currentPlayers = Object.values(playerSnap.val() || {});
-        const owned = currentPlayers.find(p => p.ownerSessionId === sessionIdRef.current && p.baseNick === baseNick);
-
-        const displayNick = owned ? owned.nickname : resolveUniqueNickname(baseNick, currentPlayers);
-        const playerId = owned ? owned.id : makeId("player");
-
-        const payload = {
-          id: playerId,
-          baseNick,
-          nickname: displayNick,
-          nicknameKey: nickKey(displayNick),
-          amount,
-          avatar: owned?.avatar || randomAvatar(displayNick),
-          color: owned?.color || seededColor(displayNick + roomId),
-          joinedAt: owned?.joinedAt || Date.now(),
-          updatedAt: Date.now(),
-          lastSeen: Date.now(),
-          ownerSessionId: sessionIdRef.current,
-          mode
-        };
-
-        await db.ref(`rooms/${roomId}/players/${playerId}`).set(payload);
-
-        await db.ref(`stats/${nickKey(baseNick)}`).transaction(cur => {
-          const d = cur || { betsCount: 0, wins: 0, totalBet: 0, refs: 0 };
-          d.betsCount = Number(d.betsCount || 0) + 1;
-          d.totalBet = +(Number(d.totalBet || 0) + amount).toFixed(2);
-          d.lastBetAt = Date.now();
-          return d;
-        });
-
-        const roomSnap = await db.ref(`rooms/${roomId}`).once("value");
-        const data = roomSnap.val() || {};
-        const count = Object.keys(data.players || {}).length + (owned ? 0 : 1);
-
-        if ((data.status || "waiting") === "waiting" && count >= 2) {
-          await db.ref(`rooms/${roomId}`).update({
-            status: "betting",
-            timer: ROUND_SECONDS,
-            phaseText: "betting",
-            startedAt: data.startedAt || Date.now(),
-            host: data.host || payload.nicknameKey,
-            timerOwner: sessionIdRef.current
-          });
-          setNotice(t(lang, "wait2"));
-        } else if ((data.status || "waiting") === "betting" && !data.timerOwner) {
-          await db.ref(`rooms/${roomId}/timerOwner`).set(sessionIdRef.current);
-        }
-
-        try {
-          await db.ref(`app_presence/${sessionIdRef.current}`).set({
-            sessionId: sessionIdRef.current,
-            nickname: baseNick,
-            roomId,
-            mode,
-            lastSeen: Date.now(),
-            updatedAt: Date.now()
-          });
-        } catch {}
-      }
-
-      async function resetRoom() {
-        const host = nickKey(nickname || "host");
-        await db.ref(`rooms/${roomId}`).set({
-          status: "waiting",
-          timer: ROUND_SECONDS,
-          host,
-          timerOwner: sessionIdRef.current,
-          winner: null,
-          lastGame: room.lastGame || null,
-          startedAt: null,
-          phaseText: "waiting",
-          arrowHistory: [],
-          players: {},
-        });
-
-        setBall({ active: false, x: 50, y: 50, vx: 0, vy: 0, zoom: false, angle: 0 });
-        setNotice(t(lang, "finished"));
-        setTimeout(() => {
-          setNotice("");
-        }, 2500);
-      }
-
-      function startBallPhysicsAndResolve() {
-        if (physicsRef.current) cancelAnimationFrame(physicsRef.current);
-
-        const arena = document.getElementById("arenaShell");
-        const rect = arena ? arena.getBoundingClientRect() : { width: 360, height: 360 };
-        const min = 2.2;
-        const max = 97.8;
-
-        let x = 50 + (Math.random() * 20 - 10);
-        let y = 50 + (Math.random() * 20 - 10);
-        let vx = (Math.random() * 22 + 16) * (Math.random() < 0.5 ? -1 : 1);
-        let vy = (Math.random() * 22 + 16) * (Math.random() < 0.5 ? -1 : 1);
-        let angle = Math.random() * 360;
-        let last = performance.now();
-        const start = performance.now();
-        const duration = 10000;
-
-        setBall({ active: true, x, y, vx, vy, zoom: false, angle });
-
-        function frame(now) {
-          const dt = Math.min(0.033, (now - last) / 1000);
-          last = now;
-
-          x += vx * dt;
-          y += vy * dt;
-          angle += (Math.abs(vx) + Math.abs(vy)) * 0.08;
-
-          if (x <= min) {
-            x = min;
-            vx = Math.abs(vx) * 0.98;
-          }
-          if (x >= max) {
-            x = max;
-            vx = -Math.abs(vx) * 0.98;
-          }
-          if (y <= min) {
-            y = min;
-            vy = Math.abs(vy) * 0.98;
-          }
-          if (y >= max) {
-            y = max;
-            vy = -Math.abs(vy) * 0.98;
-          }
-
-          vx *= 0.9992;
-          vy *= 0.9992;
-
-          const remaining = duration - (now - start);
-          const zoom = remaining <= 2000;
-
-          setBall({ active: true, x, y, vx, vy, zoom, angle });
-
-          if ((now - start) < duration && Math.sqrt(vx * vx + vy * vy) > 2) {
-            physicsRef.current = requestAnimationFrame(frame);
-            return;
-          }
-
-          physicsRef.current = null;
-          finishRound({ x, y });
-        }
-
-        physicsRef.current = requestAnimationFrame(frame);
-      }
-
-      async function finishRound(finalPos) {
-        const blocks = blocksRef.current || [];
-        const winnerBlock = findBlockAt(blocks, finalPos.x, finalPos.y) || blocks[0] || null;
-        const playersList = Object.values((await db.ref(`rooms/${roomId}/players`).once("value")).val() || {});
-        const bank = sumAmount(playersList);
-        const fee = computeCommission(playersList);
-        const payout = +(bank - fee).toFixed(2);
-
-        await db.ref(`rooms/${roomId}`).update({
-          status: "finished",
-          timer: 0,
-          phaseText: "finished",
-          winner: winnerBlock ? {
-            id: winnerBlock.id,
-            nickname: winnerBlock.nickname,
-            nicknameKey: winnerBlock.nicknameKey,
-            amount: winnerBlock.amount
-          } : null,
-          lastGame: {
-            at: Date.now(),
-            roomId,
-            bank,
-            payout,
-            fee,
-            winnerName: winnerBlock ? winnerBlock.nickname : null,
-            winnerKey: winnerBlock ? winnerBlock.nicknameKey : null,
-            winnerAmount: winnerBlock ? winnerBlock.amount : null
-          }
-        });
-
-        if (winnerBlock) {
-          await db.ref(`stats/${winnerBlock.nicknameKey}`).transaction(cur => {
-            const d = cur || { betsCount: 0, wins: 0, totalBet: 0, refs: 0 };
-            d.wins = Number(d.wins || 0) + 1;
-            d.lastWinAt = Date.now();
-            return d;
-          });
-        }
-
-        const historySnap = await db.ref(`rooms/${roomId}/arrowHistory`).once("value");
-        const historyArr = Array.isArray(historySnap.val()) ? historySnap.val() : [];
-        const next = [
-          ...historyArr,
-          {
-            at: Date.now(),
-            roomId,
-            bank,
-            fee,
-            payout,
-            winnerName: winnerBlock ? winnerBlock.nickname : null,
-            winnerKey: winnerBlock ? winnerBlock.nicknameKey : null
-          }
-        ].slice(-12);
-
-        await db.ref(`rooms/${roomId}/arrowHistory`).set(next);
-
-        setTimeout(async () => {
-          await resetRoom();
-        }, 5000);
-      }
-
-      useEffect(() => {
-        if (room.status === "spinning" && !ball.active) {
-          startBallPhysicsAndResolve();
-        }
-      }, [room.status]);
-
-      function openSupport() {
-        setSupportOpen(true);
-      }
-
-      function closeSupport() {
-        setSupportOpen(false);
-      }
-
-      function toggleLang(next) {
-        setLang(next);
-      }
-
-      function toggleMode(next) {
-        setMode(next);
-      }
-
-      function setPresetValue(key, value) {
-        setPresets(prev => ({ ...prev, [key]: Number(value || 0) }));
-      }
-
-      function openHistory() {
-        setHistoryOpen(true);
-      }
-
-      function closeHistory() {
-        setHistoryOpen(false);
-      }
-
-      function openEditPresets() {
-        setEditPresetsOpen(true);
-      }
-
-      function closeEditPresets() {
-        setEditPresetsOpen(false);
-      }
-
-      function jumpAllIn() {
-        setBetAmount(Math.max(1, totalBank || 1000));
-      }
-
-      function allPlayersChanceByKey(key) {
-        const p = shares.find(x => x.nicknameKey === key);
-        return p ? Math.max(1, Math.round(p.share * 100)) : 0;
-      }
-
-      const topText = room.status === "betting"
-        ? `${t(lang, "autoStart")} · ${room.timer}s`
-        : room.status === "spinning"
-          ? `${t(lang, "launch")}`
-          : room.status === "finished"
-            ? `${t(lang, "finished")}`
-            : `${t(lang, "wait2")}`;
-
-      function renderTopBar() {
-        return h("div", { className: "top-line" },
-          h("div", { className: "chip" },
-            h("span", { style: { width: 10, height: 10, borderRadius: 999, background: "#22c55e", boxShadow: "0 0 12px rgba(34,197,94,.55)" } }),
-            h("span", { style: { fontWeight: 900 } }, `${t(lang, "online")}: ${onlineCount}`)
-          ),
-          h("div", { className: "top-center" },
-            h("div", { style: { fontSize: 11, letterSpacing: ".22em", textTransform: "uppercase", fontWeight: 900 } }, "TON ARENA"),
-            h("div", { style: { marginTop: 4, fontSize: 11, color: "rgba(255,255,255,.62)" } }, topText)
-          ),
-          h("div", { style: { display: "flex", justifyContent: "flex-end", gap: 8 } },
-            h("div", { className: "chip" },
-              h("span", { style: { fontWeight: 900 } }, `${t(lang, "balance")}: ${formatTON(totalBank)} TON`)
-            ),
-            h("button", { className: "clock-btn", onClick: openHistory, title: t(lang, "history") }, "◷")
-          )
-        );
-      }
-
-      function renderArenaPanel() {
-        const winnerKey = room.winner ? room.winner.nicknameKey : null;
-
-        return h("div", { className: "arena-wrap" },
-          h("div", {
-            id: "arenaShell",
-            className: "arena-shell referenced"
-          },
-            h("button", { className: "history-trigger", onClick: openHistory, title: t(lang, "history") }, "◷"),
-            h("div", { className: "arena-inner" },
-              arenaBlocks.map((b, idx) => {
-                const isWinner = winnerKey && b.nicknameKey === winnerKey;
-                return h("div", {
-                  key: b.id || idx,
-                  className: "player-zone",
-                  style: {
-                    left: b.x + "%",
-                    top: b.y + "%",
-                    width: b.w + "%",
-                    height: b.h + "%",
-                    background: b.color || seededColor(b.nicknameKey || b.nickname || idx),
-                    boxShadow: isWinner ? "inset 0 0 0 2px rgba(255,255,255,.22), inset 0 0 30px rgba(255,255,255,.10)" : "none"
-                  }
-                },
-                  h("div", { className: "zone-label" },
-                    h("div", { className: "avatar-ring" },
-                      h("div", { className: "avatar" },
-                        h("img", {
-                          src: b.avatar || randomAvatar(b.nicknameKey || b.nickname || idx),
-                          alt: ""
-                        })
-                      )
-                    )
-                  )
-                );
-              }),
-
-              h("div", { className: "pointer-line" }, `${t(lang, "feeNote")}`),
-
-              ball.active && h("div", {
-                className: "ball" + (ball.zoom ? " zoom" : ""),
-                style: {
-                  left: ball.x + "%",
-                  top: ball.y + "%",
-                  transform: `translate(-50%, -50%) scale(${ball.zoom ? 1.08 : 1}) rotate(${ball.angle || 0}deg)`
-                }
-              }, h("div", { className: "ball-arrow" })),
-
-              h("div", { className: "center-core" },
-                h("div", { className: "title" }, t(lang, "round")),
-                h("div", { className: "value" }, livePlayers.length),
-                h("div", { className: "sub" },
-                  livePlayers.length === 1 ? t(lang, "wait2") : `${livePlayers.length} ${t(lang, "players")}`,
-                  h("br"),
-                  room.phaseText || room.status
-                )
-              )
-            )
-          ),
-          h("div", { style: { marginTop: 12 }, className: "row" },
-            h("div", { className: "mini-stat" },
-              h("div", { className: "mini-label" }, t(lang, "balance")),
-              h("div", { className: "mini-value" }, `${formatTON(totalBank)} TON`),
-              h("div", { className: "mini-hint" }, `${t(lang, "payout")}: ${formatTON(payout)} TON`)
-            ),
-            h("div", { className: "mini-stat" },
-              h("div", { className: "mini-label" }, "Status"),
-              h("div", { className: "mini-value" }, room.status),
-              h("div", { className: "mini-hint" }, room.phaseText || t(lang, "roomInfo"))
-            ),
-            h("div", { className: "mini-stat" },
-              h("div", { className: "mini-label" }, t(lang, "winner")),
-              h("div", { className: "mini-value" }, room.winner ? shortNick(room.winner.nickname) : "—"),
-              h("div", { className: "mini-hint" }, room.winner ? `${formatTON(room.winner.amount)} TON` : t(lang, "noLast"))
-            )
-          )
-        );
-      }
-
-      function renderBetPanel() {
-        return h("div", { className: "glass", style: { borderRadius: 28, padding: 12, marginTop: 12 } },
-          h("div", { className: "space-between" },
-            h("div", null,
-              h("div", { className: "section-title" }, t(lang, "bet")),
-              h("div", { style: { marginTop: 6, fontSize: 18, fontWeight: 900 } }, `${t(lang, "autoStart")}`)
-            ),
-            h("button", { className: "btn-dark", style: { borderRadius: 16, padding: "10px 12px", fontWeight: 900 }, onClick: openEditPresets }, "✎")
-          ),
-
-          h("div", { style: { marginTop: 12 }, className: "preset-row" },
-            h("button", {
-              className: "preset-chip" + (Number(betAmount) === Number(presets.one) ? " active" : ""),
-              onClick: () => setBetAmount(Number(presets.one) || 1)
-            }, `${formatTON(presets.one)} TON`),
-
-            h("button", {
-              className: "preset-chip" + (Number(betAmount) === Number(presets.five) ? " active" : ""),
-              onClick: () => setBetAmount(Number(presets.five) || 5)
-            }, `${formatTON(presets.five)} TON`),
-
-            h("button", {
-              className: "preset-chip" + (Number(betAmount) === Number(presets.ten) ? " active" : ""),
-              onClick: () => setBetAmount(Number(presets.ten) || 10)
-            }, `${formatTON(presets.ten)} TON`),
-
-            h("button", { className: "preset-chip", onClick: jumpAllIn }, t(lang, "allIn")),
-
-            h("button", { className: "btn-dark", style: { borderRadius: 16, padding: "0 12px", fontWeight: 900 }, onClick: openEditPresets }, "✎")
-          ),
-
-          h("div", { style: { marginTop: 12 }, className: "row" },
-            h("input", {
-              className: "input",
-              type: "number",
-              min: 1,
-              step: "0.1",
-              value: betAmount,
-              onChange: e => setBetAmount(Number(e.target.value) || 0),
-              placeholder: t(lang, "bet")
-            }),
-            h("button", {
-              className: "btn-green",
-              style: { borderRadius: 18, padding: "14px 16px", fontWeight: 900, whiteSpace: "nowrap" },
-              onClick: joinOrUpdateBet
-            }, t(lang, "join"))
-          ),
-
-          h("div", { style: { marginTop: 10, fontSize: 11, lineHeight: 1.7, color: "rgba(255,255,255,.60)" } },
-            t(lang, "autoStart"), " · ",
-            t(lang, "autoSuffix")
-          )
-        );
-      }
-
-      function renderPlayersPanel() {
-        return h("div", { className: "glass", style: { borderRadius: 28, padding: 12, marginTop: 12 } },
-          h("div", { className: "space-between" },
-            h("div", null,
-              h("div", { className: "section-title" }, t(lang, "players")),
-              h("div", { style: { marginTop: 6, fontSize: 18, fontWeight: 900 } }, livePlayers.length)
-            ),
-            h("div", { className: "chip" },
-              h("span", { className: "muted", style: { fontSize: 11 } }, t(lang, "online")),
-              h("span", { style: { fontWeight: 900 } }, onlineCount)
-            )
-          ),
-
-          h("div", { style: { marginTop: 12, maxHeight: 260, overflow: "auto", paddingRight: 4 }, className: "thin-scroll" },
-            livePlayers.length ? livePlayers.map((p, idx) => {
-              const chance = allPlayersChanceByKey(p.nicknameKey);
-              const isWinner = room.winner && room.winner.nicknameKey === p.nicknameKey;
-              return h("div", { key: p.id || idx, className: "list-item" },
-                h("div", { className: "row", style: { minWidth: 0, flex: 1 } },
-                  h("div", {
-                    className: "small-icon",
-                    style: { background: p.color || seededColor(p.nicknameKey || p.nickname || idx) }
-                  },
-                    h("img", { src: p.avatar || randomAvatar(p.nicknameKey || p.nickname || idx), alt: "" })
-                  ),
-                  h("div", { style: { minWidth: 0 } },
-                    h("div", { style: { fontWeight: 900, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } },
-                      p.nickname,
-                      isWinner ? h("span", { style: { marginLeft: 6, fontSize: 10, color: "#34d399", textTransform: "uppercase", letterSpacing: ".18em", fontWeight: 900 } }, "winner") : null
-                    ),
-                    h("div", { style: { fontSize: 11, color: "rgba(255,255,255,.58)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } },
-                      `${chance}% · ${formatTON(p.amount)} TON`
-                    )
-                  )
-                ),
-                h("div", { style: { textAlign: "right", flex: "0 0 auto" } },
-                  h("div", { style: { fontWeight: 900, color: "#93c5fd" } }, `${formatTON(p.amount)} TON`),
-                  h("div", { style: { fontSize: 10, color: "rgba(255,255,255,.55)" } },
-                    p.joinedAt ? new Date(p.joinedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""
-                  )
-                )
-              );
-            }) : h("div", { className: "empty-box" }, t(lang, "noPlayers"))
-          )
-        );
-      }
-
-      function renderLastGame() {
-        const g = room.lastGame;
-        return h("div", { className: "glass", style: { borderRadius: 28, padding: 12, marginTop: 12 } },
-          h("div", { className: "space-between" },
-            h("div", null,
-              h("div", { className: "section-title" }, t(lang, "history")),
-              h("div", { style: { marginTop: 6, fontSize: 18, fontWeight: 900 } }, t(lang, "smallHistory"))
-            ),
-            h("button", { className: "btn-dark", style: { borderRadius: 16, padding: "10px 12px", fontWeight: 900 }, onClick: openHistory }, "◷")
-          ),
-
-          h("div", { style: { marginTop: 12, borderRadius: 20, padding: 14, background: "rgba(0,0,0,.24)", border: "1px solid rgba(255,255,255,.10)" } },
-            g ? h(F, null,
-              h("div", { className: "space-between" },
-                h("div", { style: { minWidth: 0 } },
-                  h("div", { style: { fontWeight: 900, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, g.winnerName || "—"),
-                  h("div", { style: { fontSize: 11, color: "rgba(255,255,255,.58)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, g.winnerKey || "")
-                ),
-                h("div", { style: { fontWeight: 900, color: "#93c5fd", flex: "0 0 auto" } }, `${formatTON(g.payout || 0)} TON`)
-              ),
-              h("div", { style: { marginTop: 8, fontSize: 11, color: "rgba(255,255,255,.58)" } },
-                `Room: ${g.roomId || roomId} · ${g.at ? new Date(g.at).toLocaleString() : ""}`
-              ),
-              h("div", { style: { marginTop: 6, fontSize: 11, color: "rgba(255,255,255,.58)" } },
-                `${t(lang, "feeNote")}: ${formatTON(g.fee || 0)} TON`
-              )
-            ) : h("div", { style: { fontSize: 13, color: "rgba(255,255,255,.60)" } }, t(lang, "noLast"))
-          ),
-
-          h("div", { style: { marginTop: 12 } },
-            h("div", { className: "section-title" }, t(lang, "history")),
-            h("div", { style: { marginTop: 10, maxHeight: 160, overflow: "auto", paddingRight: 4 }, className: "thin-scroll" },
-              (room.arrowHistory || []).slice().reverse().map((item, idx) =>
-                h("div", { key: idx, className: "list-item", style: { padding: "10px 0" } },
-                  h("div", { style: { minWidth: 0 } },
-                    h("div", { style: { fontWeight: 900, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, item.winnerName || "—"),
-                    h("div", { style: { fontSize: 11, color: "rgba(255,255,255,.58)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, item.roomId || roomId)
-                  ),
-                  h("div", { style: { textAlign: "right", flex: "0 0 auto" } },
-                    h("div", { style: { fontWeight: 900, color: "#93c5fd" } }, `${formatTON(item.payout || 0)} TON`),
-                    h("div", { style: { fontSize: 10, color: "rgba(255,255,255,.55)" } }, item.at ? new Date(item.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "")
-                  )
-                )
-              )
-            )
-          )
-        );
-      }
-
-      function renderGamesTab() {
-        return h(F, null,
-          renderTopBar(),
-          renderArenaPanel(),
-          renderBetPanel(),
-          renderPlayersPanel(),
-          renderLastGame()
-        );
-      }
-
-      function copyReferralLink() {
-        const link = `${location.origin}${location.pathname}?ref=${encodeURIComponent(`${nickKey(nickname || "guest")}-tonarena`)}`;
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(link).then(() => {
-            setNotice(t(lang, "copied"));
-            setTimeout(() => setNotice(""), 1400);
-          }).catch(() => {
-            alert(link);
-          });
-        } else {
-          alert(link);
-        }
-      }
-
-      function renderReferralTab() {
-        const link = `${location.origin}${location.pathname}?ref=${encodeURIComponent(`${nickKey(nickname || "guest")}-tonarena`)}`;
-        return h("div", { className: "glass", style: { borderRadius: 28, padding: 16, marginTop: 12 } },
-          h("div", { className: "space-between" },
-            h("div", null,
-              h("div", { className: "badge blue" }, "Referrals"),
-              h("div", { style: { marginTop: 12, fontSize: 26, fontWeight: 900 } }, t(lang, "referralTitle"))
-            ),
-            h("div", { style: { width: 52, height: 52, borderRadius: 18, background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.10)", display: "flex", alignItems: "center", justifyContent: "center" } }, h("span", { style: { fontSize: 20 } }, "↗"))
-          ),
-
-          h("div", { style: { marginTop: 14, fontSize: 13, lineHeight: 1.7, color: "rgba(255,255,255,.72)" } }, t(lang, "referralDesc")),
-
-          h("div", { style: { marginTop: 14 }, className: "stack" },
-            h("div", { className: "glass", style: { borderRadius: 20, padding: 14 } },
-              h("div", { className: "card-title" }, t(lang, "referralLink")),
-              h("div", { style: { marginTop: 8, wordBreak: "break-all", fontSize: 13, fontWeight: 900 } }, link),
-              h("button", {
-                className: "btn-main",
-                style: { marginTop: 12, width: "100%", borderRadius: 18, padding: "14px 16px", fontWeight: 900 },
-                onClick: copyReferralLink
-              }, t(lang, "copy"))
-            ),
-            h("div", { className: "glass", style: { borderRadius: 20, padding: 14 } },
-              h("div", { className: "card-title" }, t(lang, "howItWorks")),
-              h("div", { style: { marginTop: 8, fontSize: 13, lineHeight: 1.7, color: "rgba(255,255,255,.72)" } },
-                "1) Игрок переходит по ссылке.",
-                h("br"), "2) Вводит ник и входит в комнату.",
-                h("br"), "3) Делает ставку.",
-                h("br"), "4) Ты получаешь реферальный бонус по правилам системы."
-              )
-            ),
-            h("div", { className: "glass", style: { borderRadius: 20, padding: 14 } },
-              h("div", { className: "card-title" }, t(lang, "feeNote")),
-              h("div", { style: { marginTop: 8, fontSize: 13, lineHeight: 1.7, color: "rgba(255,255,255,.72)" } }, "Платформа удерживает 10% от минимальной ставки в комнате. Так победитель не уходит в минус из-за комиссии.")
-            )
-          )
-        );
-      }
-
-      function renderProfileTab() {
-        return h("div", { className: "glass", style: { borderRadius: 28, padding: 16, marginTop: 12 } },
-          h("div", { className: "space-between" },
-            h("div", null,
-              h("div", { className: "badge blue" }, t(lang, "profileInfo")),
-              h("div", { style: { marginTop: 12, fontSize: 26, fontWeight: 900 } }, nickname || "Guest"),
-              h("div", { style: { marginTop: 4, fontSize: 13, color: "rgba(255,255,255,.64)" } }, t(lang, "note"))
-            ),
-            h("div", { className: "small-icon", style: { width: 56, height: 56, borderRadius: 20, background: seededColor(nickKey(nickname || "guest")) } },
-              h("img", { src: randomAvatar(nickKey(nickname || "guest")), alt: "" })
-            )
-          ),
-
-          h("div", { style: { marginTop: 14 }, className: "toggle" },
-            h("button", { className: mode === "test" ? "active" : "", onClick: () => setMode("test") }, t(lang, "modeTest")),
-            h("button", { className: mode === "real" ? "active" : "", onClick: () => setMode("real") }, t(lang, "modeReal"))
-          ),
-
-          h("div", { style: { marginTop: 14 }, className: "toggle" },
-            h("button", { className: lang === "ru" ? "active" : "", onClick: () => toggleLang("ru") }, "Русский"),
-            h("button", { className: lang === "en" ? "active" : "", onClick: () => toggleLang("en") }, "English")
-          ),
-
-          h("div", { style: { marginTop: 14, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 } },
-            h("div", { className: "mini-stat" },
-              h("div", { className: "mini-label" }, t(lang, "betsCount")),
-              h("div", { className: "mini-value" }, Number(stats.betsCount || 0)),
-              h("div", { className: "mini-hint" }, t(lang, "stats"))
-            ),
-            h("div", { className: "mini-stat" },
-              h("div", { className: "mini-label" }, t(lang, "wins")),
-              h("div", { className: "mini-value" }, Number(stats.wins || 0)),
-              h("div", { className: "mini-hint" }, t(lang, "stats"))
-            ),
-            h("div", { className: "mini-stat" },
-              h("div", { className: "mini-label" }, t(lang, "totalBet")),
-              h("div", { className: "mini-value" }, `${formatTON(stats.totalBet || 0)} TON`),
-              h("div", { className: "mini-hint" }, t(lang, "stats"))
-            ),
-            h("div", { className: "mini-stat" },
-              h("div", { className: "mini-label" }, t(lang, "rooms")),
-              h("div", { className: "mini-value" }, 1),
-              h("div", { className: "mini-hint" }, roomId)
-            )
-          ),
-
-          h("div", { style: { marginTop: 14 }, className: "stack" },
-            h("button", { className: "btn-dark", style: { borderRadius: 18, padding: "14px 16px", fontWeight: 900 }, onClick: openSupport }, t(lang, "support")),
-            h("button", { className: "btn-dark", style: { borderRadius: 18, padding: "14px 16px", fontWeight: 900 }, onClick: openGate }, t(lang, "changeNick"))
-          ),
-
-          h("div", { style: { marginTop: 14, fontSize: 11, color: "rgba(255,255,255,.60)", lineHeight: 1.7 } },
-            `Nickname: ${nickname || "—"}`, h("br"),
-            `${t(lang, "roomId")}: ${roomId}`, h("br"),
-            `Session: ${shortId(sessionIdRef.current)}`
-          )
-        );
-      }
-
-      function renderBottomNav() {
-        const nav = h("div", { className: "nav-inner" },
-          h("button", { className: `nav-btn ${tab === "games" ? "active" : ""}`, onClick: () => setTab("games") },
-            h("span", { className: "nav-ic" }),
-            h("span", null, t(lang, "games"))
-          ),
-          h("button", { className: `nav-btn ${tab === "referral" ? "active" : ""}`, onClick: () => setTab("referral") },
-            h("span", { className: "nav-ic" }),
-            h("span", null, t(lang, "referral"))
-          ),
-          h("button", { className: `nav-btn ${tab === "profile" ? "active" : ""}`, onClick: () => setTab("profile") },
-            h("span", { className: "nav-ic" }),
-            h("span", null, t(lang, "profile"))
-          )
-        );
-        ReactDOM.createRoot(document.getElementById("nav-anchor")).render(nav);
-      }
-
-      function renderIntroOverlay() {
-        return introOpen ? h("div", { className: "intro-mask" },
-          h("div", { className: "portal-sizes" },
-            h("div", { className: "portal-wrap" },
-              h("div", { className: "portal-ring" }),
-              h("div", { className: "portal-core" })
-            ),
-            h("div", { style: { marginTop: 14, textAlign: "center" } },
-              h("div", { style: { fontSize: 13, letterSpacing: ".22em", textTransform: "uppercase", fontWeight: 900, color: "rgba(255,255,255,.68)" } }, "TON Arena"),
-              h("div", { style: { marginTop: 8, fontSize: 14, color: "rgba(255,255,255,.80)" } }, "Launching arena...")
-            )
-          )
-        ) : null;
-      }
-
-      function renderGateModal() {
-        if (!gateOpen) return null;
-        return h("div", { className: "overlay" },
-          h("div", { className: "modal" },
-            h("div", { className: "space-between" },
-              h("div", null,
-                h("div", { className: "badge blue" }, mode === "test" ? t(lang, "testMode") : t(lang, "realMode")),
-                h("div", { style: { marginTop: 14, fontSize: 28, fontWeight: 900, lineHeight: 1.05 } }, t(lang, "enterNick")),
-                h("div", { style: { marginTop: 8, fontSize: 13, color: "rgba(255,255,255,.70)" } }, t(lang, "autoSuffix"))
-              ),
-              h("div", { className: "top-pill", style: { width: 52, height: 52, justifyContent: "center", padding: 0, borderRadius: 18, display: "flex" } },
-                h("span", { style: { fontSize: 22 } }, "⚡")
-              )
-            ),
-
-            h("div", { style: { marginTop: 18 }, className: "stack" },
-              h("input", {
-                id: "gateNick",
-                className: "input",
-                defaultValue: nickname,
-                placeholder: t(lang, "nickHint"),
-                maxLength: 18,
-                onKeyDown: e => {
-                  if (e.key === "Enter") saveNickname();
-                }
-              }),
-              h("input", {
-                id: "gateRoom",
-                className: "input",
-                defaultValue: roomId,
-                placeholder: t(lang, "roomHint"),
-                maxLength: 20
-              }),
-
-              h("div", { className: "row" },
-                h("button", {
-                  className: "btn-main",
-                  style: { flex: 1, borderRadius: 18, padding: "14px 16px", fontWeight: 900 },
-                  onClick: saveNickname
-                }, t(lang, "continue")),
-                h("button", {
-                  className: "btn-dark",
-                  style: { borderRadius: 18, padding: "14px 16px", fontWeight: 900 },
-                  onClick: () => setMode(mode === "test" ? "real" : "test")
-                }, mode === "test" ? t(lang, "modeTest") : t(lang, "modeReal"))
-              ),
-
-              h("div", { style: { fontSize: 11, lineHeight: 1.7, color: "rgba(255,255,255,.62)" } },
-                t(lang, "howItWorks"),
-                h("br"),
-                t(lang, "howText")
-              )
-            )
-          )
-        ) : null;
-      }
-
-      function renderSupportSheet() {
-        if (!supportOpen) return null;
-        return h("div", { className: "support-mask" },
-          h("div", { className: "support-sheet" },
-            h("div", { className: "space-between" },
-              h("div", null,
-                h("div", { className: "badge warn" }, t(lang, "support")),
-                h("div", { style: { marginTop: 12, fontSize: 28, fontWeight: 900 } }, t(lang, "supportSoon"))
-              ),
-              h("button", {
-                className: "btn-dark",
-                style: { borderRadius: 14, padding: "10px 12px", fontWeight: 900 },
-                onClick: closeSupport
-              }, t(lang, "back"))
-            ),
-            h("div", { className: "glass", style: { marginTop: 14, borderRadius: 20, padding: 14 } },
-              h("div", { className: "support-note" }, t(lang, "supportText"))
-            ),
-            h("div", { className: "glass", style: { marginTop: 12, borderRadius: 20, padding: 14 } },
-              h("div", { className: "card-title" }, "Note"),
-              h("div", { className: "support-note", style: { marginTop: 8 } }, "Здесь позже появится чат поддержки, FAQ и кнопка связи.")
-            )
-          )
-        );
-      }
-
-      function renderHistorySheet() {
-        if (!historyOpen) return null;
-        return h("div", { className: "support-mask" },
-          h("div", { className: "support-sheet" },
-            h("div", { className: "space-between" },
-              h("div", null,
-                h("div", { className: "badge blue" }, t(lang, "history")),
-                h("div", { style: { marginTop: 12, fontSize: 28, fontWeight: 900 } }, t(lang, "smallHistory"))
-              ),
-              h("button", {
-                className: "btn-dark",
-                style: { borderRadius: 14, padding: "10px 12px", fontWeight: 900 },
-                onClick: closeHistory
-              }, t(lang, "back"))
-            ),
-            h("div", { style: { marginTop: 14, maxHeight: "60vh", overflow: "auto", paddingRight: 4 }, className: "thin-scroll" },
-              (room.arrowHistory || []).slice().reverse().length
-                ? (room.arrowHistory || []).slice().reverse().map((item, idx) =>
-                    h("div", { key: idx, className: "list-item" },
-                      h("div", { style: { minWidth: 0 } },
-                        h("div", { style: { fontWeight: 900, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, item.winnerName || "—"),
-                        h("div", { style: { fontSize: 11, color: "rgba(255,255,255,.58)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, item.roomId || roomId)
-                      ),
-                      h("div", { style: { textAlign: "right", flex: "0 0 auto" } },
-                        h("div", { style: { fontWeight: 900, color: "#93c5fd" } }, `${formatTON(item.payout || 0)} TON`),
-                        h("div", { style: { fontSize: 10, color: "rgba(255,255,255,.55)" } }, item.at ? new Date(item.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "")
-                      )
-                    )
-                  )
-                : h("div", { className: "empty-box" }, t(lang, "noLast"))
-            )
-          )
-        );
-      }
-
-      function renderEditPresets() {
-        if (!editPresetsOpen) return null;
-        return h("div", { className: "overlay" },
-          h("div", { className: "modal" },
-            h("div", { className: "space-between" },
-              h("div", null,
-                h("div", { className: "badge blue" }, t(lang, "editPresets")),
-                h("div", { style: { marginTop: 12, fontSize: 28, fontWeight: 900 } }, t(lang, "bet"))
-              ),
-              h("button", {
-                className: "btn-dark",
-                style: { borderRadius: 14, padding: "10px 12px", fontWeight: 900 },
-                onClick: closeEditPresets
-              }, t(lang, "back"))
-            ),
-
-            h("div", { style: { marginTop: 14 }, className: "stack" },
-              h("input", {
-                className: "input",
-                type: "number",
-                min: 1,
-                step: "0.1",
-                defaultValue: presets.one,
-                id: "presetOne"
-              }),
-              h("input", {
-                className: "input",
-                type: "number",
-                min: 1,
-                step: "0.1",
-                defaultValue: presets.five,
-                id: "presetFive"
-              }),
-              h("input", {
-                className: "input",
-                type: "number",
-                min: 1,
-                step: "0.1",
-                defaultValue: presets.ten,
-                id: "presetTen"
-              }),
-
-              h("div", { className: "row" },
-                h("button", {
-                  className: "btn-main",
-                  style: { flex: 1, borderRadius: 18, padding: "14px 16px", fontWeight: 900 },
-                  onClick: () => {
-                    const one = Number(document.getElementById("presetOne").value || 1);
-                    const five = Number(document.getElementById("presetFive").value || 5);
-                    const ten = Number(document.getElementById("presetTen").value || 10);
-                    setPresets({ one, five, ten });
-                    closeEditPresets();
-                  }
-                }, t(lang, "continue")),
-                h("button", {
-                  className: "btn-dark",
-                  style: { borderRadius: 18, padding: "14px 16px", fontWeight: 900 },
-                  onClick: () => {
-                    setBetAmount(Math.max(1, totalBank || 1000));
-                    closeEditPresets();
-                  }
-                }, t(lang, "allIn"))
-              ),
-
-              h("div", { style: { fontSize: 11, lineHeight: 1.7, color: "rgba(255,255,255,.62)" } },
-                "Фиксированные ставки можно изменить. ALL IN берёт текущий баланс комнаты, если он есть."
-              )
-            )
-          )
-        );
-      }
-
-      function renderGames() {
-        return h(F, null,
-          renderTopBar(),
-          h("div", { className: "arena-hero glass", style: { marginTop: 8 } },
-            h("div", { className: "space-between", style: { marginBottom: 10 } },
-              h("div", null,
-                h("div", { className: "title-big" }, "Arena"),
-                h("div", { style: { marginTop: 4, fontSize: 12, color: "rgba(255,255,255,.66)" } }, t(lang, "note"))
-              ),
-              h("button", { className: "open-history", onClick: openHistory }, "◷")
-            ),
-            renderArenaPanel()
-          ),
-          renderBetPanel(),
-          renderPlayersPanel(),
-          renderLastGame()
-        );
-      }
-
-      function renderReferral() {
-        return renderReferralTab();
-      }
-
-      function renderProfile() {
-        return renderProfileTab();
-      }
-
-      function mainContent() {
-        if (tab === "referral") return renderReferral();
-        if (tab === "profile") return renderProfile();
-        return renderGames();
-      }
-
-      function renderApp() {
-        ReactDOM.createRoot(document.getElementById("root")).render(
-          h(F, null,
-            renderIntroOverlay(),
-            renderGateModal(),
-            renderSupportSheet(),
-            renderHistorySheet(),
-            renderEditPresets(),
-            h("div", { className: "app" }, mainContent(), notice ? h("div", { style: { marginTop: 14, textAlign: "center", fontSize: 11, color: "rgba(255,255,255,.60)" } }, notice) : null),
-            h("div", { className: "nav-bar" },
-              h("div", { className: "nav-inner" },
-                h("button", { className: `nav-btn ${tab === "games" ? "active" : ""}`, onClick: () => setTab("games") },
-                  h("span", { className: "nav-ic" }),
-                  h("span", null, t(lang, "games"))
-                ),
-                h("button", { className: `nav-btn ${tab === "referral" ? "active" : ""}`, onClick: () => setTab("referral") },
-                  h("span", { className: "nav-ic" }),
-                  h("span", null, t(lang, "referral"))
-                ),
-                h("button", { className: `nav-btn ${tab === "profile" ? "active" : ""}`, onClick: () => setTab("profile") },
-                  h("span", { className: "nav-ic" }),
-                  h("span", null, t(lang, "profile"))
-                )
-              )
-            )
-          )
-        );
-      }
-
-      useEffect(() => {
-        renderApp();
-      });
-
-      return null;
-    }
-
-    ReactDOM.createRoot(document.getElementById("root")).render(h(App));
-  </script>
+<div id="root"></div>
+
+<script type="text/babel">
+
+const {useState,useEffect,useRef} = React;
+
+const COLORS = [
+"#ff4757","#3742fa","#2ed573","#ffa502","#ff6b81",
+"#1e90ff","#7bed9f","#70a1ff","#5352ed"
+];
+
+function App(){
+
+const [players,setPlayers]=useState([]);
+const [name,setName]=useState("");
+const [bet,setBet]=useState(1);
+
+const [started,setStarted]=useState(false);
+const [timer,setTimer]=useState(30);
+const [winner,setWinner]=useState(null);
+
+const [ball,setBall]=useState({x:150,y:150,vx:3,vy:2});
+
+
+// ===== ADD PLAYER =====
+function join(){
+if(!name) return;
+
+setPlayers(p=>[
+...p,
+{
+id:Date.now(),
+name,
+bet:Number(bet),
+color:COLORS[Math.floor(Math.random()*COLORS.length)]
+}
+]);
+
+setName("");
+}
+
+
+// ===== AUTO START =====
+useEffect(()=>{
+if(players.length>=2 && !started){
+setStarted(true);
+setTimer(30);
+}
+},[players]);
+
+
+// ===== TIMER =====
+useEffect(()=>{
+if(!started) return;
+
+if(timer<=0){
+finishGame();
+return;
+}
+
+const t=setTimeout(()=>setTimer(t=>t-1),1000);
+return ()=>clearTimeout(t);
+
+},[timer,started]);
+
+
+// ===== BALL =====
+useEffect(()=>{
+if(!started) return;
+
+const i=setInterval(()=>{
+setBall(b=>{
+let {x,y,vx,vy}=b;
+
+x+=vx;
+y+=vy;
+
+if(x<0||x>300) vx*=-1;
+if(y<0||y>300) vy*=-1;
+
+return {x,y,vx,vy};
+});
+},16);
+
+return ()=>clearInterval(i);
+
+},[started]);
+
+
+// ===== FINISH =====
+function finishGame(){
+
+const total = players.reduce((s,p)=>s+p.bet,0);
+const pos = ball.x / 300;
+
+let acc = 0;
+let win = players[0];
+
+for(let p of players){
+acc += p.bet / total;
+if(pos <= acc){
+win = p;
+break;
+}
+}
+
+const losers = total - win.bet;
+const commission = losers * 0.1;
+const winAmount = total - commission;
+
+setWinner({...win, winAmount:winAmount.toFixed(2)});
+
+setTimeout(()=>{
+setPlayers([]);
+setStarted(false);
+setWinner(null);
+setTimer(30);
+},5000);
+
+}
+
+
+// ===== UI =====
+return(
+<div className="app">
+
+<div className="arena-wrap">
+<div className="arena">
+
+{/* HUD */}
+<div className="hud">
+<div>{players.reduce((s,p)=>s+p.bet,0)} TON</div>
+<div>{started ? timer : "WAIT"}</div>
+</div>
+
+{/* zones */}
+{players.map(p=>(
+<div
+key={p.id}
+className="zone"
+style={{
+background:p.color,
+opacity:p.bet / players.reduce((s,x)=>s+x.bet,0)
+}}
+/>
+))}
+
+{/* ball */}
+<div className="ball" style={{left:ball.x,top:ball.y}}/>
+
+{/* avatars */}
+{players.map(p=>(
+<img
+key={p.id}
+className="avatar"
+src={`https://api.dicebear.com/7.x/identicon/svg?seed=${p.name}`}
+style={{
+left:Math.random()*300,
+top:Math.random()*300
+}}
+/>
+))}
+
+</div>
+</div>
+
+{/* PANEL */}
+<div className="panel">
+
+<input placeholder="nickname" value={name} onChange={e=>setName(e.target.value)} />
+
+<input type="number" value={bet} onChange={e=>setBet(e.target.value)} />
+
+<button className="main" onClick={join}>JOIN</button>
+
+{players.map(p=>{
+const total = players.reduce((s,x)=>s+x.bet,0);
+const chance = total ? ((p.bet/total)*100).toFixed(1) : 0;
+
+return <div key={p.id}>{p.name} — {p.bet} TON — {chance}%</div>
+})}
+
+{winner && (
+<div style={{color:"lime",marginTop:10}}>
+WINNER: {winner.name} +{winner.winAmount} TON
+</div>
+)}
+
+</div>
+
+</div>
+);
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+
+</script>
 </body>
 </html>
+//////////////////////////////////////////////////////
+// 🚀 UPGRADE SYSTEM (REAL ARENA, PHYSICS, ZONES)
+//////////////////////////////////////////////////////
+
+// ===== FIX RANDOM AVATAR POSITIONS =====
+const avatarPositions = {};
+
+// ===== IMPROVED BALL PHYSICS =====
+useEffect(()=>{
+if(!started) return;
+
+let speed = 4;
+
+const interval = setInterval(()=>{
+
+setBall(b=>{
+let {x,y,vx,vy} = b;
+
+// ускорение ближе к концу
+if(timer < 10){
+vx *= 1.01;
+vy *= 1.01;
+}
+
+// движение
+x += vx;
+y += vy;
+
+// столкновения (реалистичнее)
+if(x <= 0){
+x = 0;
+vx = Math.abs(vx);
+}
+if(x >= 300){
+x = 300;
+vx = -Math.abs(vx);
+}
+if(y <= 0){
+y = 0;
+vy = Math.abs(vy);
+}
+if(y >= 300){
+y = 300;
+vy = -Math.abs(vy);
+}
+
+return {x,y,vx,vy};
+});
+
+},16);
+
+return ()=>clearInterval(interval);
+
+},[started, timer]);
+
+
+// ===== BETTER ZONE SYSTEM (НЕ opacity) =====
+function generateZones(){
+
+const total = players.reduce((s,p)=>s+p.bet,0);
+
+let current = 0;
+
+return players.map(p=>{
+const size = p.bet / total;
+
+const start = current;
+const end = current + size;
+
+current += size;
+
+// делим по X (как на скрине)
+return {
+player:p,
+left: start * 100,
+width: size * 100
+};
+
+});
+}
+
+
+// ===== WINNER BY BALL POSITION =====
+function getWinnerByBall(){
+
+const zones = generateZones();
+const pos = (ball.x / 300) * 100;
+
+for(let z of zones){
+if(pos >= z.left && pos <= z.left + z.width){
+return z.player;
+}
+}
+
+return players[0];
+}
+
+
+// ===== OVERRIDE FINISH GAME =====
+function finishGame(){
+
+const total = players.reduce((s,p)=>s+p.bet,0);
+
+const win = getWinnerByBall();
+
+const losers = total - win.bet;
+const commission = losers * 0.1;
+const winAmount = total - commission;
+
+setWinner({...win, winAmount:winAmount.toFixed(2)});
+
+setTimeout(()=>{
+setPlayers([]);
+setStarted(false);
+setWinner(null);
+setTimer(30);
+setBall({x:150,y:150,vx:3,vy:2});
+},5000);
+
+}
+
+
+// ===== RENDER OVERRIDE =====
+
+// заменяем зоны
+const zones = generateZones();
+
+//////////////////////////////////////////////////////
+// 🔥 UI PATCH (OVERRIDE RENDER)
+//////////////////////////////////////////////////////
+
+const originalRender = App.prototype?.render;
+
+App = function(){
+
+const [players,setPlayers]=React.useState([]);
+const [name,setName]=React.useState("");
+const [bet,setBet]=React.useState(1);
+const [started,setStarted]=React.useState(false);
+const [timer,setTimer]=React.useState(30);
+const [winner,setWinner]=React.useState(null);
+const [ball,setBall]=React.useState({x:150,y:150,vx:3,vy:2});
+
+// ===== JOIN =====
+function join(){
+if(!name) return;
+
+setPlayers(p=>[
+...p,
+{
+id:Date.now(),
+name,
+bet:Number(bet),
+color:COLORS[Math.floor(Math.random()*COLORS.length)]
+}
+]);
+
+setName("");
+}
+
+// ===== AUTO START =====
+React.useEffect(()=>{
+if(players.length>=2 && !started){
+setStarted(true);
+setTimer(30);
+}
+},[players]);
+
+// ===== TIMER =====
+React.useEffect(()=>{
+if(!started) return;
+
+if(timer<=0){
+const total = players.reduce((s,p)=>s+p.bet,0);
+
+const zones = generateZones();
+const pos = (ball.x / 300) * 100;
+
+let win = players[0];
+
+for(let z of zones){
+if(pos >= z.left && pos <= z.left + z.width){
+win = z.player;
+break;
+}
+}
+
+const losers = total - win.bet;
+const commission = losers * 0.1;
+const winAmount = total - commission;
+
+setWinner({...win, winAmount:winAmount.toFixed(2)});
+
+setTimeout(()=>{
+setPlayers([]);
+setStarted(false);
+setWinner(null);
+setTimer(30);
+},5000);
+
+return;
+}
+
+const t=setTimeout(()=>setTimer(t=>t-1),1000);
+return ()=>clearTimeout(t);
+
+},[timer,started]);
+
+// ===== BALL =====
+React.useEffect(()=>{
+if(!started) return;
+
+const i=setInterval(()=>{
+setBall(b=>{
+let {x,y,vx,vy}=b;
+
+if(timer < 10){
+vx *= 1.01;
+vy *= 1.01;
+}
+
+x+=vx;
+y+=vy;
+
+if(x<=0){x=0;vx=Math.abs(vx);}
+if(x>=300){x=300;vx=-Math.abs(vx);}
+if(y<=0){y=0;vy=Math.abs(vy);}
+if(y>=300){y=300;vy=-Math.abs(vy);}
+
+return {x,y,vx,vy};
+});
+},16);
+
+return ()=>clearInterval(i);
+
+},[started,timer]);
+
+
+// ===== ZONES =====
+const total = players.reduce((s,p)=>s+p.bet,0);
+let current = 0;
+
+const zones = players.map(p=>{
+const size = p.bet / total || 0;
+const start = current;
+current += size;
+
+return {
+p,
+left: start * 100,
+width: size * 100
+};
+});
+
+
+// ===== UI =====
+return(
+<div className="app">
+
+<div className="arena-wrap">
+<div className="arena">
+
+<div className="hud">
+<div>{total} TON</div>
+<div>{started ? timer : "WAIT"}</div>
+</div>
+
+{/* REAL ZONES */}
+{zones.map(z=>(
+<div
+key={z.p.id}
+className="zone"
+style={{
+left: z.left+"%",
+width: z.width+"%",
+background:z.p.color
+}}
+/>
+))}
+
+<div className="ball" style={{left:ball.x,top:ball.y}}/>
+
+{/* avatars fixed */}
+{players.map(p=>{
+if(!avatarPositions[p.id]){
+avatarPositions[p.id]={
+x:Math.random()*300,
+y:Math.random()*300
+};
+}
+
+return(
+<img
+key={p.id}
+className="avatar"
+src={`https://api.dicebear.com/7.x/identicon/svg?seed=${p.name}`}
+style={{
+left:avatarPositions[p.id].x,
+top:avatarPositions[p.id].y
+}}
+/>
+);
+})}
+
+</div>
+</div>
+
+<div className="panel">
+
+<input placeholder="nickname" value={name} onChange={e=>setName(e.target.value)} />
+<input type="number" value={bet} onChange={e=>setBet(e.target.value)} />
+
+<button className="main" onClick={join}>JOIN</button>
+
+{players.map(p=>{
+const chance = total ? ((p.bet/total)*100).toFixed(1) : 0;
+return <div key={p.id}>{p.name} — {p.bet} TON — {chance}%</div>
+})}
+
+{winner && (
+<div style={{color:"lime",marginTop:10}}>
+WINNER: {winner.name} +{winner.winAmount} TON
+</div>
+)}
+
+</div>
+
+</div>
+);
+};
+
+// RE-RENDER
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+  
